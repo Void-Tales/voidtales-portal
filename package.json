@@ -13,24 +13,24 @@
 	},
 	"devDependencies": {
 		"@nuxt/image": "^1.11.0",
-		"@unhead/vue": "^2.0.17",
-		"autoprefixer": "^10.4.21",
-		"eslint": "^9.36.0",
-		"eslint-plugin-unused-imports": "^4.2.0",
-		"nuxt": "^4.1.2",
+		"@unhead/vue": "^2.1.2",
+		"autoprefixer": "^10.4.23",
+		"eslint": "^9.39.2",
+		"eslint-plugin-unused-imports": "^4.3.0",
+		"nuxt": "^4.3.0",
 		"postcss": "^8.5.6",
 		"prettier-plugin-organize-imports": "^4.3.0",
-		"sharp": "^0.34.4",
-		"tailwindcss": "^4.1.13",
-		"unstorage": "^1.17.1"
+		"sharp": "^0.34.5",
+		"tailwindcss": "^4.1.18",
+		"unstorage": "^1.17.4"
 	},
 	"dependencies": {
 		"@nuxt/fonts": "^0.11.4",
 		"@nuxtjs/color-mode": "^3.5.2",
-		"@tailwindcss/postcss": "^4.1.13",
+		"@tailwindcss/postcss": "^4.1.18",
 		"embla-carousel-vue": "^8.6.0",
-		"prettier": "^3.6.2",
-		"vue": "^3.5.22"
+		"prettier": "^3.8.1",
+		"vue": "^3.5.27"
 	},
 	"packageManager": "pnpm@9.0.5"
 }

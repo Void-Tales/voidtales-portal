@@ -4,16 +4,16 @@ const isMenuOpen = ref(false);
 import { onMounted } from 'vue';
 
 onMounted(() => {
-  // Erstelle ein neues <link>-Element
-  const preloadLink = document.createElement('link');
+	// Erstelle ein neues <link>-Element
+	const preloadLink = document.createElement('link');
 
-  // Setze die Attribute für das Preloading
-  preloadLink.rel = 'preload';
-  preloadLink.as = 'image';
-  preloadLink.href = '/images/index-light.webp';
+	// Setze die Attribute für das Preloading
+	preloadLink.rel = 'preload';
+	preloadLink.as = 'image';
+	preloadLink.href = '/images/index-light.webp';
 
-  // Füge das Element zum <head> der Seite hinzu
-  document.head.appendChild(preloadLink);
+	// Füge das Element zum <head> der Seite hinzu
+	document.head.appendChild(preloadLink);
 });
 </script>
 

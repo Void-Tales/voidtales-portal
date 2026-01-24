@@ -218,7 +218,14 @@
 						src="https://www.youtube.com/embed/sIdqXmTkGsE"
 						title="Void Tales Trailer"
 						frameborder="0"
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+						allow="
+							accelerometer;
+							autoplay;
+							clipboard-write;
+							encrypted-media;
+							gyroscope;
+							picture-in-picture;
+						"
 						allowfullscreen
 					></iframe>
 				</div>
