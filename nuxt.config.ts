@@ -41,16 +41,18 @@ export default defineNuxtConfig({
 				{ property: 'og:site_name', content: 'Void Tales' },
 			],
 			link: [
-				{ rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-				{ rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
 				{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
 				{
-					rel: 'stylesheet',
-					href: 'https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap',
+					rel: 'preload',
+					as: 'image',
+					href: '/images/index-dark.webp',
+					media: '(prefers-color-scheme: dark)',
 				},
 				{
-					rel: 'stylesheet',
-					href: 'https://fonts.googleapis.com/css2?family=Asul:wght@400&display=swap',
+					rel: 'preload',
+					as: 'image',
+					href: '/images/index-light.webp',
+					media: '(prefers-color-scheme: light)',
 				},
 			],
 		},
@@ -77,6 +79,11 @@ export default defineNuxtConfig({
 			pass: process.env.PLAN_PASS,
 			serverId: process.env.SERVER_ID,
 		},
+	},
+
+	routeRules: {
+		'/images/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+		'/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
 	},
 
 	colorMode: {

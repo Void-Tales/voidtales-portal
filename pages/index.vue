@@ -98,14 +98,13 @@
 			<div class="relative [perspective:1200px] animate-bob" style="animation-delay: -1.5s">
 				<div class="card card-hover tilt-left">
 					<div class="card-glow"></div>
-					<NuxtImg
+					<img
 						src="/images/portal-1.webp"
 						alt="Void Tales ~ Soul Station"
 						width="800"
 						height="600"
-						format="webp"
-						quality="80"
 						loading="lazy"
+						class="w-full h-auto"
 					/>
 					<div class="card-tint"></div>
 					<div class="card-ring"></div>
@@ -121,14 +120,13 @@
 			<div class="relative [perspective:1200px] animate-bob">
 				<div class="card card-hover tilt-right">
 					<div class="card-glow"></div>
-					<NuxtImg
+					<img
 						src="/images/portal-2.webp"
 						alt="Void Tales ~ Soul Station"
 						width="800"
 						height="600"
-						format="webp"
-						quality="80"
 						loading="lazy"
+						class="w-full h-auto"
 					/>
 					<div class="card-tint"></div>
 					<div class="card-ring"></div>
@@ -175,14 +173,13 @@
 				<div v-for="img in images" :key="img" class="embla__slide">
 					<div class="card">
 						<div class="card-glow"></div>
-						<NuxtImg
-							class="embla__slide__img"
+						<img
+							class="embla__slide__img w-full h-auto"
 							:src="img"
 							alt="Void Tales ~ Soul Station"
 							width="800"
 							height="450"
-							format="webp"
-							quality="80"
+							loading="lazy"
 						/>
 						<div class="card-tint"></div>
 						<div class="card-ring"></div>
@@ -215,9 +212,10 @@
 				>
 					<iframe
 						class="rounded-2xl w-full h-full"
-						src="https://www.youtube.com/embed/sIdqXmTkGsE"
+						src="https://www.youtube-nocookie.com/embed/sIdqXmTkGsE"
 						title="Void Tales Trailer"
 						frameborder="0"
+						loading="lazy"
 						allow="
 							accelerometer;
 							autoplay;
