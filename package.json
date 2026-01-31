@@ -14,7 +14,7 @@
 	"devDependencies": {
 		"@nuxt/image": "^2.0.0",
 		"@unhead/vue": "^2.1.2",
-		"autoprefixer": "^10.4.23",
+		"autoprefixer": "^10.4.24",
 		"eslint": "^9.39.2",
 		"eslint-plugin-unused-imports": "^4.3.0",
 		"nuxt": "^4.3.0",
