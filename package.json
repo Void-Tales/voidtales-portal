@@ -25,7 +25,7 @@
 		"unstorage": "^1.17.4"
 	},
 	"dependencies": {
-		"@nuxt/fonts": "^0.13.0",
+		"@nuxt/fonts": "^0.14.0",
 		"@nuxtjs/color-mode": "^4.0.0",
 		"@tailwindcss/postcss": "^4.1.18",
 		"embla-carousel-vue": "^8.6.0",
