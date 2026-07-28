@@ -1,209 +1,374 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ServerStatus from '../components/ServerStatus.astro';
-import { siteConfig, storySections, newsItems, galleryImages } from '../config/site.js';
+import { siteConfig, storySections, galleryImages } from '../config/site.js';
 import { socialLinks } from '../config/navigation.js';
+
+const { hero, gallery, trailer, join, social, modrinthUrl, galleryUrl } = siteConfig;
+
+// `titleAccent` is the trailing word of `hero.title` that carries the accent colour.
+const accentAt = hero.title.lastIndexOf(hero.titleAccent);
+const heroLead = hero.title.slice(0, accentAt).trim();
+
+// Scroll cues form a chain: hero -> realm 1 -> realm 2 -> gallery. Each one is a
+// real anchor, so the label names the section it actually jumps to.
+const anchorOf = (i: number) => (i < storySections.length ? `realm-${i + 1}` : 'gallery');
+const titleOf = (i: number) => (i < storySections.length ? storySections[i].title : gallery.title);
 ---
 
 <BaseLayout>
-	{/* Hero */}
-	<section class="relative space-y-8 text-center">
-		<div
-			class="relative mx-auto flex w-full max-w-xs flex-col items-center overflow-visible text-center"
-		>
-			<h1 class="text-5xl font-bold tracking-wide">{siteConfig.hero.title}</h1>
-			<div class="relative flex w-full flex-col items-center justify-center">
-				<div
-					class="absolute inset-x-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent blur-sm"
-				>
-				</div>
-				<div
-					class="absolute inset-x-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent"
-				>
-				</div>
-				<div
-					class="absolute inset-x-0 top-0 h-[5px] w-1/2 bg-gradient-to-r from-transparent via-purple-400 to-transparent blur-sm"
-				>
-				</div>
-				<div
-					class="absolute inset-x-0 top-0 h-px w-1/2 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
-				>
-				</div>
-				<div
-					class="absolute inset-0 h-full w-full [mask-image:radial-gradient(50%_200px_at_top,transparent_20%,white)]"
-				>
-				</div>
-			</div>
-			<span
-				class="pointer-events-none absolute inset-0 -z-[1] flex h-full w-full before:h-3/4 before:w-full before:bg-gradient-to-r before:from-neutral-900 before:to-purple-600 before:blur-[90px] before:content-[''] after:h-1/2 after:w-full after:bg-gradient-to-br after:from-cyan-400 after:to-sky-300 after:blur-[90px] after:content-['']"
-			>
-			</span>
-		</div>
+	{/* 1 - Hero: full-bleed screenshot, copy anchored to the bottom edge */}
+	<section class="hero">
+		<div class="hero-bg"></div>
+		<div class="hero-scrim"></div>
 
-		<p class="text-lg opacity-80">{siteConfig.hero.subtitle}</p>
-	</section>
+		<div class="shell hero-body">
+			<span class="eyebrow" style="--i: 0">{hero.eyebrow}</span>
+			<h1 class="hero-title" style="--i: 1">
+				{heroLead}{' '}<span class="accent">{hero.titleAccent}</span>
+			</h1>
+			<p class="hero-subtitle" style="--i: 2">{hero.subtitle}</p>
 
-	{/* Connect */}
-	<section class="mx-auto w-full max-w-5xl px-6 py-6">
-		<h2 class="mb-4 text-2xl font-semibold tracking-wide">Connect</h2>
+			<div class="hero-actions" style="--i: 3">
+				<a href={modrinthUrl} target="_blank" rel="noopener" class="btn btn-primary">
+					{hero.ctaLabel}
+				</a>
+				<ServerStatus variant="inline" />
 
-		<div class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
-			<ServerStatus />
-
-			<div class="glass-panel justify-between">
-				<div>
-					<h3 class="mb-2 text-sm font-medium">News &amp; Announcements</h3>
-					<p class="mb-3 text-xs opacity-85">
-						Here could be a devlog entry from discord or something with added via workflow.
-					</p>
-					<ul class="space-y-2 text-xs">
-						{
-							newsItems.map((item) => (
-								<li class="flex items-start gap-2">
-									<span class={`mt-1 h-2 w-2 rounded-full ${item.dot}`} />
-									{item.text}
-								</li>
-							))
-						}
-					</ul>
-				</div>
-				<div class="mt-3 flex justify-end">
-					<a
-						href="https://blog.voidtales.win"
-						target="_blank"
-						rel="noopener"
-						class="inline-block rounded-lg border border-neutral-300/60 px-3 py-2 text-sm dark:border-neutral-700/60"
-						>Learn more</a
+				<a href={`#${anchorOf(0)}`} class="scroll-cue" aria-label={`Scroll to ${titleOf(0)}`}>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
 					>
-				</div>
+						<path d="M12 4v15M5 12.5l7 7 7-7"></path>
+					</svg>
+				</a>
 			</div>
 		</div>
 	</section>
 
-	{/* Story sections — image and text swap sides on the second one */}
 	{
-		storySections.map((section, i) => (
-			<section class="section-shell">
-				<div class="grid items-center gap-10 md:grid-cols-2 md:gap-14">
-					<div class:list={['space-y-5', i % 2 === 1 && 'md:order-2']}>
-						<h2 class="section-title">{section.title}</h2>
-						<p class="text-base leading-relaxed opacity-85">{section.body}</p>
-						<ul class="space-y-2.5 text-sm opacity-85">
-							{section.points.map((point, p) => (
-								<li class="flex gap-3">
-									<span
-										class:list={[
-											'mt-2 h-2 w-2 rounded-full',
-											['bg-purple-500/80', 'bg-indigo-500/80', 'bg-cyan-400/80'][p % 3],
-										]}
-									/>
-									<span>{point}</span>
-								</li>
-							))}
-						</ul>
-					</div>
+		/* 2 - The realms, as a sticky stack: panel 2 slides over panel 1.
+	    The wrapper is load-bearing: it is the containing block that lets the
+	    panels unstick again, otherwise they stay pinned under every section
+	    that follows. */
+	}
+	<div class="story-stack">
+		{
+			storySections.map((section, i) => (
+				<section class="story-panel" id={`realm-${i + 1}`}>
+					<div class="shell story-grid">
+						<div class:list={[i % 2 === 1 && 'lg:order-2']}>
+							<h2>{section.title}</h2>
+							<p class="section-lead">{section.body}</p>
+							<ul class="story-points">
+								{section.points.map((point) => (
+									<li>{point}</li>
+								))}
+							</ul>
+						</div>
 
-					<div
-						class:list={['relative [perspective:1200px] animate-bob', i % 2 === 1 && 'md:order-1']}
-						style={i === 0 ? 'animation-delay: -1.5s' : undefined}
-					>
-						<div class:list={['card card-hover', section.tilt]}>
-							<div class="card-glow" />
+						<figure
+							class:list={['story-figure', i % 2 === 1 && ['story-figure--left', 'lg:order-1']]}
+						>
 							<img
 								src={section.image}
-								alt="Void Tales ~ Soul Station"
-								width="800"
-								height="600"
+								alt={section.imageAlt}
+								width="1200"
+								height="675"
 								loading="lazy"
-								class="h-auto w-full"
+								decoding="async"
 							/>
-							<div class="card-tint" />
-							<div class="card-ring" />
-						</div>
+						</figure>
 					</div>
-				</div>
-			</section>
-		))
-	}
 
-	{/* Gallery carousel */}
-	<section class="section-shell">
-		<div class="narrow-center mb-10 text-center">
-			<h2 class="section-title">Echoes from the Station</h2>
-			<p class="opacity-85">Glimpses across realms—moments caught between memory and motion.</p>
-		</div>
-
-		<div class="embla">
-			<div class="embla__container">
-				{
-					galleryImages.map((img) => (
-						<div class="embla__slide">
-							<div class="card">
-								<div class="card-glow" />
-								<img
-									class="h-auto w-full"
-									src={img}
-									alt="Void Tales ~ Soul Station"
-									width="800"
-									height="450"
-									loading="lazy"
-								/>
-								<div class="card-tint" />
-								<div class="card-ring" />
-							</div>
-						</div>
-					))
-				}
-			</div>
-		</div>
-
-		<div class="narrow-center mt-10 text-center">
-			<p class="opacity-85">
-				Fragments remain—each a path back to what was lost, and forward to what must be found.
-			</p>
-		</div>
-	</section>
-
-	{/* Trailer */}
-	<section class="section-shell">
-		<div class="narrow-center mb-10 text-center">
-			<h2 class="section-title">{siteConfig.trailer.title}</h2>
-			<p class="mb-6 opacity-85">{siteConfig.trailer.subtitle}</p>
-			<div class="mx-auto flex w-full max-w-2xl justify-center">
-				<div
-					class="aspect-video w-full overflow-hidden rounded-2xl border border-indigo-400/60"
-					style="box-shadow: 0 0 0 2px rgba(128,90,213,0.25), 0 0 0 6px rgba(139,92,246,0.12), 0 8px 32px 0 rgba(139,92,246,0.18);"
-				>
-					<iframe
-						class="h-full w-full rounded-2xl"
-						src={siteConfig.trailer.embedUrl}
-						title="Void Tales Trailer"
-						loading="lazy"
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-						allowfullscreen></iframe>
-				</div>
-			</div>
-		</div>
-	</section>
-
-	{/* Social links */}
-	<section class="space-y-6 py-20 text-center">
-		<h3 class="text-2xl font-semibold tracking-wide">Follow the Journey</h3>
-		<div class="flex flex-wrap items-center justify-center gap-4">
-			{
-				socialLinks.map((link) => (
-					<a href={link.href} target="_blank" rel="noopener" class="btn-contrast btn-glow">
-						{link.label}
+					<a
+						href={`#${anchorOf(i + 1)}`}
+						class="scroll-cue scroll-cue--panel"
+						aria-label={`Scroll to ${titleOf(i + 1)}`}
+					>
+						<svg
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M12 4v15M5 12.5l7 7 7-7" />
+						</svg>
 					</a>
-				))
-			}
+				</section>
+			))
+		}
+	</div>
+
+	{
+		/* 3 - Gallery: the track pans sideways with the scroll where that is
+	    supported, and stays a manual scroll-snap strip everywhere else.
+	    `--tiles` drives the travel distance, so it has to count the last
+	    "see all" tile too. */
+	}
+	<section
+		class="section pan border-t border-line"
+		id="gallery"
+		style={`--tiles: ${galleryImages.length + 1}`}
+	>
+		<div class="pan-sticky">
+			<div class="shell rise">
+				<h2>{gallery.title}</h2>
+				<p class="section-lead">{gallery.body}</p>
+			</div>
+
+			<div
+				class="pan-viewport"
+				tabindex="0"
+				role="region"
+				aria-label="Screenshots from the Void Tales realms"
+			>
+				<div class="pan-track">
+					{
+						galleryImages.map((image) => (
+							<div class="pan-tile">
+								<img
+									src={image.src}
+									alt={image.alt}
+									width="1200"
+									height="675"
+									loading="lazy"
+									decoding="async"
+								/>
+							</div>
+						))
+					}
+					<a href={galleryUrl} target="_blank" rel="noopener" class="pan-tile pan-more">
+						<strong>{gallery.moreLabel}</strong>
+						<span>{gallery.moreHint}</span>
+					</a>
+				</div>
+			</div>
+
+			<a
+				href="#trailer"
+				class="scroll-cue scroll-cue--panel"
+				aria-label={`Scroll to ${trailer.title}`}
+			>
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M12 4v15M5 12.5l7 7 7-7"></path>
+				</svg>
+			</a>
+		</div>
+	</section>
+
+	{/* 4 - Trailer */}
+	<section class="section border-t border-line" id="trailer">
+		<div class="shell rise">
+			<h2>{trailer.title}</h2>
+			<p class="section-lead mb-10">{trailer.subtitle}</p>
+
+			<div class="trailer-frame">
+				<iframe
+					src={trailer.embedUrl}
+					title="Void Tales Trailer"
+					loading="lazy"
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+					allowfullscreen></iframe>
+			</div>
+
+			<div class="mt-12 flex justify-end">
+				<a href="#join" class="scroll-cue" aria-label={`Scroll to ${join.title}`}>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M12 4v15M5 12.5l7 7 7-7"></path>
+					</svg>
+				</a>
+			</div>
+		</div>
+	</section>
+
+	{/* 5 - Join: the three steps, the live server card, and the social links */}
+	<section class="section border-t border-line" id="join">
+		<div class="shell">
+			<h2 class="rise">{join.title}</h2>
+
+			<div class="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+				<ol class="steps rise">
+					{
+						join.steps.map((step, i) => (
+							<li class="step" data-step={i + 1}>
+								<h3>{step.title}</h3>
+								<p>{step.body}</p>
+								{i === 0 && (
+									<a
+										href={modrinthUrl}
+										target="_blank"
+										rel="noopener"
+										class="btn btn-modrinth mt-4"
+									>
+										{hero.ctaLabel}
+										<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+											<path d="M12.252.004a11.78 11.768 0 0 0-8.92 3.73a11 11 0 0 0-2.17 3.11a11.37 11.359 0 0 0-1.16 5.169c0 1.42.17 2.5.6 3.77c.24.759.77 1.899 1.17 2.529a12.3 12.298 0 0 0 8.85 5.639c.44.05 2.54.07 2.76.02c.2-.04.22.1-.26-1.7l-.36-1.37l-1.01-.06a8.5 8.489 0 0 1-5.18-1.8a5.3 5.3 0 0 1-1.3-1.26c0-.05.34-.28.74-.5a37.572 37.545 0 0 1 2.88-1.629c.03 0 .5.45 1.06.98l1 .97l2.07-.43l2.06-.43l1.47-1.47c.8-.8 1.48-1.5 1.48-1.52c0-.09-.42-1.63-.46-1.7c-.04-.06-.2-.03-1.02.18c-.53.13-1.2.3-1.45.4l-.48.15l-.53.53l-.53.53l-.93.1l-.93.07l-.52-.5a2.7 2.7 0 0 1-.96-1.7l-.13-.6l.43-.57c.68-.9.68-.9 1.46-1.1c.4-.1.65-.2.83-.33c.13-.099.65-.579 1.14-1.069l.9-.9l-.7-.7l-.7-.7l-1.95.54c-1.07.3-1.96.53-1.97.53c-.03 0-2.23 2.48-2.63 2.97l-.29.35l.28 1.03c.16.56.3 1.16.31 1.34l.03.3l-.34.23c-.37.23-2.22 1.3-2.84 1.63c-.36.2-.37.2-.44.1c-.08-.1-.23-.6-.32-1.03c-.18-.86-.17-2.75.02-3.73a8.84 8.84 0 0 1 7.9-6.93c.43-.03.77-.08.78-.1c.06-.17.5-2.999.47-3.039c-.01-.02-.1-.02-.2-.03Zm3.68.67c-.2 0-.3.1-.37.38c-.06.23-.46 2.42-.46 2.52c0 .04.1.11.22.16a8.51 8.499 0 0 1 2.99 2a8.38 8.379 0 0 1 2.16 3.449a6.9 6.9 0 0 1 .4 2.8c0 1.07 0 1.27-.1 1.73a9.4 9.4 0 0 1-1.76 3.769c-.32.4-.98 1.06-1.37 1.38c-.38.32-1.54 1.1-1.7 1.14c-.1.03-.1.06-.07.26c.03.18.64 2.56.7 2.78l.06.06a12.07 12.058 0 0 0 7.27-9.4c.13-.77.13-2.58 0-3.4a11.96 11.948 0 0 0-5.73-8.578c-.7-.42-2.05-1.06-2.25-1.06Z" />
+										</svg>
+									</a>
+								)}
+							</li>
+						))
+					}
+				</ol>
+
+				<ServerStatus variant="full" />
+			</div>
+
+			<div class="mt-16 border-t border-line pt-10">
+				<h3>{social.title}</h3>
+				<div class="mt-5 flex flex-wrap gap-3">
+					{
+						socialLinks.map((link) => (
+							<a href={link.href} target="_blank" rel="noopener" class="btn">
+								{link.label}
+							</a>
+						))
+					}
+				</div>
+			</div>
 		</div>
 	</section>
 </BaseLayout>
 
 <script>
-	import EmblaCarousel from 'embla-carousel';
+	// Scroll-linked motion. Driven by IntersectionObserver plus a
+	// requestAnimationFrame loop that only runs while the subject is on screen.
+	//
+	// Deliberately not CSS `animation-timeline` / the ViewTimeline API: both are
+	// Chromium-only, and the gallery pan is the section's whole point, so
+	// Safari and Firefox should not be left with a static strip. This is not a
+	// scroll listener either - nothing is computed while the section is out of
+	// view, and the loop only writes a transform.
+	//
+	// If you ever move this back to CSS: `animation-timeline` must not share a
+	// declaration block with the `animation` shorthand. The CSS minifier folds
+	// the two together, and a shorthand carrying a timeline is invalid, so the
+	// whole declaration is dropped without warning.
+	//
+	// Without JS every element stays visible, the hero image sits still and the
+	// gallery is a manual scroll-snap strip. That is the designed fallback.
+	const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
-	const node = document.querySelector<HTMLElement>('.embla');
-	if (node) EmblaCarousel(node, { loop: false });
+	/** Runs `tick` once per frame, but only while `el` intersects the viewport. */
+	function whileVisible(el: Element, tick: () => void) {
+		let running = false;
+		const frame = () => {
+			if (!running) return;
+			tick();
+			requestAnimationFrame(frame);
+		};
+		new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting === running) return;
+			running = entry.isIntersecting;
+			if (running) requestAnimationFrame(frame);
+		}).observe(el);
+	}
+
+	const clamp = (n: number) => Math.min(1, Math.max(0, n));
+
+	if (!reduced.matches) {
+		// Entrances: the observer fires the animation once, so nothing is ever
+		// left sitting at opacity 0 waiting for a trigger that may not come.
+		const entrances = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+					entry.target.animate(
+						{ opacity: [0, 1], transform: ['translateY(1.5rem)', 'none'] },
+						{ duration: 700, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
+					);
+					entrances.unobserve(entry.target);
+				}
+			},
+			{ threshold: 0.15 }
+		);
+		for (const el of document.querySelectorAll('.rise')) entrances.observe(el);
+
+		// Hero: the background drifts as the hero scrolls away.
+		const hero = document.querySelector<HTMLElement>('.hero');
+		const heroBg = document.querySelector<HTMLElement>('.hero-bg');
+		if (hero && heroBg) {
+			whileVisible(hero, () => {
+				const p = clamp(-hero.getBoundingClientRect().top / window.innerHeight);
+				heroBg.style.transform = `scale(1.14) translateY(${p * 6}%)`;
+			});
+		}
+
+		// Gallery: pin the section and pan the track sideways across the extra
+		// height. Desktop only - trading vertical scroll for a sideways strip on a
+		// phone is hostile, and the snap strip is the better answer there.
+		const pan = document.querySelector<HTMLElement>('.pan');
+		const track = pan?.querySelector<HTMLElement>('.pan-track');
+		const wide = matchMedia('(min-width: 768px)');
+
+		if (pan && track) {
+			const headerH = document.querySelector('header')?.offsetHeight ?? 0;
+			let travel = 0;
+
+			const measure = () => {
+				pan.classList.remove('is-panning');
+				pan.style.removeProperty('height');
+				track.style.removeProperty('transform');
+				travel = 0;
+				if (!wide.matches) return;
+
+				pan.classList.add('is-panning');
+
+				// Measured rather than recomputed from the CSS, so the geometry has
+				// exactly one source of truth: track content plus both insets, minus
+				// what already fits on screen.
+				const first = track.firstElementChild?.getBoundingClientRect().left ?? 0;
+				const last = track.lastElementChild?.getBoundingClientRect().right ?? 0;
+				const inset = parseFloat(getComputedStyle(track).paddingInlineStart);
+				travel = Math.max(0, last - first + 2 * inset - window.innerWidth);
+
+				if (travel === 0) {
+					pan.classList.remove('is-panning');
+					return;
+				}
+				pan.style.height = `${window.innerHeight + travel}px`;
+			};
+
+			measure();
+
+			whileVisible(pan, () => {
+				if (travel === 0) return;
+				const p = clamp((headerH - pan.getBoundingClientRect().top) / travel);
+				track.style.transform = `translateX(${-p * travel}px)`;
+			});
+
+			// Resize changes the tile width and therefore the travel.
+			let pending = 0;
+			window.addEventListener('resize', () => {
+				cancelAnimationFrame(pending);
+				pending = requestAnimationFrame(measure);
+			});
+		}
+	}
 </script>

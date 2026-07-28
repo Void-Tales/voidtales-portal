@@ -1,12 +1,32 @@
 ---
 import { siteConfig } from '../config/site.js';
+import { navigationLinks } from '../config/navigation.js';
 
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-20 border-t border-neutral-200/40 dark:border-neutral-800/60">
-	<div class="mx-auto max-w-5xl px-6 py-8 text-sm opacity-70">
-		© {year}
-		{siteConfig.footer}
+<footer class="border-t border-line">
+	<div class="shell footer-inner">
+		<a href="/" class="brand text-[0.95rem]">{siteConfig.name}</a>
+
+		<nav class="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer navigation">
+			{
+				navigationLinks.map((link) => (
+					<a
+						href={link.href}
+						target="_blank"
+						rel="noopener"
+						class="text-muted text-[0.85rem] transition-colors hover:text-accent"
+					>
+						{link.label}
+					</a>
+				))
+			}
+		</nav>
+
+		<p class="text-muted ml-auto max-w-md text-[0.8rem]">
+			{/* One expression: Prettier collapses the whitespace between two of them. */}
+			{`© ${year} ${siteConfig.footer}`}
+		</p>
 	</div>
 </footer>

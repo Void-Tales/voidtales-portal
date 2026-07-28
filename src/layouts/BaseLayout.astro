@@ -32,7 +32,11 @@ const twitterImage = new URL(siteConfig.twitterImage, siteConfig.url).toString()
 		<meta name="description" content={description} />
 		<meta name="theme-color" content={siteConfig.themeColor} />
 		<link rel="canonical" href={canonical} />
+		{/* All four are generated from favicon.svg, see the brand-assets skill. */}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" sizes="32x32" href="/favicon.ico" />
+		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content={siteConfig.name} />
@@ -46,8 +50,14 @@ const twitterImage = new URL(siteConfig.twitterImage, siteConfig.url).toString()
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={twitterImage} />
 
-		<Font cssVariable="--font-body" preload={[{ style: 'normal' }]} />
-		<Font cssVariable="--font-display" preload={[{ style: 'normal' }]} />
+		{
+			/* Filter the preload by style, never by weight: in the build all weights
+		    of a family collapse into one variable font file whose preload entry
+		    carries the weight of the first face, so a weight filter matches
+		    nothing. */
+		}
+		<Font cssVariable="--font-instrument-sans" preload={[{ style: 'normal' }]} />
+		<Font cssVariable="--font-unbounded" preload={[{ style: 'normal' }]} />
 
 		<link
 			rel="preload"
@@ -78,9 +88,13 @@ const twitterImage = new URL(siteConfig.twitterImage, siteConfig.url).toString()
 		</script>
 	</head>
 
-	<body class="relative min-h-screen bg-transparent text-neutral-900 dark:text-neutral-200">
+	{
+		/* <main> is unconstrained so sections can go full-bleed; the width limit
+	    lives on `.shell` inside each section. */
+	}
+	<body class="flex min-h-[100dvh] flex-col">
 		<Header />
-		<main class="animate-fade-in relative z-10 mx-auto min-h-screen max-w-5xl px-6 py-10 opacity-0">
+		<main class="flex-1">
 			<slot />
 		</main>
 		<Footer />

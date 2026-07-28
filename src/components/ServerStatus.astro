@@ -1,159 +1,133 @@
 ---
 import { siteConfig } from '../config/site.js';
 
-const { mcServerHost, mcServerPort, modrinthUrl, discordUrl } = siteConfig;
+interface Props {
+	/**
+	 * `inline` is the compact live line in the hero (dot, players, address).
+	 * `full` is the card with version and MOTD. Both share one script and one
+	 * MOTD parser, so the fetch logic exists exactly once.
+	 */
+	variant?: 'inline' | 'full';
+}
+
+const { variant = 'full' } = Astro.props;
+
+const { mcServerHost, mcServerPort } = siteConfig;
 const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcServerPort}`;
 ---
 
 {
-	/* Static shell — JS fills in the live values. Without JS the address and the
-    CTAs still work, the status just stays "Checking…". */
+	/* Static shell, JS fills in the live values. Without JS the address and the
+	   copy button still work, the status just stays "Checking…". */
 }
 <div
-	class="glass-panel h-full justify-between"
+	class:list={[variant === 'full' ? 'status-card' : 'flex flex-wrap items-center gap-3']}
 	data-server-status
 	data-host={mcServerHost}
 	data-port={String(mcServerPort)}
 	data-address={address}
 >
-	<div class="flex flex-col gap-3">
-		<div class="flex flex-wrap items-center justify-between gap-3">
-			<div class="flex items-center gap-3">
-				<span
-					data-badge
-					class="inline-flex items-center gap-2 rounded-lg bg-neutral-500/15 px-2 py-1 text-xs font-medium"
-				>
-					<span data-dot class="h-2 w-2 rounded-full bg-neutral-500"></span>
-					<span data-label>Checking…</span>
-				</span>
-				<button
-					type="button"
-					data-refresh
-					class="rounded-lg border border-neutral-300/60 px-2 py-1 text-xs hover:bg-neutral-100 dark:border-neutral-700/60 dark:hover:bg-neutral-800/70"
-				>
+	<div class="flex flex-wrap items-center gap-3">
+		<span data-badge class="status-badge">
+			<span data-dot class="status-dot"></span>
+			<span data-label>Checking…</span>
+		</span>
+
+		{
+			variant === 'full' && (
+				<button type="button" data-refresh class="btn px-3 py-1 text-[0.8rem]">
 					Refresh
 				</button>
-			</div>
+			)
+		}
+	</div>
 
-			<code
-				class="flex items-center gap-1 rounded-lg border border-neutral-200/60 bg-neutral-100/80 px-2 py-1 text-sm dark:border-neutral-700/60 dark:bg-neutral-800/70"
-			>
-				{address}
-				<button
-					type="button"
-					data-copy
-					class="ml-2 cursor-pointer"
-					aria-label="Copy server address"
-					title="Copy IP"
-				>
-					<svg
-						data-copy-idle
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-5 w-5 text-neutral-500 transition-colors hover:text-neutral-900 dark:hover:text-white"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="1.5"
-							d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
-						></path>
-					</svg>
-					<svg
-						data-copy-done
-						xmlns="http://www.w3.org/2000/svg"
-						class="hidden h-5 w-5 text-emerald-500"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"
-						></path>
-					</svg>
-				</button>
-			</code>
-		</div>
+	<button type="button" data-copy class="status-address" aria-label="Copy server address">
+		<span>{address}</span>
+		<svg
+			data-copy-idle
+			class="h-4 w-4"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="1.5"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+		>
+			<rect x="9" y="9" width="12" height="12" rx="2"></rect>
+			<path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+		</svg>
+		<svg
+			data-copy-done
+			class="hidden h-4 w-4 text-emerald-500"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M5 13l4 4L19 7"></path>
+		</svg>
+	</button>
 
-		<div class="flex flex-wrap items-center gap-4 text-sm opacity-85">
-			<div>Players: <strong data-players>–</strong></div>
-			<div data-version-wrap hidden>Version: <strong data-version></strong></div>
-			<div data-motd-wrap hidden class="flex max-w-full items-center gap-2">
-				<span>MOTD:</span>
+	<div class="status-meta">
+		<div>Players: <strong data-players>-</strong></div>
+		{
+			variant === 'full' && (
+				<div data-version-wrap hidden>
+					Version: <strong data-version />
+				</div>
+			)
+		}
+	</div>
+
+	{
+		variant === 'full' && (
+			<div data-motd-wrap hidden>
 				{/* Always dark: the Minecraft palette is built for a dark server list. */}
-				<code
-					data-motd
-					class="rounded-lg border border-neutral-700/60 bg-neutral-900 px-2 py-1 text-sm whitespace-pre-line text-neutral-200"
-				></code>
+				<code data-motd class="status-motd block" />
 			</div>
-		</div>
-	</div>
-
-	<div class="flex items-center gap-3">
-		<a
-			href={modrinthUrl}
-			target="_blank"
-			rel="noopener"
-			class="bg-modrinth flex items-center gap-x-2 rounded-xl px-4 py-2 text-sm text-white transition-colors hover:brightness-110"
-		>
-			<span class="sm:hidden">Modrinth</span>
-			<span class="hidden sm:inline">Get the Modpack</span>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				class="hidden h-5 w-5 sm:inline"
-				viewBox="0 0 24 24"
-				fill="currentColor"
-			>
-				<path
-					d="M12.252.004a11.78 11.768 0 0 0-8.92 3.73a11 11 0 0 0-2.17 3.11a11.37 11.359 0 0 0-1.16 5.169c0 1.42.17 2.5.6 3.77c.24.759.77 1.899 1.17 2.529a12.3 12.298 0 0 0 8.85 5.639c.44.05 2.54.07 2.76.02c.2-.04.22.1-.26-1.7l-.36-1.37l-1.01-.06a8.5 8.489 0 0 1-5.18-1.8a5.3 5.3 0 0 1-1.3-1.26c0-.05.34-.28.74-.5a37.572 37.545 0 0 1 2.88-1.629c.03 0 .5.45 1.06.98l1 .97l2.07-.43l2.06-.43l1.47-1.47c.8-.8 1.48-1.5 1.48-1.52c0-.09-.42-1.63-.46-1.7c-.04-.06-.2-.03-1.02.18c-.53.13-1.2.3-1.45.4l-.48.15l-.53.53l-.53.53l-.93.1l-.93.07l-.52-.5a2.7 2.7 0 0 1-.96-1.7l-.13-.6l.43-.57c.68-.9.68-.9 1.46-1.1c.4-.1.65-.2.83-.33c.13-.099.65-.579 1.14-1.069l.9-.9l-.7-.7l-.7-.7l-1.95.54c-1.07.3-1.96.53-1.97.53c-.03 0-2.23 2.48-2.63 2.97l-.29.35l.28 1.03c.16.56.3 1.16.31 1.34l.03.3l-.34.23c-.37.23-2.22 1.3-2.84 1.63c-.36.2-.37.2-.44.1c-.08-.1-.23-.6-.32-1.03c-.18-.86-.17-2.75.02-3.73a8.84 8.84 0 0 1 7.9-6.93c.43-.03.77-.08.78-.1c.06-.17.5-2.999.47-3.039c-.01-.02-.1-.02-.2-.03Zm3.68.67c-.2 0-.3.1-.37.38c-.06.23-.46 2.42-.46 2.52c0 .04.1.11.22.16a8.51 8.499 0 0 1 2.99 2a8.38 8.379 0 0 1 2.16 3.449a6.9 6.9 0 0 1 .4 2.8c0 1.07 0 1.27-.1 1.73a9.4 9.4 0 0 1-1.76 3.769c-.32.4-.98 1.06-1.37 1.38c-.38.32-1.54 1.1-1.7 1.14c-.1.03-.1.06-.07.26c.03.18.64 2.56.7 2.78l.06.06a12.07 12.058 0 0 0 7.27-9.4c.13-.77.13-2.58 0-3.4a11.96 11.948 0 0 0-5.73-8.578c-.7-.42-2.05-1.06-2.25-1.06Z"
-				></path>
-			</svg>
-		</a>
-		<a
-			href={discordUrl}
-			target="_blank"
-			rel="noopener"
-			class="rounded-xl bg-neutral-900 px-4 py-2 text-sm text-white hover:opacity-90 dark:bg-white dark:text-neutral-900"
-		>
-			Join Discord
-		</a>
-	</div>
+		)
+	}
 </div>
 
 <script>
 	import { parseMotd } from '../utils/motd.ts';
 
-	const root = document.querySelector<HTMLElement>('[data-server-status]');
-
-	if (root) {
+	// The component can appear twice on a page (hero line + card), so every root
+	// is wired up on its own. Astro bundles this script once either way.
+	for (const root of document.querySelectorAll<HTMLElement>('[data-server-status]')) {
 		const { host, port, address } = root.dataset;
 		const q = <T extends Element>(sel: string) => root.querySelector<T>(sel);
 
 		const badge = q<HTMLElement>('[data-badge]')!;
 		const dot = q<HTMLElement>('[data-dot]')!;
 		const label = q<HTMLElement>('[data-label]')!;
-		const refresh = q<HTMLButtonElement>('[data-refresh]')!;
 		const players = q<HTMLElement>('[data-players]')!;
-		const versionWrap = q<HTMLElement>('[data-version-wrap]')!;
-		const version = q<HTMLElement>('[data-version]')!;
-		const motdWrap = q<HTMLElement>('[data-motd-wrap]')!;
-		const motd = q<HTMLElement>('[data-motd]')!;
+
+		// Only present on the `full` variant.
+		const refresh = q<HTMLButtonElement>('[data-refresh]');
+		const versionWrap = q<HTMLElement>('[data-version-wrap]');
+		const version = q<HTMLElement>('[data-version]');
+		const motdWrap = q<HTMLElement>('[data-motd-wrap]');
+		const motd = q<HTMLElement>('[data-motd]');
 
 		const ONLINE = 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
 		const OFFLINE = 'bg-rose-500/15 text-rose-700 dark:text-rose-300';
 
 		function setBadge(state: 'online' | 'offline', text: string) {
-			badge.className = `inline-flex items-center gap-2 rounded-lg px-2 py-1 text-xs font-medium ${
-				state === 'online' ? ONLINE : OFFLINE
-			}`;
-			dot.className = `h-2 w-2 rounded-full ${state === 'online' ? 'bg-emerald-500' : 'bg-rose-500'}`;
+			badge.className = `status-badge ${state === 'online' ? ONLINE : OFFLINE}`;
+			dot.className = `status-dot ${state === 'online' ? 'bg-emerald-500' : 'bg-rose-500'}`;
 			label.textContent = text;
 		}
 
 		// Builds the MOTD from text nodes. Colours are set from the parser's fixed
-		// table, never from the response string — so nothing here can inject markup.
+		// table, never from the response string, so nothing here can inject markup.
 		function renderMotd(raw: string) {
+			if (!motd) return;
 			motd.replaceChildren();
 			for (const seg of parseMotd(raw)) {
 				const span = document.createElement('span');
@@ -168,11 +142,13 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 		}
 
 		async function load() {
-			refresh.disabled = true;
-			refresh.textContent = 'Refreshing…';
+			if (refresh) {
+				refresh.disabled = true;
+				refresh.textContent = 'Refreshing…';
+			}
 			try {
 				// api.mcstatus.io sends `access-control-allow-origin: *`, so the browser
-				// can query it directly — no proxy needed.
+				// can query it directly, no proxy needed.
 				const res = await fetch(`https://api.mcstatus.io/v2/status/java/${host}:${port}`, {
 					signal: AbortSignal.timeout(8000),
 				});
@@ -181,30 +157,32 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 				setBadge(data.online ? 'online' : 'offline', data.online ? 'Online' : 'Offline');
 				players.textContent = data.online
 					? `${data.players?.online ?? 0}${data.players?.max ? ` / ${data.players.max}` : ''}`
-					: '–';
+					: '-';
 
 				const name = data.version?.name_clean;
-				versionWrap.hidden = !name;
-				version.textContent = name ?? '';
+				if (versionWrap) versionWrap.hidden = !name;
+				if (version) version.textContent = name ?? '';
 
-				// Colours come from parsing the § codes ourselves into text nodes —
+				// Colours come from parsing the § codes ourselves into text nodes,
 				// deliberately not from `motd.html`, which would mean injecting
 				// third-party markup into the page.
 				const raw = data.motd?.raw?.trim();
-				motdWrap.hidden = !raw;
+				if (motdWrap) motdWrap.hidden = !raw;
 				renderMotd(raw ?? '');
 			} catch {
 				setBadge('offline', 'Offline');
-				players.textContent = '–';
-				versionWrap.hidden = true;
-				motdWrap.hidden = true;
+				players.textContent = '-';
+				if (versionWrap) versionWrap.hidden = true;
+				if (motdWrap) motdWrap.hidden = true;
 			} finally {
-				refresh.disabled = false;
-				refresh.textContent = 'Refresh';
+				if (refresh) {
+					refresh.disabled = false;
+					refresh.textContent = 'Refresh';
+				}
 			}
 		}
 
-		refresh.addEventListener('click', load);
+		refresh?.addEventListener('click', load);
 		load();
 
 		const copy = q<HTMLButtonElement>('[data-copy]')!;
@@ -221,8 +199,8 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 					done.classList.add('hidden');
 				}, 1200);
 			} catch {
-				// Clipboard blocked (no permission / insecure context) — the address is
-				// selectable in the code element either way.
+				// Clipboard blocked (no permission / insecure context): the address is
+				// still readable in the button either way.
 			}
 		});
 	}
