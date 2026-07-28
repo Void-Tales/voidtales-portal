@@ -203,7 +203,8 @@ html.dark body::before {
 			border-color 0.2s var(--ease-brand);
 	}
 
-	.btn:hover,
+	/* Every `:hover` twin of these rules lives in the `@media (hover: hover)`
+	   block at the end of the layer - see the note there. */
 	.btn:focus-visible {
 		border-color: var(--vt-accent);
 		color: var(--vt-text);
@@ -219,7 +220,6 @@ html.dark body::before {
 			filter 0.2s var(--ease-brand);
 	}
 
-	.btn-primary:hover,
 	.btn-primary:focus-visible {
 		border-color: transparent;
 		color: var(--vt-accent-ink);
@@ -237,7 +237,6 @@ html.dark body::before {
 			filter 0.2s var(--ease-brand);
 	}
 
-	.btn-modrinth:hover,
 	.btn-modrinth:focus-visible {
 		border-color: transparent;
 		color: #fff;
@@ -263,7 +262,6 @@ html.dark body::before {
 			border-color 0.2s var(--ease-brand);
 	}
 
-	.icon-btn:hover,
 	.icon-btn:focus-visible {
 		border-color: var(--vt-accent);
 		color: var(--vt-text);
@@ -357,12 +355,10 @@ html.dark body::before {
 		transition: transform 0.2s var(--ease-brand);
 	}
 
-	.nav-link:hover,
 	.nav-link:focus-visible {
 		color: var(--vt-text);
 	}
 
-	.nav-link:hover::after,
 	.nav-link:focus-visible::after {
 		transform: scaleX(1);
 	}
@@ -480,7 +476,6 @@ html.dark body::before {
 			transform 0.2s var(--ease-brand);
 	}
 
-	.scroll-cue:hover,
 	.scroll-cue:focus-visible {
 		background: var(--vt-accent);
 		color: var(--vt-accent-ink);
@@ -725,7 +720,6 @@ html.dark body::before {
 		transition: border-color 0.2s var(--ease-brand);
 	}
 
-	.pan-tile:hover,
 	.pan-tile:focus-visible {
 		border-color: var(--vt-accent);
 	}
@@ -735,10 +729,6 @@ html.dark body::before {
 		height: 100%;
 		object-fit: cover;
 		transition: transform 0.5s var(--ease-brand);
-	}
-
-	.pan-tile:hover img {
-		transform: scale(1.04);
 	}
 
 	/* Last tile of the track: the link out to the full gallery. */
@@ -901,10 +891,6 @@ html.dark body::before {
 		transition: border-color 0.2s var(--ease-brand);
 	}
 
-	.status-address:hover {
-		border-color: var(--vt-accent);
-	}
-
 	.status-meta {
 		display: flex;
 		flex-wrap: wrap;
@@ -955,6 +941,67 @@ html.dark body::before {
 	.footer-copyright {
 		border-top: 1px solid var(--vt-line);
 		padding-top: 1.25rem;
+	}
+
+	/* ---- hover ---- */
+
+	/* Every hand-written `:hover` in this file, in one place and behind the
+	   capability query. A touch browser keeps `:hover` latched on the last
+	   tapped element until something else is tapped, which reads as a button
+	   stuck in its focus ring. `:focus-visible` stays outside - keyboard focus
+	   has to work on any device. Tailwind's `hover:` utilities need nothing,
+	   the variant is gated the same way in v4. */
+	@media (hover: hover) {
+		.btn:hover {
+			border-color: var(--vt-accent);
+			color: var(--vt-text);
+		}
+
+		.btn-primary:hover,
+		.btn-modrinth:hover {
+			border-color: transparent;
+			filter: brightness(1.08);
+			transform: translateY(-1px);
+		}
+
+		.btn-primary:hover {
+			color: var(--vt-accent-ink);
+		}
+
+		.btn-modrinth:hover {
+			color: #fff;
+		}
+
+		.icon-btn:hover {
+			border-color: var(--vt-accent);
+			color: var(--vt-text);
+		}
+
+		.nav-link:hover {
+			color: var(--vt-text);
+		}
+
+		.nav-link:hover::after {
+			transform: scaleX(1);
+		}
+
+		.scroll-cue:hover {
+			background: var(--vt-accent);
+			color: var(--vt-accent-ink);
+			transform: translateY(2px);
+		}
+
+		.pan-tile:hover {
+			border-color: var(--vt-accent);
+		}
+
+		.pan-tile:hover img {
+			transform: scale(1.04);
+		}
+
+		.status-address:hover {
+			border-color: var(--vt-accent);
+		}
 	}
 }
 
