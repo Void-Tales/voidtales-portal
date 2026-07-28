@@ -370,12 +370,17 @@ html.dark body::before {
 	/* ---- hero ---- */
 
 	/* Minus the header, which sits in flow above it: the whole hero, CTA
-	   included, has to fit the first viewport. */
+	   included, has to fit the first viewport.
+
+	   `svh`, not `dvh`: the dynamic height changes live while mobile Chrome
+	   hides and shows its URL bar, which resizes the hero and shoves everything
+	   below it mid-scroll. The small height is constant. Price: with the URL bar
+	   hidden the hero is a little shorter than the visible area. */
 	.hero {
 		position: relative;
 		display: flex;
 		align-items: flex-end;
-		min-height: calc(100dvh - var(--header-h));
+		min-height: calc(100svh - var(--header-h));
 		overflow: hidden;
 	}
 
@@ -718,7 +723,7 @@ html.dark body::before {
 		position: sticky;
 		top: var(--header-h);
 		display: flex;
-		height: calc(100dvh - var(--header-h));
+		height: calc(100svh - var(--header-h));
 		flex-direction: column;
 		justify-content: center;
 		gap: clamp(2rem, 5vh, 4rem);
