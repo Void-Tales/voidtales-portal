@@ -111,15 +111,9 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 
 	{
 		/* 3 - Gallery: the track pans sideways with the scroll where that is
-	    supported, and stays a manual scroll-snap strip everywhere else.
-	    `--tiles` drives the travel distance, so it has to count the last
-	    "see all" tile too. */
+	    supported, and stays a manual scroll-snap strip everywhere else. */
 	}
-	<section
-		class="section pan border-t border-line"
-		id="gallery"
-		style={`--tiles: ${galleryImages.length + 1}`}
-	>
+	<section class="section pan border-t border-line" id="gallery">
 		<div class="pan-sticky">
 			<div class="shell rise">
 				<h2>{gallery.title}</h2>
@@ -321,14 +315,16 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 		}
 
 		// Gallery: pin the section and pan the track sideways across the extra
-		// height. Desktop only - trading vertical scroll for a sideways strip on a
-		// phone is hostile, and the snap strip is the better answer there.
+		// height. On every width - a phone gets the same effect, and manual
+		// swiping is off in pan mode anyway (`.pan-viewport { overflow: visible }`).
 		const pan = document.querySelector<HTMLElement>('.pan');
 		const track = pan?.querySelector<HTMLElement>('.pan-track');
-		const wide = matchMedia('(min-width: 768px)');
+		const sticky = pan?.querySelector<HTMLElement>('.pan-sticky');
 
-		if (pan && track) {
-			const headerH = document.querySelector('header')?.offsetHeight ?? 0;
+		if (pan && track && sticky) {
+			// The inner row, not <header>: it is the `--header-h` line and never
+			// grows, while the header itself gets taller with the mobile menu open.
+			const headerH = document.querySelector('.site-header-inner')?.clientHeight ?? 0;
 			let travel = 0;
 
 			const measure = () => {
@@ -336,7 +332,6 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 				pan.style.removeProperty('height');
 				track.style.removeProperty('transform');
 				travel = 0;
-				if (!wide.matches) return;
 
 				pan.classList.add('is-panning');
 
@@ -352,7 +347,10 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 					pan.classList.remove('is-panning');
 					return;
 				}
-				pan.style.height = `${window.innerHeight + travel}px`;
+				// The pinned child's real height, not `window.innerHeight`: the CSS
+				// sizes it in `svh`, and on mobile `innerHeight` follows the URL bar.
+				// Two sources would disagree by exactly the URL bar's height.
+				pan.style.height = `${sticky.offsetHeight + travel}px`;
 			};
 
 			measure();
@@ -363,9 +361,14 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 				track.style.transform = `translateX(${-p * travel}px)`;
 			});
 
-			// Resize changes the tile width and therefore the travel.
+			// Resize changes the tile width and therefore the travel. Width only:
+			// mobile Chrome fires `resize` on every URL bar toggle, and re-measuring
+			// tears `is-panning` down and back up in the middle of a scroll.
+			let lastW = window.innerWidth;
 			let pending = 0;
 			window.addEventListener('resize', () => {
+				if (window.innerWidth === lastW) return;
+				lastW = window.innerWidth;
 				cancelAnimationFrame(pending);
 				pending = requestAnimationFrame(measure);
 			});

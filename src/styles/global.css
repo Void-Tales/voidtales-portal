@@ -654,13 +654,13 @@ html.dark body::before {
 
 	/* Two modes, one markup.
 
-	   Default (and the only mode on mobile, on Safari/Firefox and under reduced
-	   motion): a manual scroll-snap strip. The half-visible next tile is the
-	   affordance, so there are no arrows and no dots.
+	   Default (and the only mode without JS, under reduced motion, and when all
+	   tiles already fit): a manual scroll-snap strip. The half-visible next tile
+	   is the affordance, so there are no arrows and no dots.
 
-	   Where scroll-driven animations exist: the section grows taller than the
+	   Otherwise the script adds `.is-panning`: the section grows taller than the
 	   viewport, `.pan-sticky` pins, and the track travels sideways over exactly
-	   that extra height. No JS, no scroll listener, no library. */
+	   that extra height. */
 	.pan {
 		--tile-w: min(72vw, 26rem);
 		--tile-gap: 1rem;
