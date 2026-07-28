@@ -7,24 +7,26 @@ const year = new Date().getFullYear();
 
 <footer class="border-t border-line">
 	<div class="shell footer-inner">
-		<a href="/" class="brand text-[0.95rem]">{siteConfig.name}</a>
+		<div class="footer-top">
+			<a href="/" class="brand text-[0.95rem]">{siteConfig.name}</a>
 
-		<nav class="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer navigation">
-			{
-				navigationLinks.map((link) => (
-					<a
-						href={link.href}
-						target="_blank"
-						rel="noopener"
-						class="text-muted text-[0.85rem] transition-colors hover:text-accent"
-					>
-						{link.label}
-					</a>
-				))
-			}
-		</nav>
+			<nav class="ml-auto flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer navigation">
+				{
+					navigationLinks.map((link) => (
+						<a
+							href={link.href}
+							target="_blank"
+							rel="noopener"
+							class="text-muted text-[0.85rem] transition-colors hover:text-accent"
+						>
+							{link.label}
+						</a>
+					))
+				}
+			</nav>
+		</div>
 
-		<p class="text-muted ml-auto max-w-md text-[0.8rem]">
+		<p class="footer-copyright text-muted text-[0.8rem]">
 			{/* One expression: Prettier collapses the whitespace between two of them. */}
 			{`© ${year} ${siteConfig.footer}`}
 		</p>

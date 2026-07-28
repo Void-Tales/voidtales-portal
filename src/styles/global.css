@@ -933,20 +933,28 @@ html.dark body::before {
 
 	/* ---- footer ---- */
 
+	/* Two rows at every width: brand and links up top, copyright below its own
+	   hairline. A single row put the copyright's `ml-auto` on the cross axis as
+	   soon as the column kicked in, which right-aligned it against everything
+	   else. */
 	.footer-inner {
 		display: flex;
-		flex-wrap: wrap;
-		/* baseline, not center: the three blocks have different font sizes. */
-		align-items: baseline;
-		gap: 1rem 2rem;
-		padding-block: 2rem;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding-block: 3rem 2.5rem;
 	}
 
-	@media (width <= 767px) {
-		.footer-inner {
-			flex-direction: column;
-			align-items: flex-start;
-		}
+	.footer-top {
+		display: flex;
+		flex-wrap: wrap;
+		/* baseline, not center: the two blocks have different font sizes. */
+		align-items: baseline;
+		gap: 1rem 2rem;
+	}
+
+	.footer-copyright {
+		border-top: 1px solid var(--vt-line);
+		padding-top: 1.25rem;
 	}
 }
 
