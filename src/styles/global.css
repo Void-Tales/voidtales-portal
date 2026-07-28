@@ -127,31 +127,59 @@ h3 {
 	color: var(--vt-accent-ink);
 }
 
-/* Ambient starfield behind the flat page surface. Dark only: six tiled radials,
-   no image, no request. The hero carries its own background image on top. */
-body::before {
-	content: '';
-	position: fixed;
-	z-index: -1;
-	inset: 0;
-	pointer-events: none;
+/* Ambient layer, one token per theme: a tiled starfield at night, three soft
+   accent washes by day. Pure gradients - no image, no request. Stars inverted
+   to dark dots would read as dirt on a near-white surface, hence the washes;
+   three of them, because with only the upper corners lit the lower half of
+   every viewport stayed flat.
+
+   A token and not just a rule, because two surfaces paint it: the fixed layer
+   below, and the story panels. Those are opaque - the sticky stack needs that
+   to let panel 2 slide over panel 1 - and cover two full viewports on desktop,
+   so the fixed layer alone never showed through there. */
+:root {
+	--vt-ambient:
+		radial-gradient(
+			70rem 45rem at 10% -5%,
+			color-mix(in srgb, var(--vt-accent) 18%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			55rem 40rem at 95% 25%,
+			color-mix(in srgb, var(--vt-accent) 13%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			60rem 45rem at 20% 95%,
+			color-mix(in srgb, var(--vt-accent) 11%, transparent),
+			transparent 70%
+		);
+
+	/* The washes carry their own size, only the tiled starfield needs a list. */
+	--vt-ambient-size: auto;
 }
 
-html.dark body::before {
-	background:
+html.dark {
+	--vt-ambient:
 		radial-gradient(circle 1.2px at 20% 30%, rgb(236 232 246 / 50%) 0 100%, transparent),
 		radial-gradient(circle 1px at 68% 62%, rgb(236 232 246 / 38%) 0 100%, transparent),
 		radial-gradient(circle 1.4px at 75% 15%, rgb(236 232 246 / 44%) 0 100%, transparent),
 		radial-gradient(circle 1px at 12% 84%, rgb(236 232 246 / 32%) 0 100%, transparent),
 		radial-gradient(circle 1.2px at 45% 70%, rgb(236 232 246 / 40%) 0 100%, transparent),
 		radial-gradient(circle 1px at 88% 40%, rgb(236 232 246 / 30%) 0 100%, transparent);
-	background-size:
-		320px 320px,
-		320px 320px,
-		260px 260px,
-		260px 260px,
-		400px 400px,
-		400px 400px;
+
+	--vt-ambient-size: 320px 320px, 320px 320px, 260px 260px, 260px 260px, 400px 400px, 400px 400px;
+}
+
+/* The hero carries its own background image on top of this. */
+body::before {
+	content: '';
+	position: fixed;
+	z-index: -1;
+	inset: 0;
+	background: var(--vt-ambient);
+	background-size: var(--vt-ambient-size);
+	pointer-events: none;
 }
 
 /* --------------------------------------------------------- components --- */
@@ -518,7 +546,12 @@ html.dark body::before {
 		display: flex;
 		align-items: center;
 		border-top: 1px solid var(--vt-line);
-		background: var(--vt-bg);
+		/* Opaque so panel 2 can slide over panel 1, plus its own copy of the
+		   ambient wash - see the token. Colour and image split, because the
+		   `background` shorthand would reset the image. */
+		background-color: var(--vt-bg);
+		background-image: var(--vt-ambient);
+		background-size: var(--vt-ambient-size);
 		padding-block: clamp(3rem, 7vw, 5rem);
 	}
 
