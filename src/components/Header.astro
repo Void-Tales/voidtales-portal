@@ -1,0 +1,90 @@
+---
+import { siteConfig } from '../config/site.js';
+import { navigationLinks } from '../config/navigation.js';
+---
+
+<header
+	class="sticky top-0 z-50 border-b border-neutral-200/40 bg-transparent backdrop-blur-md dark:border-neutral-800/60"
+>
+	<div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+		<a href="/" class="mr-4 font-semibold tracking-wide sm:mr-6">{siteConfig.name}</a>
+
+		<nav class="hidden items-center gap-3 md:flex" aria-label="Main navigation">
+			{
+				navigationLinks.map((link) => (
+					<a href={link.href} target="_blank" rel="noopener" class="btn-nav">
+						{link.label}
+					</a>
+				))
+			}
+		</nav>
+
+		<div class="ml-2 flex items-center gap-3 sm:ml-4">
+			<button
+				type="button"
+				id="menu-toggle"
+				class="rounded-xl border border-neutral-300/60 p-2 transition-colors hover:bg-neutral-100 md:hidden dark:border-neutral-700/60 dark:hover:bg-neutral-800/70"
+				aria-label="Toggle menu"
+				aria-expanded="false"
+				aria-controls="mobile-menu"
+			>
+				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 6h16M4 12h16M4 18h16"></path>
+				</svg>
+			</button>
+
+			{/* Label is switched by CSS, so it is correct on first paint without JS. */}
+			<button
+				type="button"
+				id="theme-toggle"
+				class="rounded-xl border border-neutral-300/60 px-3 py-1.5 text-sm dark:border-neutral-700/60"
+				aria-label="Toggle dark mode"
+				title="Toggle dark mode"
+			>
+				<span class="dark:hidden">☀️ Light</span>
+				<span class="hidden dark:inline">🌙 Dark</span>
+			</button>
+		</div>
+	</div>
+
+	<div
+		id="mobile-menu"
+		hidden
+		class="border-t border-neutral-200/40 bg-white md:hidden dark:border-neutral-800/60 dark:bg-neutral-900"
+	>
+		<nav class="mx-auto flex max-w-5xl flex-col gap-3 px-6 py-4" aria-label="Mobile navigation">
+			{
+				navigationLinks.map((link) => (
+					<a href={link.href} target="_blank" rel="noopener" class="btn-nav">
+						{link.label}
+					</a>
+				))
+			}
+		</nav>
+	</div>
+</header>
+
+<script>
+	const menuToggle = document.getElementById('menu-toggle');
+	const menu = document.getElementById('mobile-menu');
+
+	menuToggle?.addEventListener('click', () => {
+		const open = menu?.hasAttribute('hidden');
+		if (open) menu?.removeAttribute('hidden');
+		else menu?.setAttribute('hidden', '');
+		menuToggle.setAttribute('aria-expanded', String(open));
+	});
+
+	document.getElementById('theme-toggle')?.addEventListener('click', () => {
+		const isDark = document.documentElement.classList.toggle('dark');
+		try {
+			localStorage.setItem('theme', isDark ? 'dark' : 'light');
+		} catch {
+			// Private mode / storage disabled: the toggle still works for this page view.
+		}
+	});
+</script>

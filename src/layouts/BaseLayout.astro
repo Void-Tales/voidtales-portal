@@ -1,0 +1,88 @@
+---
+import { Font } from 'astro:assets';
+import { siteConfig } from '../config/site.js';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+	/** Page title, inserted into siteConfig.titleTemplate. Omit on the homepage. */
+	title?: string;
+	description?: string;
+}
+
+const { title, description = siteConfig.description } = Astro.props;
+
+const pageTitle = title ? siteConfig.titleTemplate.replace('%s', title) : siteConfig.name;
+
+// Relative og:image paths are ignored by Discord/X link previews — always absolute.
+const canonical = new URL(Astro.url.pathname, siteConfig.url).toString();
+const ogImage = new URL(siteConfig.ogImage, siteConfig.url).toString();
+const twitterImage = new URL(siteConfig.twitterImage, siteConfig.url).toString();
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+		<meta name="theme-color" content={siteConfig.themeColor} />
+		<link rel="canonical" href={canonical} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={siteConfig.name} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={ogImage} />
+		<meta name="twitter:card" content={siteConfig.twitterCard} />
+		<meta name="twitter:site" content={siteConfig.twitterSite} />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={twitterImage} />
+
+		<Font cssVariable="--font-body" preload={[{ style: 'normal' }]} />
+		<Font cssVariable="--font-display" preload={[{ style: 'normal' }]} />
+
+		<link
+			rel="preload"
+			as="image"
+			href="/images/index-dark.webp"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<link
+			rel="preload"
+			as="image"
+			href="/images/index-light.webp"
+			media="(prefers-color-scheme: light)"
+		/>
+
+		{/* Runs before first paint so the theme never flashes. */}
+		<script is:inline>
+			(function () {
+				try {
+					var saved = localStorage.getItem('theme');
+					var isDark = saved
+						? saved === 'dark'
+						: matchMedia('(prefers-color-scheme: dark)').matches;
+					document.documentElement.classList.toggle('dark', isDark);
+				} catch (e) {
+					document.documentElement.classList.add('dark');
+				}
+			})();
+		</script>
+	</head>
+
+	<body class="relative min-h-screen bg-transparent text-neutral-900 dark:text-neutral-200">
+		<Header />
+		<main class="animate-fade-in relative z-10 mx-auto min-h-screen max-w-5xl px-6 py-10 opacity-0">
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

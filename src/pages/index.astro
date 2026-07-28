@@ -1,0 +1,209 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ServerStatus from '../components/ServerStatus.astro';
+import { siteConfig, storySections, newsItems, galleryImages } from '../config/site.js';
+import { socialLinks } from '../config/navigation.js';
+---
+
+<BaseLayout>
+	{/* Hero */}
+	<section class="relative space-y-8 text-center">
+		<div
+			class="relative mx-auto flex w-full max-w-xs flex-col items-center overflow-visible text-center"
+		>
+			<h1 class="text-5xl font-bold tracking-wide">{siteConfig.hero.title}</h1>
+			<div class="relative flex w-full flex-col items-center justify-center">
+				<div
+					class="absolute inset-x-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent blur-sm"
+				>
+				</div>
+				<div
+					class="absolute inset-x-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent"
+				>
+				</div>
+				<div
+					class="absolute inset-x-0 top-0 h-[5px] w-1/2 bg-gradient-to-r from-transparent via-purple-400 to-transparent blur-sm"
+				>
+				</div>
+				<div
+					class="absolute inset-x-0 top-0 h-px w-1/2 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
+				>
+				</div>
+				<div
+					class="absolute inset-0 h-full w-full [mask-image:radial-gradient(50%_200px_at_top,transparent_20%,white)]"
+				>
+				</div>
+			</div>
+			<span
+				class="pointer-events-none absolute inset-0 -z-[1] flex h-full w-full before:h-3/4 before:w-full before:bg-gradient-to-r before:from-neutral-900 before:to-purple-600 before:blur-[90px] before:content-[''] after:h-1/2 after:w-full after:bg-gradient-to-br after:from-cyan-400 after:to-sky-300 after:blur-[90px] after:content-['']"
+			>
+			</span>
+		</div>
+
+		<p class="text-lg opacity-80">{siteConfig.hero.subtitle}</p>
+	</section>
+
+	{/* Connect */}
+	<section class="mx-auto w-full max-w-5xl px-6 py-6">
+		<h2 class="mb-4 text-2xl font-semibold tracking-wide">Connect</h2>
+
+		<div class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
+			<ServerStatus />
+
+			<div class="glass-panel justify-between">
+				<div>
+					<h3 class="mb-2 text-sm font-medium">News &amp; Announcements</h3>
+					<p class="mb-3 text-xs opacity-85">
+						Here could be a devlog entry from discord or something with added via workflow.
+					</p>
+					<ul class="space-y-2 text-xs">
+						{
+							newsItems.map((item) => (
+								<li class="flex items-start gap-2">
+									<span class={`mt-1 h-2 w-2 rounded-full ${item.dot}`} />
+									{item.text}
+								</li>
+							))
+						}
+					</ul>
+				</div>
+				<div class="mt-3 flex justify-end">
+					<a
+						href="https://blog.voidtales.win"
+						target="_blank"
+						rel="noopener"
+						class="inline-block rounded-lg border border-neutral-300/60 px-3 py-2 text-sm dark:border-neutral-700/60"
+						>Learn more</a
+					>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	{/* Story sections — image and text swap sides on the second one */}
+	{
+		storySections.map((section, i) => (
+			<section class="section-shell">
+				<div class="grid items-center gap-10 md:grid-cols-2 md:gap-14">
+					<div class:list={['space-y-5', i % 2 === 1 && 'md:order-2']}>
+						<h2 class="section-title">{section.title}</h2>
+						<p class="text-base leading-relaxed opacity-85">{section.body}</p>
+						<ul class="space-y-2.5 text-sm opacity-85">
+							{section.points.map((point, p) => (
+								<li class="flex gap-3">
+									<span
+										class:list={[
+											'mt-2 h-2 w-2 rounded-full',
+											['bg-purple-500/80', 'bg-indigo-500/80', 'bg-cyan-400/80'][p % 3],
+										]}
+									/>
+									<span>{point}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+
+					<div
+						class:list={['relative [perspective:1200px] animate-bob', i % 2 === 1 && 'md:order-1']}
+						style={i === 0 ? 'animation-delay: -1.5s' : undefined}
+					>
+						<div class:list={['card card-hover', section.tilt]}>
+							<div class="card-glow" />
+							<img
+								src={section.image}
+								alt="Void Tales ~ Soul Station"
+								width="800"
+								height="600"
+								loading="lazy"
+								class="h-auto w-full"
+							/>
+							<div class="card-tint" />
+							<div class="card-ring" />
+						</div>
+					</div>
+				</div>
+			</section>
+		))
+	}
+
+	{/* Gallery carousel */}
+	<section class="section-shell">
+		<div class="narrow-center mb-10 text-center">
+			<h2 class="section-title">Echoes from the Station</h2>
+			<p class="opacity-85">Glimpses across realms—moments caught between memory and motion.</p>
+		</div>
+
+		<div class="embla">
+			<div class="embla__container">
+				{
+					galleryImages.map((img) => (
+						<div class="embla__slide">
+							<div class="card">
+								<div class="card-glow" />
+								<img
+									class="h-auto w-full"
+									src={img}
+									alt="Void Tales ~ Soul Station"
+									width="800"
+									height="450"
+									loading="lazy"
+								/>
+								<div class="card-tint" />
+								<div class="card-ring" />
+							</div>
+						</div>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="narrow-center mt-10 text-center">
+			<p class="opacity-85">
+				Fragments remain—each a path back to what was lost, and forward to what must be found.
+			</p>
+		</div>
+	</section>
+
+	{/* Trailer */}
+	<section class="section-shell">
+		<div class="narrow-center mb-10 text-center">
+			<h2 class="section-title">{siteConfig.trailer.title}</h2>
+			<p class="mb-6 opacity-85">{siteConfig.trailer.subtitle}</p>
+			<div class="mx-auto flex w-full max-w-2xl justify-center">
+				<div
+					class="aspect-video w-full overflow-hidden rounded-2xl border border-indigo-400/60"
+					style="box-shadow: 0 0 0 2px rgba(128,90,213,0.25), 0 0 0 6px rgba(139,92,246,0.12), 0 8px 32px 0 rgba(139,92,246,0.18);"
+				>
+					<iframe
+						class="h-full w-full rounded-2xl"
+						src={siteConfig.trailer.embedUrl}
+						title="Void Tales Trailer"
+						loading="lazy"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+						allowfullscreen></iframe>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	{/* Social links */}
+	<section class="space-y-6 py-20 text-center">
+		<h3 class="text-2xl font-semibold tracking-wide">Follow the Journey</h3>
+		<div class="flex flex-wrap items-center justify-center gap-4">
+			{
+				socialLinks.map((link) => (
+					<a href={link.href} target="_blank" rel="noopener" class="btn-contrast btn-glow">
+						{link.label}
+					</a>
+				))
+			}
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+	import EmblaCarousel from 'embla-carousel';
+
+	const node = document.querySelector<HTMLElement>('.embla');
+	if (node) EmblaCarousel(node, { loop: false });
+</script>

@@ -6,5 +6,11 @@
 	"tabWidth": 2,
 	"useTabs": true,
 	"endOfLine": "lf",
-	"vueIndentScriptAndStyle": false
+	"plugins": ["prettier-plugin-astro"],
+	"overrides": [
+		{
+			"files": "*.astro",
+			"options": { "parser": "astro" }
+		}
+	]
 }
