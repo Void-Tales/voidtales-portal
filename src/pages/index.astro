@@ -63,7 +63,7 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 			storySections.map((section, i) => (
 				<section class="story-panel" id={`realm-${i + 1}`}>
 					<div class="shell story-grid">
-						<div class:list={[i % 2 === 1 && 'lg:order-2']}>
+						<div class:list={['story-copy', i % 2 === 1 && 'lg:order-2']}>
 							<h2>{section.title}</h2>
 							<p class="section-lead">{section.body}</p>
 							<ul class="story-points">

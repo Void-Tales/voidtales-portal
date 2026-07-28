@@ -527,14 +527,68 @@ html.dark body::before {
 	}
 
 	/* Panel 2 slides over panel 1. Pure CSS sticky, no scroll listener, no
-	   library. Only from the two-column breakpoint up and only when the viewport
-	   is tall enough: a sticky panel taller than the viewport pins its top and
-	   leaves its own bottom permanently below the fold. */
-	@media (width >= 1024px) and (height >= 700px) {
+	   library. Every width, but only when the viewport is tall enough: a sticky
+	   panel taller than the viewport pins its top and leaves its own bottom
+	   permanently below the fold. That rules out a phone in landscape. */
+	@media (height >= 34rem) {
 		.story-panel {
 			position: sticky;
 			top: var(--header-h);
-			min-height: calc(100dvh - var(--header-h));
+			min-height: calc(100svh - var(--header-h));
+		}
+	}
+
+	/* Below the two-column breakpoint the image becomes the panel's background
+	   with a scrim over it and the copy sits on top - the hero idiom. Side by
+	   side the panel would only fit the viewport at some text lengths. */
+	@media (width < 1024px) {
+		.story-panel {
+			/* Copy to the bottom edge, exactly like the hero: the image gets the
+			   top band to itself instead of running through the headline. */
+			align-items: flex-end;
+			overflow: hidden;
+			padding-block: clamp(2rem, 7vw, 5rem);
+		}
+
+		.story-figure {
+			position: absolute;
+			z-index: 0;
+			inset: 0;
+			margin: 0;
+		}
+
+		.story-figure img {
+			width: 100%;
+			height: 100%;
+			border-radius: 0;
+			box-shadow: none;
+			object-fit: cover;
+		}
+
+		.story-figure::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(
+				to top,
+				var(--vt-bg) 0%,
+				var(--vt-bg) 52%,
+				color-mix(in srgb, var(--vt-bg) 78%, transparent) 72%,
+				transparent 100%
+			);
+		}
+
+		.story-copy {
+			position: relative;
+			z-index: 1;
+		}
+
+		.story-copy .section-lead {
+			font-size: 0.95rem;
+		}
+
+		.story-copy .story-points {
+			font-size: 0.9rem;
 		}
 	}
 
