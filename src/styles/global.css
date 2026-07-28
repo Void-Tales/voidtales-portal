@@ -599,8 +599,10 @@ body::before {
 			object-fit: cover;
 		}
 
-		/* Resolves the bottom edge into the page instead of cutting it. */
-		.story-figure::after {
+		/* Resolves the bottom edge into the page instead of cutting it. Dark only:
+		   fading into near-black reads as a vignette, fading into the near-white
+		   day surface reads as fog over the image. Light gets a hard edge. */
+		html.dark .story-figure::after {
 			content: '';
 			position: absolute;
 			inset: auto 0 0;
