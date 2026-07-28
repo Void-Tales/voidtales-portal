@@ -326,10 +326,11 @@ html.dark body::before {
 		transform: none;
 	}
 
+	/* No background of its own: the panel sits inside `.site-header`, so the
+	   header's tinted, blurred surface shows through and the menu is the same
+	   material by construction. Only the hairline separates the two. */
 	.mobile-menu {
 		border-top: 1px solid var(--vt-line);
-		background: var(--vt-raised);
-		box-shadow: var(--vt-shadow-2);
 	}
 
 	/* ---- nav ---- */
