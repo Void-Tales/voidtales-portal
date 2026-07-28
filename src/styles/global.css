@@ -534,49 +534,45 @@ html.dark body::before {
 		}
 	}
 
-	/* Below the two-column breakpoint the image becomes the panel's background
-	   with a scrim over it and the copy sits on top - the hero idiom. Side by
-	   side the panel would only fit the viewport at some text lengths. */
+	/* Below the two-column breakpoint the image is an edge-to-edge band above
+	   the copy. It stays in flow, so the distance between image and text is the
+	   grid gap - a background image plus scrim left a hole that grew with the
+	   panel height, because the scrim's opaque part sits at a fixed percentage
+	   while the copy is bottom-aligned. `overflow: hidden` catches the bleed. */
 	@media (width < 1024px) {
 		.story-panel {
-			/* Copy to the bottom edge, exactly like the hero: the image gets the
-			   top band to itself instead of running through the headline. */
-			align-items: flex-end;
 			overflow: hidden;
 			padding-block: clamp(2rem, 7vw, 5rem);
 		}
 
+		.story-grid {
+			gap: 1.75rem;
+		}
+
+		/* Out to both viewport edges without knowing the shell's padding: the
+		   percentage resolves against the grid area, which is exactly the shell's
+		   content box. */
 		.story-figure {
-			position: absolute;
-			z-index: 0;
-			inset: 0;
-			margin: 0;
+			position: relative;
+			order: -1;
+			margin-inline: calc(50% - 50vw);
 		}
 
 		.story-figure img {
 			width: 100%;
-			height: 100%;
+			height: 38svh;
 			border-radius: 0;
 			box-shadow: none;
 			object-fit: cover;
 		}
 
+		/* Resolves the bottom edge into the page instead of cutting it. */
 		.story-figure::after {
 			content: '';
 			position: absolute;
-			inset: 0;
-			background: linear-gradient(
-				to top,
-				var(--vt-bg) 0%,
-				var(--vt-bg) 52%,
-				color-mix(in srgb, var(--vt-bg) 78%, transparent) 72%,
-				transparent 100%
-			);
-		}
-
-		.story-copy {
-			position: relative;
-			z-index: 1;
+			inset: auto 0 0;
+			height: 35%;
+			background: linear-gradient(to top, var(--vt-bg), transparent);
 		}
 
 		.story-copy .section-lead {
