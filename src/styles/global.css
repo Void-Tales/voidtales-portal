@@ -1035,6 +1035,52 @@ body::before {
 			border-color: var(--vt-accent);
 		}
 	}
+
+	/* Mirror of the hover block for pointers without hover. `:active` needs no
+	   capability query: it releases itself on pointer-up everywhere, so nothing
+	   stays latched on touch, and on desktop it adds mousedown feedback.
+	   ponytail: iOS Safari only fires `:active` reliably on natively
+	   interactive elements - every target here is an <a> or <button>. If it
+	   ever fails on an iPhone, the fix is `ontouchstart=""` on <body>. */
+	.btn:active,
+	.icon-btn:active {
+		border-color: var(--vt-accent);
+		color: var(--vt-text);
+	}
+
+	.btn-primary:active,
+	.btn-modrinth:active {
+		border-color: transparent;
+		filter: brightness(1.08);
+		transform: translateY(-1px);
+	}
+
+	.btn-primary:active {
+		color: var(--vt-accent-ink);
+	}
+
+	.btn-modrinth:active {
+		color: #fff;
+	}
+
+	.nav-link:active {
+		color: var(--vt-text);
+	}
+
+	.nav-link:active::after {
+		transform: scaleX(1);
+	}
+
+	.scroll-cue:active {
+		background: var(--vt-accent);
+		color: var(--vt-accent-ink);
+		transform: translateY(2px);
+	}
+
+	.status-address:active,
+	.pan-more:active {
+		border-color: var(--vt-accent);
+	}
 }
 
 /* ------------------------------------------------------------- motion --- */
