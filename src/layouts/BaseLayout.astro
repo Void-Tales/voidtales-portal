@@ -59,31 +59,30 @@ const twitterImage = new URL(siteConfig.twitterImage, siteConfig.url).toString()
 		<Font cssVariable="--font-instrument-sans" preload={[{ style: 'normal' }]} />
 		<Font cssVariable="--font-unbounded" preload={[{ style: 'normal' }]} />
 
-		<link
-			rel="preload"
-			as="image"
-			href="/images/index-dark.webp"
-			media="(prefers-color-scheme: dark)"
-		/>
-		<link
-			rel="preload"
-			as="image"
-			href="/images/index-light.webp"
-			media="(prefers-color-scheme: light)"
-		/>
-
-		{/* Runs before first paint so the theme never flashes. */}
+		{
+			/* Runs before first paint so the theme never flashes. The hero preload
+		    lives here too: a `media="(prefers-color-scheme: …)"` link would guess
+		    from the OS while the class below decides from localStorage, and every
+		    time the two disagree the browser preloads the image nobody uses. The
+		    URLs must stay byte-identical to the ones in global.css, otherwise the
+		    request is not deduplicated. */
+		}
 		<script is:inline>
 			(function () {
+				var isDark = true;
 				try {
 					var saved = localStorage.getItem('theme');
-					var isDark = saved
-						? saved === 'dark'
-						: matchMedia('(prefers-color-scheme: dark)').matches;
-					document.documentElement.classList.toggle('dark', isDark);
+					isDark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
 				} catch (e) {
-					document.documentElement.classList.add('dark');
+					/* No storage access: dark is the design target. */
 				}
+				document.documentElement.classList.toggle('dark', isDark);
+
+				var link = document.createElement('link');
+				link.rel = 'preload';
+				link.as = 'image';
+				link.href = isDark ? '/images/index-dark.webp' : '/images/index-light.webp';
+				document.head.appendChild(link);
 			})();
 		</script>
 	</head>
