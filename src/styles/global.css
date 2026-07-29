@@ -127,36 +127,36 @@ h3 {
 	color: var(--vt-accent-ink);
 }
 
-/* Ambient layer, one token per theme: a tiled starfield at night, three soft
-   accent washes by day. Pure gradients - no image, no request. Stars inverted
-   to dark dots would read as dirt on a near-white surface, hence the washes;
-   three of them, because with only the upper corners lit the lower half of
-   every viewport stayed flat.
+/* Ambient layer, one token per theme: a tiled starfield at night, a tiled grain
+   plus a flat violet veil by day. Pure CSS and an inline data URI - no request.
 
    A token and not just a rule, because two surfaces paint it: the fixed layer
    below, and the story panels. Those are opaque - the sticky stack needs that
    to let panel 2 slide over panel 1 - and cover two full viewports on desktop,
-   so the fixed layer alone never showed through there. */
+   so the fixed layer alone never showed through there.
+
+   Both themes are tiled, and the light one has to stay that way. The two
+   surfaces live in different coordinate systems - the layer below is fixed to
+   the viewport, a panel positions from its own box - so any *positioned*
+   decoration (`at 10% -5%`) lands somewhere else on each and leaves a visible
+   step at every panel edge. A uniform tile has no offset to see. Rebuilding
+   this as radials brings that seam straight back, plus banding: wide gradients
+   at single-digit alpha over a near-white surface put centimetre-wide 8-bit
+   steps on the page, and softer stops only widen them. The veil is one colour
+   from 0 to 100% - a constant plane, so nothing to band - and the grain is
+   greyscale (`saturate 0`), so its hue comes from the veil underneath instead
+   of turning muddy. `stitchTiles='stitch'` is what keeps the tile seams out.
+
+   The veil is an rgb() literal and not color-mix(var(--vt-accent) N%): the
+   lightningcss targets baked into @tailwindcss/vite emit an unguarded fallback
+   for color-mix, and that fallback uses the accent at *full* opacity - a solid
+   violet sheet instead of a hint. 109 40 217 is #6d28d9, the light accent. */
 :root {
 	--vt-ambient:
-		radial-gradient(
-			70rem 45rem at 10% -5%,
-			color-mix(in srgb, var(--vt-accent) 18%, transparent),
-			transparent 70%
-		),
-		radial-gradient(
-			55rem 40rem at 95% 25%,
-			color-mix(in srgb, var(--vt-accent) 13%, transparent),
-			transparent 70%
-		),
-		radial-gradient(
-			60rem 45rem at 20% 95%,
-			color-mix(in srgb, var(--vt-accent) 11%, transparent),
-			transparent 70%
-		);
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E"),
+		linear-gradient(rgb(109 40 217 / 3%) 0 100%);
 
-	/* The washes carry their own size, only the tiled starfield needs a list. */
-	--vt-ambient-size: auto;
+	--vt-ambient-size: 200px 200px, auto;
 }
 
 html.dark {
