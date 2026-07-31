@@ -76,6 +76,21 @@ html.dark {
 	--ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Smooth dark/light switch: only colour props, so it doesn't fight layout or
+   the entrance/scroll motion. No transition on first paint because the theme
+   class is already set before that (BaseLayout inline script). */
+@media (prefers-reduced-motion: no-preference) {
+	*,
+	*::before,
+	*::after {
+		transition:
+			background-color 700ms var(--ease-brand),
+			color 700ms var(--ease-brand),
+			border-color 700ms var(--ease-brand),
+			box-shadow 700ms var(--ease-brand);
+	}
+}
+
 /* --------------------------------------------------------------- base --- */
 
 html {
