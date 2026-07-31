@@ -4,7 +4,7 @@
 export const siteConfig = {
 	name: 'Void Tales',
 	titleTemplate: '%s · Void Tales',
-	description: 'A station between worlds ✨',
+	description: 'Drawn To Light ✨',
 	url: 'https://portal.voidtales.win',
 	themeColor: '#0a0714',
 
@@ -29,14 +29,13 @@ export const siteConfig = {
 		title: 'Void Tales',
 		// Rendered in the accent colour. Must be a substring of `title`.
 		titleAccent: 'Tales',
-		subtitle:
-			'Six shattered realms, the fragments of a fallen goddess, and the Soul Station between them.',
+		subtitle: 'Mend a broken world, and uncover the truth within yourself.',
 		ctaLabel: 'Get the Modpack',
 	},
 
 	gallery: {
-		title: 'Echoes from the Station',
-		body: 'Glimpses across realms, caught between memory and motion. Each fragment is a path back to what was lost.',
+		title: 'Community Screenshots',
+		body: 'Take a look at the world of Void Tales, its regions, bosses, and handcrafted environments.',
 		moreLabel: 'See all screenshots',
 		moreHint: 'gallery.voidtales.win',
 	},
@@ -44,24 +43,24 @@ export const siteConfig = {
 	trailer: {
 		title: 'Watch the Trailer',
 		subtitle: 'Step into the world of Void Tales.',
-		embedUrl: 'https://www.youtube-nocookie.com/embed/sIdqXmTkGsE',
+		embedUrl: 'https://www.youtube-nocookie.com/embed/sIdqXmTkGsE?si=WFjpRQjjKl9FE9li',
 	},
 
 	join: {
-		title: 'Three steps to the Station',
+		title: 'Start Your Journey',
 		// The step content is the label; no "Stage 1 / Step 2" prefixes.
 		steps: [
 			{
 				title: 'Get the modpack from Modrinth',
-				body: 'One download. Everything the server runs is inside it.',
+				body: 'Install the official Void Tales modpack from Modrinth.',
 			},
 			{
 				title: 'Install it in your launcher',
 				body: 'The Modrinth App, Prism Launcher and ATLauncher all import the pack directly.',
 			},
 			{
-				title: 'Connect to play.voidtales.win',
-				body: 'Add the address, hit join, and the Station is open.',
+				title: 'Launch & Play',
+				body: 'Start Void Tales and join the server.',
 			},
 		],
 	},
@@ -77,25 +76,25 @@ export const siteConfig = {
 // The two realm panels. Rendered as a sticky stack, mirrored between the two.
 export const storySections = [
 	{
-		title: 'Through Ash and Arcana',
+		title: 'Remember Why You Fell in Love with Games',
 		image: '/images/portal-1.webp',
 		imageAlt: 'A ruined keep wrapped in red autumn foliage under a burning sky.',
-		body: 'You awaken in a world undone, where the goddess Phia lies scattered and silent, her fragments hidden across realms touched by the void. At the center of it all stands the Soul Station, a place where memory drifts, where paths between worlds converge. To walk this journey is to seek not only the pieces of a fallen divinity, but also the shape of your own forgotten self.',
+		body: 'Void Tales is inspired by the adventures that made us fall in love with games in the first place. A world that rewards curiosity and lets unforgettable moments happen naturally instead of pointing you toward them.',
 		points: [
-			'Gather Phia’s fragments, hidden in worlds fractured by the void.',
-			'Shape your soul with relics, sigils, and attunements.',
-			'Confront the trials that guard the way between memory and rebirth.',
+			'Explore without being led every step of the way.',
+			'Discover hidden places, secrets, and memorable encounters.',
+			'Experience a handcrafted world built to be explored, not rushed.',
 		],
 	},
 	{
-		title: 'The Shattered Realms',
+		title: 'A World Made by Hand',
 		image: '/images/portal-2.webp',
 		imageAlt: 'A stone colonnade hung with blossom and lanterns, lit by a low sun.',
-		body: 'The lands you cross are more than ruins. They are kingdoms long surrendered to time. In the autumn-bound halls of Falwhind, beneath the endless trees of Ibya, or in the buried stone of Aridia, every shadow holds its own memory. Battles rise and fall, strange events twist the present, and creatures beyond reason linger in the dark. Here, to lose yourself is to step closer to the truth the world has hidden.',
+		body: 'Void Tales was built with the belief that worlds should feel discovered, not generated. Every region, creature, and encounter has been crafted with its own identity, history, and purpose.',
 		points: [
-			'Wander realms each marked by their own history and peril.',
-			'Face encounters, events, and challenges that shift with the world.',
-			'Discover the strange beauty of being lost, and the wonder of finding your way.',
+			'Explore places shaped by years of passion and dedication.',
+			'Meet characters and creatures with stories of their own.',
+			'Find moments that were created to be remembered.',
 		],
 	},
 ];
