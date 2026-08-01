@@ -1,162 +1,94 @@
+<img src="public/images/githeader.webp" alt="Void Tales" width="100%" />
+
 # Void Tales Portal ✨
 
-A lightweight Nuxt 4 portal for the Void Tales Minecraft community: landing page, live server status, embedded BlueMap, SEO, and performance analytics.
+A static Astro landing page for the Void Tales Minecraft community: full-bleed hero with live
+server status, two sticky realm panels, a screenshot strip, the trailer, and the join steps.
 
-- Live map: [pages/map.vue](pages/map.vue)
-- Home and gallery: [pages/index.vue](pages/index.vue)
-- Layout and header: [layouts/default.vue](layouts/default.vue)
-- Global app shell: [app.vue](app.vue)
-
-## Features
-
-- 🟢 Live server status via Nitro endpoint → UI in [components/ServerStatus.vue](components/ServerStatus.vue), API in [server/api/mc-status.get.ts](server/api/mc-status.get.ts)
-- 🗺️ Embedded BlueMap world viewer → [pages/map.vue](pages/map.vue)
-- 🌓 Dark/light mode with persisted preference → [components/ColorModeToggle.vue](components/ColorModeToggle.vue)
-- 🔎 Automatic SEO and canonical tags → [plugins/seo.ts](plugins/seo.ts)
-- 🖼️ Optimized images via Nuxt Image → used in [pages/index.vue](pages/index.vue)
-- 🅰️ Google Fonts via @nuxt/fonts → configured in [nuxt.config.ts](nuxt.config.ts)
-- 💨 Tailwind CSS v4 with custom animations/utilities → [tailwind.config.js](tailwind.config.js), [assets/css/tailwind.css](assets/css/tailwind.css)
+No backend, no database, no runtime environment variables. The build produces plain HTML/CSS/JS served by nginx.
 
 ## Tech Stack
 
-- Nuxt 4 + Vue 3.5 (Nitro server for API routes)
-- Tailwind CSS v4 (via @tailwindcss/postcss)
-- PostCSS + Autoprefixer
-- @nuxt/image, @nuxt/fonts, @nuxtjs/color-mode
-
-See project configuration in [nuxt.config.ts](nuxt.config.ts).
+- [Astro 7](https://astro.build) — `output: 'static'`, no adapter
+- [Tailwind CSS v4](https://tailwindcss.com) — CSS-first via `@tailwindcss/vite`, no `tailwind.config.js`
+- Vanilla JS for interactivity (theme toggle, mobile menu, server status, copy button)
+- No animation, carousel or UI library. Motion, the sticky stack and the screenshot strip
+  are CSS (`position: sticky`, `scroll-snap`, `animation-timeline`)
+- Astro Fonts API — Unbounded and Instrument Sans, self-hosted at build time
+- pnpm
 
 ## Getting Started
 
-Prerequisites:
+Prerequisites: Node 22+ and pnpm.
 
-- Node.js 18.20+ (LTS recommended)
-- npm (or your preferred package manager)
-
-Install and run (Windows PowerShell):
-
-```powershell
-npm install
-npm run dev
-# open http://localhost:3000
+```bash
+pnpm install
+pnpm run dev        # http://localhost:4321
 ```
 
-Build, generate, and preview:
+## Scripts
 
-```powershell
-npm run build
-npm run generate
-npm run preview
+| Command            | What it does                                  |
+| ------------------ | --------------------------------------------- |
+| `pnpm run dev`     | Dev server on :4321                           |
+| `pnpm run build`   | `astro check` + `astro build` → `dist/`       |
+| `pnpm run check`   | Type and template check only                  |
+| `pnpm run preview` | Serve the production build locally            |
+| `pnpm run test`    | Self-check for the MOTD parser                |
+| `pnpm run format`  | Prettier over everything (`:check` to verify) |
+
+There is no test framework. `astro check`, the production build and the MOTD parser
+self-check are the gate.
+
+## Project Structure
+
+```
+src/
+  config/site.js         All copy, URLs and metadata — single source of truth
+  config/navigation.js   Navigation links (rendered for desktop AND mobile)
+  layouts/BaseLayout.astro   <head>, SEO tags, fonts, theme init, header + footer
+  components/            Header, Footer, ServerStatus
+  pages/index.astro      The landing page
+  pages/404.astro        Error page
+  styles/global.css      Tailwind import, @theme tokens, component classes
+public/                  Images, favicon set, OG image, robots.txt, health.html
 ```
 
-## Configuration
+**Content lives in `src/config/site.js`** — never hard-code copy into components.
 
-Public runtime config lives in [nuxt.config.ts](nuxt.config.ts) under `runtimeConfig.public`. These keys are read at runtime (and can be provided via `.env`):
+## Server Status
 
-```dotenv
-# .env (copy from .env.example)
-NUXT_PUBLIC_SITE_URL=https://portal.voidtales.win
+`ServerStatus.astro` queries [api.mcstatus.io](https://api.mcstatus.io) directly from the
+browser (the API sends `access-control-allow-origin: *`, so no proxy is needed).
 
-# Minecraft server
-NUXT_PUBLIC_MC_HOST=play.voidtales.win
-NUXT_PUBLIC_MC_PORT=25565
+The MOTD keeps its colours: `src/utils/motd.ts` parses Minecraft's `§` codes from `motd.raw`
+into plain data, and the component builds `<span>`s with `textContent` from it. Colours come
+from a fixed table in the parser, never from the response. The API's `motd.html` is
+deliberately unused — that would put third-party markup into the DOM.
+Run `pnpm run test` for the parser's self-check.
 
-# Modrinth project
-NUXT_PUBLIC_MODRINTH_URL=https://modrinth.com/modpack/your-pack
+Host and port are configured in `src/config/site.js`.
 
-# Plan server API credentials (used for /api/plan-stats)
-PLAN_URL=
-PLAN_USER=
-PLAN_PASS=
-SERVER_ID=
-```
+## Design tokens
 
-Used by:
+Colours live as runtime variables (`--vt-*`) on `:root` and `html.dark`, and Tailwind's
+utilities are hung on them through `@theme inline`. That is why `bg-raised`, `text-muted` and
+`border-line` follow the theme on their own and there is no `dark:` colour pair in the markup.
+The same token set powers the sister site, `voidtales-gallery`.
 
-- SEO and social previews: `siteUrl`, `siteName`, `siteDescription`, `themeColor`, `ogImage`, `twitterImage`, `twitterCard`, `twitterSite` → see [plugins/seo.ts](plugins/seo.ts)
-- Server status: `mcServerHost`, `mcServerPort` → see [components/ServerStatus.vue](components/ServerStatus.vue) and [server/api/mc-status.get.ts](server/api/mc-status.get.ts)
-- Modrinth button: `modrinthUrl` → see [components/ServerStatus.vue](components/ServerStatus.vue)
+## Theme
 
-Tip:
-
-- Set `NUXT_PUBLIC_SITE_URL` correctly for accurate canonical/og:urls.
-- Social images default to `/og.svg` and `/twitter.svg` (place in `public/`).
-- Keep your `.env` file out of version control by adding `.env` to `.gitignore`.
-
-## Styles
-
-- Tailwind entry and global styles: [assets/css/tailwind.css](assets/css/tailwind.css)
-  - Imports Tailwind v4 and applies custom base layers, dark theme background overlay, and hover/animation helpers.
-- Tailwind config (colors, keyframes, animations): [tailwind.config.js](tailwind.config.js)
-  - Includes a custom `modrinth` brand color and several animations (`bob`, `fade-in`, `slide-up`, `blur-in`).
-
-Fonts are configured in [nuxt.config.ts](nuxt.config.ts) and loaded via @nuxt/fonts:
-
-- Asul (UI text)
-- Cinzel Decorative (headings)
-
-## API
-
-Minecraft status (proxied via Nitro):
-
-- Route: `GET /api/mc-status?host=<host>&port=<port>`
-- Source: [server/api/mc-status.get.ts](server/api/mc-status.get.ts)
-- Returns:
-  ```json
-  {
-  	"online": true,
-  	"host": "play.voidtales.win",
-  	"port": 25565,
-  	"players": { "online": 7, "max": 40 },
-  	"version": "1.20.1",
-  	"motd": "Welcome to Void Tales",
-  	"favicon": "data:image/png;base64,...",
-  	"latency": 42
-  }
-  ```
-  If `host`/`port` are omitted, values from runtime config are used.
-
-## SEO
-
-- Canonical URL is computed from `siteUrl` + current route.
-- Open Graph and Twitter meta are set automatically.
-- Relative image paths are normalized to absolute using `siteUrl`.
-- Source: [plugins/seo.ts](plugins/seo.ts)
-
-Adjust descriptions and social tags in [nuxt.config.ts](nuxt.config.ts).
+Class-based dark mode. An inline script in `<head>` applies `.dark` to `<html>` before first
+paint based on `localStorage.theme`, falling back to `prefers-color-scheme`. Which toggle icon
+is visible is decided by CSS, so the button is correct without JavaScript.
 
 ## Deployment
 
-Build commands:
+Push to `main` builds a Docker image (`node:22-alpine` build stage → `nginx:alpine` serving
+`dist/`) and triggers a Dokploy deployment.
 
-- Install: `npm install` or `bun install`
-- Build: `npm run build`
+The container listens on **port 80**.
 
-## Contributing
+## License
 
-- Use VS Code settings in [.vscode/settings.json](.vscode/settings.json); Prettier is enforced.
-- Before committing:
-  ```powershell
-  npm run format
-  ```
-- Suggested flow:
-  - Branch from `main`
-  - Make focused changes
-  - Add/update docs where relevant
-  - Open a PR
-
-## Useful Files
-
-- App config: [nuxt.config.ts](nuxt.config.ts)
-- Pages: [pages/](pages/)
-- Components: [components/](components/)
-- Layouts: [layouts/](layouts/)
-- Styles: [assets/css/tailwind.css](assets/css/tailwind.css), [tailwind.config.js](tailwind.config.js)
-- Server/API: [server/api/mc-status.get.ts](server/api/mc-status.get.ts)
-- SEO plugin: [plugins/seo.ts](plugins/seo.ts)
-- Public assets: [public/](public/)
-- Formatting: [.prettierrc](.prettierrc)
-
----
-
-<a href="https://portal.hypho.dev">Void Tales</a> © 2025 by <a href="https://creativecommons.org">Hyphonical, Inventory, ShinSnowly</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+See [LICENSE](LICENSE).

@@ -1,13 +1,10 @@
-# Nuxt dev/build outputs
-.output
-.data
-.nuxt
-.nitro
-.cache
+# Astro build output
 dist
+.astro
 
 # Node dependencies
 node_modules
+pnpm-lock.yaml
 
 # Logs
 logs

@@ -1,0 +1,207 @@
+---
+import { siteConfig } from '../config/site.js';
+
+interface Props {
+	/**
+	 * `inline` is the compact live line in the hero (dot, players, address).
+	 * `full` is the card with version and MOTD. Both share one script and one
+	 * MOTD parser, so the fetch logic exists exactly once.
+	 */
+	variant?: 'inline' | 'full';
+}
+
+const { variant = 'full' } = Astro.props;
+
+const { mcServerHost, mcServerPort } = siteConfig;
+const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcServerPort}`;
+---
+
+{
+	/* Static shell, JS fills in the live values. Without JS the address and the
+	   copy button still work, the status just stays "Checking…". */
+}
+<div
+	class:list={[variant === 'full' ? 'status-card' : 'flex flex-wrap items-center gap-3']}
+	data-server-status
+	data-host={mcServerHost}
+	data-port={String(mcServerPort)}
+	data-address={address}
+>
+	<div class="flex flex-wrap items-center gap-3">
+		<span data-badge class="status-badge">
+			<span data-dot class="status-dot"></span>
+			<span data-label>Checking…</span>
+		</span>
+
+		{
+			variant === 'full' && (
+				<button type="button" data-refresh class="btn px-3 py-1 text-[0.8rem]">
+					Refresh
+				</button>
+			)
+		}
+	</div>
+
+	<button type="button" data-copy class="status-address" aria-label="Copy server address">
+		<span>{address}</span>
+		<svg
+			data-copy-idle
+			class="h-4 w-4"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="1.5"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+		>
+			<rect x="9" y="9" width="12" height="12" rx="2"></rect>
+			<path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+		</svg>
+		<svg
+			data-copy-done
+			class="hidden h-4 w-4 text-emerald-500"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"
+		>
+			<path d="M5 13l4 4L19 7"></path>
+		</svg>
+	</button>
+
+	<div class="status-meta">
+		<div>Players: <strong data-players>-</strong></div>
+		{
+			variant === 'full' && (
+				<div data-version-wrap hidden>
+					Version: <strong data-version />
+				</div>
+			)
+		}
+	</div>
+
+	{
+		variant === 'full' && (
+			<div data-motd-wrap hidden>
+				{/* Always dark: the Minecraft palette is built for a dark server list. */}
+				<code data-motd class="status-motd block" />
+			</div>
+		)
+	}
+</div>
+
+<script>
+	import { parseMotd } from '../utils/motd.ts';
+
+	// The component can appear twice on a page (hero line + card), so every root
+	// is wired up on its own. Astro bundles this script once either way.
+	for (const root of document.querySelectorAll<HTMLElement>('[data-server-status]')) {
+		const { host, port, address } = root.dataset;
+		const q = <T extends Element>(sel: string) => root.querySelector<T>(sel);
+
+		const badge = q<HTMLElement>('[data-badge]')!;
+		const dot = q<HTMLElement>('[data-dot]')!;
+		const label = q<HTMLElement>('[data-label]')!;
+		const players = q<HTMLElement>('[data-players]')!;
+
+		// Only present on the `full` variant.
+		const refresh = q<HTMLButtonElement>('[data-refresh]');
+		const versionWrap = q<HTMLElement>('[data-version-wrap]');
+		const version = q<HTMLElement>('[data-version]');
+		const motdWrap = q<HTMLElement>('[data-motd-wrap]');
+		const motd = q<HTMLElement>('[data-motd]');
+
+		const ONLINE = 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
+		const OFFLINE = 'bg-rose-500/15 text-rose-700 dark:text-rose-300';
+
+		function setBadge(state: 'online' | 'offline', text: string) {
+			badge.className = `status-badge ${state === 'online' ? ONLINE : OFFLINE}`;
+			dot.className = `status-dot ${state === 'online' ? 'bg-emerald-500' : 'bg-rose-500'}`;
+			label.textContent = text;
+		}
+
+		// Builds the MOTD from text nodes. Colours are set from the parser's fixed
+		// table, never from the response string, so nothing here can inject markup.
+		function renderMotd(raw: string) {
+			if (!motd) return;
+			motd.replaceChildren();
+			for (const seg of parseMotd(raw)) {
+				const span = document.createElement('span');
+				span.textContent = seg.text;
+				if (seg.color) span.style.color = seg.color;
+				if (seg.bold) span.style.fontWeight = '700';
+				if (seg.italic) span.style.fontStyle = 'italic';
+				const lines = [seg.underline && 'underline', seg.strike && 'line-through'].filter(Boolean);
+				if (lines.length) span.style.textDecoration = lines.join(' ');
+				motd.appendChild(span);
+			}
+		}
+
+		async function load() {
+			if (refresh) {
+				refresh.disabled = true;
+				refresh.textContent = 'Refreshing…';
+			}
+			try {
+				// api.mcstatus.io sends `access-control-allow-origin: *`, so the browser
+				// can query it directly, no proxy needed.
+				const res = await fetch(`https://api.mcstatus.io/v2/status/java/${host}:${port}`, {
+					signal: AbortSignal.timeout(8000),
+				});
+				const data = await res.json();
+
+				setBadge(data.online ? 'online' : 'offline', data.online ? 'Online' : 'Offline');
+				players.textContent = data.online
+					? `${data.players?.online ?? 0}${data.players?.max ? ` / ${data.players.max}` : ''}`
+					: '-';
+
+				const name = data.version?.name_clean;
+				if (versionWrap) versionWrap.hidden = !name;
+				if (version) version.textContent = name ?? '';
+
+				// Colours come from parsing the § codes ourselves into text nodes,
+				// deliberately not from `motd.html`, which would mean injecting
+				// third-party markup into the page.
+				const raw = data.motd?.raw?.trim();
+				if (motdWrap) motdWrap.hidden = !raw;
+				renderMotd(raw ?? '');
+			} catch {
+				setBadge('offline', 'Offline');
+				players.textContent = '-';
+				if (versionWrap) versionWrap.hidden = true;
+				if (motdWrap) motdWrap.hidden = true;
+			} finally {
+				if (refresh) {
+					refresh.disabled = false;
+					refresh.textContent = 'Refresh';
+				}
+			}
+		}
+
+		refresh?.addEventListener('click', load);
+		load();
+
+		const copy = q<HTMLButtonElement>('[data-copy]')!;
+		const idle = q<SVGElement>('[data-copy-idle]')!;
+		const done = q<SVGElement>('[data-copy-done]')!;
+
+		copy.addEventListener('click', async () => {
+			try {
+				await navigator.clipboard.writeText(address ?? '');
+				idle.classList.add('hidden');
+				done.classList.remove('hidden');
+				setTimeout(() => {
+					idle.classList.remove('hidden');
+					done.classList.add('hidden');
+				}, 1200);
+			} catch {
+				// Clipboard blocked (no permission / insecure context): the address is
+				// still readable in the button either way.
+			}
+		});
+	}
+</script>

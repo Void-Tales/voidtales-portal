@@ -1,0 +1,101 @@
+---
+import { Font } from 'astro:assets';
+import { siteConfig } from '../config/site.js';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+	/** Page title, inserted into siteConfig.titleTemplate. Omit on the homepage. */
+	title?: string;
+	description?: string;
+}
+
+const { title, description = siteConfig.description } = Astro.props;
+
+const pageTitle = title ? siteConfig.titleTemplate.replace('%s', title) : siteConfig.name;
+
+// Relative og:image paths are ignored by Discord/X link previews — always absolute.
+const canonical = new URL(Astro.url.pathname, siteConfig.url).toString();
+const ogImage = new URL(siteConfig.ogImage, siteConfig.url).toString();
+const twitterImage = new URL(siteConfig.twitterImage, siteConfig.url).toString();
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+		<meta name="theme-color" content={siteConfig.themeColor} />
+		<link rel="canonical" href={canonical} />
+		{/* All four are generated from favicon.svg, see the brand-assets skill. */}
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" sizes="32x32" href="/favicon.ico" />
+		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={siteConfig.name} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={ogImage} />
+		<meta name="twitter:card" content={siteConfig.twitterCard} />
+		<meta name="twitter:site" content={siteConfig.twitterSite} />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={twitterImage} />
+
+		{
+			/* Filter the preload by style, never by weight: in the build all weights
+		    of a family collapse into one variable font file whose preload entry
+		    carries the weight of the first face, so a weight filter matches
+		    nothing. */
+		}
+		<Font cssVariable="--font-instrument-sans" preload={[{ style: 'normal' }]} />
+		<Font cssVariable="--font-unbounded" preload={[{ style: 'normal' }]} />
+
+		{
+			/* Runs before first paint so the theme never flashes. The hero preload
+		    lives here too: a `media="(prefers-color-scheme: …)"` link would guess
+		    from the OS while the class below decides from localStorage, and every
+		    time the two disagree the browser preloads the image nobody uses. The
+		    URLs must stay byte-identical to the ones in global.css, otherwise the
+		    request is not deduplicated. */
+		}
+		<script is:inline>
+			(function () {
+				var isDark = true;
+				try {
+					var saved = localStorage.getItem('theme');
+					isDark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+				} catch (e) {
+					/* No storage access: dark is the design target. */
+				}
+				document.documentElement.classList.toggle('dark', isDark);
+
+				var link = document.createElement('link');
+				link.rel = 'preload';
+				link.as = 'image';
+				link.href = isDark ? '/images/index-dark.webp' : '/images/index-light.webp';
+				document.head.appendChild(link);
+			})();
+		</script>
+	</head>
+
+	{
+		/* <main> is unconstrained so sections can go full-bleed; the width limit
+	    lives on `.shell` inside each section. */
+	}
+	<body class="flex min-h-[100svh] flex-col">
+		<Header />
+		<main class="flex-1">
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

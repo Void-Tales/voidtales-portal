@@ -1,0 +1,1164 @@
+@import 'tailwindcss';
+
+/* Class-based dark mode: the inline script in BaseLayout puts `.dark` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------- tokens --- */
+
+/* One scale, two themes. Dark is the design target, light is derived from it.
+   Same values as the VoidTales gallery, so both sites read as one brand.
+
+   The values live as plain runtime variables here and `@theme inline` below
+   hangs the Tailwind utilities on them. `inline` keeps the `var()` inside the
+   generated utility instead of resolving it at build time, so `bg-raised`,
+   `text-muted` and `border-line` follow the theme on their own. That is why
+   there is no `dark:` twin on every colour utility in the markup. */
+
+:root {
+	--vt-bg: #f6f5fa;
+	--vt-raised: #ffffff;
+	--vt-text: #17131f;
+	--vt-muted: #5b5468;
+	--vt-line: rgb(23 19 31 / 12%);
+	--vt-accent: #6d28d9;
+	--vt-accent-ink: #ffffff;
+	--vt-accent-soft: rgb(109 40 217 / 10%);
+	--vt-glow: transparent;
+	--vt-shadow-1: 0 1px 2px rgb(23 19 31 / 6%), 0 2px 6px rgb(23 19 31 / 6%);
+	--vt-shadow-2: 0 4px 12px rgb(23 19 31 / 10%), 0 16px 40px rgb(23 19 31 / 12%);
+
+	--header-h: 4.5rem;
+	--vt-container: 72rem;
+
+	color-scheme: light dark;
+}
+
+html.dark {
+	--vt-bg: #0a0714;
+	--vt-raised: #140f22;
+	--vt-text: #ece8f6;
+	--vt-muted: #9b93b3;
+	--vt-line: rgb(236 232 246 / 12%);
+	--vt-accent: #a78bfa;
+	--vt-accent-ink: #0a0714;
+	--vt-accent-soft: rgb(167 139 250 / 14%);
+	--vt-glow: rgb(167 139 250 / 45%);
+	--vt-shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+	--vt-shadow-2: 0 8px 24px rgb(0 0 0 / 55%), 0 2px 8px rgb(0 0 0 / 40%);
+
+	color-scheme: dark;
+}
+
+@theme inline {
+	--color-bg: var(--vt-bg);
+	--color-raised: var(--vt-raised);
+	--color-ink: var(--vt-text);
+	--color-muted: var(--vt-muted);
+	--color-line: var(--vt-line);
+	--color-accent: var(--vt-accent);
+	--color-accent-ink: var(--vt-accent-ink);
+	--color-accent-soft: var(--vt-accent-soft);
+
+	/* Foreign brand colour on a foreign button, not a second accent. */
+	--color-modrinth: #00af5c;
+
+	/* Font faces are injected by <Font> in BaseLayout (Astro Fonts API); the
+	   generic fallback applies until they are loaded. */
+	--font-display: var(--font-unbounded), sans-serif;
+	--font-body: var(--font-instrument-sans), sans-serif;
+
+	/* Form rule: sm for chips and badges, md for buttons, inputs and small
+	   cards, lg for large surfaces. `rounded-full` is the status dot only. */
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-lg: 18px;
+
+	--ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Smooth dark/light switch: only colour props, so it doesn't fight layout or
+   the entrance/scroll motion. No transition on first paint because the theme
+   class is already set before that (BaseLayout inline script). */
+@media (prefers-reduced-motion: no-preference) {
+	*,
+	*::before,
+	*::after {
+		transition:
+			background-color 700ms var(--ease-brand),
+			color 700ms var(--ease-brand),
+			border-color 700ms var(--ease-brand),
+			box-shadow 700ms var(--ease-brand);
+	}
+}
+
+/* --------------------------------------------------------------- base --- */
+
+html {
+	scroll-behavior: smooth;
+	scroll-padding-top: var(--header-h);
+	scrollbar-gutter: stable;
+}
+
+body {
+	background: var(--vt-bg);
+	color: var(--vt-text);
+	font-family: var(--font-body);
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: var(--font-display);
+	font-weight: 800;
+	line-height: 1.05;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+h1 {
+	font-size: clamp(2.6rem, 7vw, 5.5rem);
+}
+
+h2 {
+	font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+}
+
+h3 {
+	font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+}
+
+:focus-visible {
+	border-radius: var(--radius-sm);
+	outline: 2px solid var(--vt-accent);
+	outline-offset: 3px;
+}
+
+::selection {
+	background: var(--vt-accent);
+	color: var(--vt-accent-ink);
+}
+
+/* Ambient layer, one token per theme: a tiled starfield at night, a tiled grain
+   plus a flat violet veil by day. Pure CSS and an inline data URI - no request.
+
+   A token and not just a rule, because two surfaces paint it: the fixed layer
+   below, and the story panels. Those are opaque - the sticky stack needs that
+   to let panel 2 slide over panel 1 - and cover two full viewports on desktop,
+   so the fixed layer alone never showed through there.
+
+   Both themes are tiled, and the light one has to stay that way. The two
+   surfaces live in different coordinate systems - the layer below is fixed to
+   the viewport, a panel positions from its own box - so any *positioned*
+   decoration (`at 10% -5%`) lands somewhere else on each and leaves a visible
+   step at every panel edge. A uniform tile has no offset to see. Rebuilding
+   this as radials brings that seam straight back, plus banding: wide gradients
+   at single-digit alpha over a near-white surface put centimetre-wide 8-bit
+   steps on the page, and softer stops only widen them. The veil is one colour
+   from 0 to 100% - a constant plane, so nothing to band - and the grain is
+   greyscale (`saturate 0`), so its hue comes from the veil underneath instead
+   of turning muddy. `stitchTiles='stitch'` is what keeps the tile seams out.
+
+   The veil is an rgb() literal and not color-mix(var(--vt-accent) N%): the
+   lightningcss targets baked into @tailwindcss/vite emit an unguarded fallback
+   for color-mix, and that fallback uses the accent at *full* opacity - a solid
+   violet sheet instead of a hint. 109 40 217 is #6d28d9, the light accent. */
+:root {
+	--vt-ambient:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E"),
+		linear-gradient(rgb(109 40 217 / 3%) 0 100%);
+
+	--vt-ambient-size: 200px 200px, auto;
+}
+
+html.dark {
+	--vt-ambient:
+		radial-gradient(circle 1.2px at 20% 30%, rgb(236 232 246 / 50%) 0 100%, transparent),
+		radial-gradient(circle 1px at 68% 62%, rgb(236 232 246 / 38%) 0 100%, transparent),
+		radial-gradient(circle 1.4px at 75% 15%, rgb(236 232 246 / 44%) 0 100%, transparent),
+		radial-gradient(circle 1px at 12% 84%, rgb(236 232 246 / 32%) 0 100%, transparent),
+		radial-gradient(circle 1.2px at 45% 70%, rgb(236 232 246 / 40%) 0 100%, transparent),
+		radial-gradient(circle 1px at 88% 40%, rgb(236 232 246 / 30%) 0 100%, transparent);
+
+	--vt-ambient-size: 320px 320px, 320px 320px, 260px 260px, 260px 260px, 400px 400px, 400px 400px;
+}
+
+/* The hero carries its own background image on top of this. */
+body::before {
+	content: '';
+	position: fixed;
+	z-index: -1;
+	inset: 0;
+	background: var(--vt-ambient);
+	background-size: var(--vt-ambient-size);
+	pointer-events: none;
+}
+
+/* --------------------------------------------------------- components --- */
+
+@layer components {
+	/* ---- layout ---- */
+
+	.shell {
+		width: 100%;
+		max-width: var(--vt-container);
+		margin-inline: auto;
+		padding-inline: 1rem;
+	}
+
+	@media (width >= 768px) {
+		.shell {
+			padding-inline: 2rem;
+		}
+	}
+
+	.section {
+		padding-block: clamp(4rem, 10vw, 8rem);
+	}
+
+	.section-lead {
+		max-width: 46rem;
+		color: var(--vt-muted);
+		font-size: 1.05rem;
+		margin-top: 1rem;
+	}
+
+	/* ---- buttons ---- */
+
+	/* Hover idiom, page-wide: the border goes accent and the text goes full ink.
+	   The background never changes. The filled CTA lifts 1px instead. */
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.7rem 1.25rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+		color: var(--vt-muted);
+		font-size: 0.95rem;
+		font-weight: 500;
+		white-space: nowrap;
+		transition:
+			color 0.2s var(--ease-brand),
+			border-color 0.2s var(--ease-brand);
+	}
+
+	/* Every `:hover` twin of these rules lives in the `@media (hover: hover)`
+	   block at the end of the layer - see the note there. */
+	.btn:focus-visible {
+		border-color: var(--vt-accent);
+		color: var(--vt-text);
+	}
+
+	.btn-primary {
+		border-color: transparent;
+		background: var(--vt-accent);
+		color: var(--vt-accent-ink);
+		font-weight: 600;
+		transition:
+			transform 0.2s var(--ease-brand),
+			filter 0.2s var(--ease-brand);
+	}
+
+	.btn-primary:focus-visible {
+		border-color: transparent;
+		color: var(--vt-accent-ink);
+		filter: brightness(1.08);
+		transform: translateY(-1px);
+	}
+
+	.btn-modrinth {
+		border-color: transparent;
+		background: var(--color-modrinth);
+		color: #fff;
+		font-weight: 600;
+		transition:
+			transform 0.2s var(--ease-brand),
+			filter 0.2s var(--ease-brand);
+	}
+
+	.btn-modrinth:focus-visible {
+		border-color: transparent;
+		color: #fff;
+		filter: brightness(1.08);
+		transform: translateY(-1px);
+	}
+
+	/* Square control, same shape for every header button. */
+	.icon-btn {
+		position: relative;
+		display: inline-flex;
+		width: 2.25rem;
+		height: 2.25rem;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+		background: var(--vt-raised);
+		color: var(--vt-muted);
+		cursor: pointer;
+		transition:
+			color 0.2s var(--ease-brand),
+			border-color 0.2s var(--ease-brand);
+	}
+
+	.icon-btn:focus-visible {
+		border-color: var(--vt-accent);
+		color: var(--vt-text);
+	}
+
+	/* ---- header ---- */
+
+	.site-header {
+		position: sticky;
+		z-index: 50;
+		top: 0;
+		border-bottom: 1px solid var(--vt-line);
+		background: color-mix(in srgb, var(--vt-bg) 85%, transparent);
+		-webkit-backdrop-filter: blur(8px);
+		backdrop-filter: blur(8px);
+	}
+
+	.site-header-inner {
+		display: flex;
+		height: var(--header-h);
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		white-space: nowrap;
+	}
+
+	/* Both icons are stacked and only one is faded in, so the toggle shows the
+	   right thing on first paint without JS. Light shows the moon (click to go
+	   dark), dark shows the sun. */
+	.theme-icon {
+		position: absolute;
+		width: 1.05rem;
+		height: 1.05rem;
+		opacity: 0;
+		transform: rotate(-90deg) scale(0.5);
+		transition:
+			opacity 0.2s var(--ease-brand),
+			transform 0.2s var(--ease-brand);
+	}
+
+	.theme-icon-moon {
+		opacity: 1;
+		transform: none;
+	}
+
+	html.dark .theme-icon-moon {
+		opacity: 0;
+		transform: rotate(90deg) scale(0.5);
+	}
+
+	html.dark .theme-icon-sun {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* No background of its own: the panel sits inside `.site-header`, so the
+	   header's tinted, blurred surface shows through and the menu is the same
+	   material by construction. Only the hairline separates the two. */
+	.mobile-menu {
+		border-top: 1px solid var(--vt-line);
+	}
+
+	/* ---- nav ---- */
+
+	.nav-link {
+		position: relative;
+		padding-block: 0.25rem;
+		color: var(--vt-muted);
+		font-size: 0.9rem;
+		transition: color 0.2s var(--ease-brand);
+	}
+
+	.nav-link::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background: var(--vt-accent);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.2s var(--ease-brand);
+	}
+
+	.nav-link:focus-visible {
+		color: var(--vt-text);
+	}
+
+	.nav-link:focus-visible::after {
+		transform: scaleX(1);
+	}
+
+	/* ---- hero ---- */
+
+	/* Minus the header, which sits in flow above it: the whole hero, CTA
+	   included, has to fit the first viewport.
+
+	   `svh`, not `dvh`: the dynamic height changes live while mobile Chrome
+	   hides and shows its URL bar, which resizes the hero and shoves everything
+	   below it mid-scroll. The small height is constant. Price: with the URL bar
+	   hidden the hero is a little shorter than the visible area. */
+	.hero {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		min-height: calc(100svh - var(--header-h));
+		overflow: hidden;
+	}
+
+	/* Background image rather than two stacked <img> with an opacity swap: only
+	   the rule that matches the current theme is fetched, so the browser never
+	   downloads both screenshots. */
+	.hero-bg {
+		position: absolute;
+		inset: 0;
+		background: url('/images/index-light.webp') center / cover no-repeat;
+		transform: scale(1.14) translateY(0);
+	}
+
+	html.dark .hero-bg {
+		background-image: url('/images/index-dark.webp');
+	}
+
+	/* Scrim only under the type, so the image stays untouched at the top and
+	   resolves cleanly into the page surface at the bottom. */
+	.hero-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			to top,
+			var(--vt-bg) 0%,
+			color-mix(in srgb, var(--vt-bg) 82%, transparent) 26%,
+			transparent 62%
+		);
+	}
+
+	.hero-body {
+		position: relative;
+		padding-bottom: clamp(3rem, 8vh, 6rem);
+		padding-top: 6rem;
+	}
+
+	/* The only eyebrow on the page. */
+	.eyebrow {
+		display: block;
+		color: var(--vt-muted);
+		font-family: ui-monospace, sfmono-regular, menlo, monospace;
+		font-size: 0.75rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+	}
+
+	.hero-title {
+		margin-top: 1rem;
+		max-width: 14ch;
+	}
+
+	.hero-title .accent {
+		color: var(--vt-accent);
+		text-shadow: 0 0 40px var(--vt-glow);
+	}
+
+	.hero-subtitle {
+		max-width: 55ch;
+		margin-top: 1.25rem;
+		color: var(--vt-muted);
+		font-size: clamp(1rem, 1.4vw, 1.15rem);
+	}
+
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1rem 1.5rem;
+		margin-top: 2rem;
+	}
+
+	/* ---- scroll cue ---- */
+
+	/* A real anchor to the next section, not decoration: `scroll-padding-top` on
+	   <html> makes it land below the header. Deliberately louder than a normal
+	   icon button (accent outline, accent tint, glow) so the fold reads as
+	   "there is more" at a glance. */
+	.scroll-cue {
+		display: inline-flex;
+		width: 3rem;
+		height: 3rem;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--vt-accent);
+		border-radius: var(--radius-md);
+		background: var(--vt-accent-soft);
+		box-shadow:
+			var(--vt-shadow-1),
+			0 0 24px var(--vt-glow);
+		color: var(--vt-accent);
+		-webkit-backdrop-filter: blur(6px);
+		backdrop-filter: blur(6px);
+		transition:
+			background 0.2s var(--ease-brand),
+			color 0.2s var(--ease-brand),
+			transform 0.2s var(--ease-brand);
+	}
+
+	.scroll-cue:focus-visible {
+		background: var(--vt-accent);
+		color: var(--vt-accent-ink);
+		transform: translateY(2px);
+	}
+
+	.scroll-cue svg {
+		width: 1.4rem;
+		height: 1.4rem;
+	}
+
+	/* In the hero it is the last item of the actions row, so flex centering keeps
+	   it on the same optical line as the CTA instead of guessing an offset. */
+	.hero-actions .scroll-cue {
+		margin-left: auto;
+	}
+
+	/* On the story panels it sits bottom right, flush with the shell's content
+	   edge. Same formula as `.shell`, so it lines up at every width. */
+	.scroll-cue--panel {
+		position: absolute;
+		right: max(1rem, calc((100vw - var(--vt-container)) / 2 + 1rem));
+		bottom: clamp(1.5rem, 4vh, 3rem);
+	}
+
+	@media (width >= 768px) {
+		.scroll-cue--panel {
+			right: max(2rem, calc((100vw - var(--vt-container)) / 2 + 2rem));
+		}
+	}
+
+	/* ---- story panels ---- */
+
+	.story-panel {
+		/* Positioned so the scroll cue can anchor to the panel. Below the sticky
+		   breakpoint this stays `relative`, above it becomes `sticky` (also a
+		   containing block), so the cue never escapes to the viewport. */
+		position: relative;
+		display: flex;
+		align-items: center;
+		border-top: 1px solid var(--vt-line);
+		/* Opaque so panel 2 can slide over panel 1, plus its own copy of the
+		   ambient wash - see the token. Colour and image split, because the
+		   `background` shorthand would reset the image. */
+		background-color: var(--vt-bg);
+		background-image: var(--vt-ambient);
+		background-size: var(--vt-ambient-size);
+		padding-block: clamp(3rem, 7vw, 5rem);
+	}
+
+	/* Panel 2 slides over panel 1. Pure CSS sticky, no scroll listener, no
+	   library. Every width, but only when the viewport is tall enough: a sticky
+	   panel taller than the viewport pins its top and leaves its own bottom
+	   permanently below the fold. That rules out a phone in landscape. */
+	@media (height >= 34rem) {
+		.story-panel {
+			position: sticky;
+			top: var(--header-h);
+			min-height: calc(100svh - var(--header-h));
+		}
+	}
+
+	/* Below the two-column breakpoint the image is an edge-to-edge band above
+	   the copy. It stays in flow, so the distance between image and text is the
+	   grid gap - a background image plus scrim left a hole that grew with the
+	   panel height, because the scrim's opaque part sits at a fixed percentage
+	   while the copy is bottom-aligned. `overflow: hidden` catches the bleed. */
+	@media (width < 1024px) {
+		.story-panel {
+			overflow: hidden;
+			padding-block: clamp(2rem, 7vw, 5rem);
+		}
+
+		.story-grid {
+			gap: 1.75rem;
+		}
+
+		/* Out to both viewport edges without knowing the shell's padding: the
+		   percentage resolves against the grid area, which is exactly the shell's
+		   content box. */
+		.story-figure {
+			position: relative;
+			order: -1;
+			margin-inline: calc(50% - 50vw);
+		}
+
+		.story-figure img {
+			width: 100%;
+			height: 38svh;
+			border-radius: 0;
+			box-shadow: none;
+			object-fit: cover;
+		}
+
+		/* Resolves the bottom edge into the page instead of cutting it. Dark only:
+		   fading into near-black reads as a vignette, fading into the near-white
+		   day surface reads as fog over the image. Light gets a hard edge. */
+		html.dark .story-figure::after {
+			content: '';
+			position: absolute;
+			inset: auto 0 0;
+			height: 35%;
+			background: linear-gradient(to top, var(--vt-bg), transparent);
+		}
+
+		.story-copy .section-lead {
+			font-size: 0.95rem;
+		}
+
+		.story-copy .story-points {
+			font-size: 0.9rem;
+		}
+	}
+
+	.story-grid {
+		/* Distance from the shell's content edge out to the viewport edge. The
+		   realm image uses it to bleed past the container. */
+		--bleed: calc((min(100vw, var(--vt-container)) - 100vw) / 2 - 2rem);
+
+		display: grid;
+		gap: clamp(2rem, 5vw, 4rem);
+		align-items: center;
+	}
+
+	.story-figure img {
+		width: 100%;
+		height: auto;
+		border-radius: var(--radius-lg);
+		box-shadow: var(--vt-shadow-2);
+	}
+
+	/* Matches Tailwind's `lg:`, which drives the mirrored order in the markup. */
+	@media (width >= 1024px) {
+		.story-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.story-figure {
+			margin-right: var(--bleed);
+		}
+
+		.story-figure img {
+			aspect-ratio: 5 / 4;
+			object-fit: cover;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+
+		/* Second panel: mirrored, so the image bleeds to the left instead. */
+		.story-figure--left {
+			margin-right: 0;
+			margin-left: var(--bleed);
+		}
+
+		.story-figure--left img {
+			border-radius: var(--radius-lg);
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
+		}
+	}
+
+	/* One accent hairline instead of a coloured dot per bullet. */
+	.story-points {
+		display: grid;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
+		padding-left: 1.25rem;
+		border-left: 2px solid var(--vt-accent);
+		color: var(--vt-muted);
+		font-size: 0.95rem;
+	}
+
+	/* ---- gallery pan ---- */
+
+	/* Two modes, one markup.
+
+	   Default (and the only mode without JS, under reduced motion, and when all
+	   tiles already fit): a manual scroll-snap strip. The half-visible next tile
+	   is the affordance, so there are no arrows and no dots.
+
+	   Otherwise the script adds `.is-panning`: the section grows taller than the
+	   viewport, `.pan-sticky` pins, and the track travels sideways over exactly
+	   that extra height. */
+	.pan {
+		--tile-w: min(72vw, 26rem);
+		--tile-gap: 1rem;
+		--strip-inset: max(1rem, calc((100vw - var(--vt-container)) / 2 + 1rem));
+	}
+
+	@media (width >= 768px) {
+		.pan {
+			--tile-gap: 1.5rem;
+			--strip-inset: max(2rem, calc((100vw - var(--vt-container)) / 2 + 2rem));
+		}
+	}
+
+	.pan-sticky {
+		position: relative;
+		/* Soft edges instead of hard cuts at the viewport border. */
+		-webkit-mask-image: linear-gradient(
+			to right,
+			transparent,
+			#000 3rem,
+			#000 calc(100% - 3rem),
+			transparent
+		);
+		mask-image: linear-gradient(
+			to right,
+			transparent,
+			#000 3rem,
+			#000 calc(100% - 3rem),
+			transparent
+		);
+	}
+
+	.pan-viewport {
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		scroll-padding-inline: var(--strip-inset);
+		scrollbar-width: thin;
+		scrollbar-color: var(--vt-line) transparent;
+	}
+
+	.pan-track {
+		display: flex;
+		gap: var(--tile-gap);
+		padding-block: 0.5rem;
+		padding-inline: var(--strip-inset);
+	}
+
+	.pan-track > * {
+		flex: 0 0 var(--tile-w);
+		scroll-snap-align: start;
+	}
+
+	.pan-tile {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-lg);
+		background: var(--vt-raised);
+		box-shadow: var(--vt-shadow-1);
+		aspect-ratio: 16 / 9;
+		transition: border-color 0.2s var(--ease-brand);
+	}
+
+	.pan-tile:focus-visible {
+		border-color: var(--vt-accent);
+	}
+
+	.pan-tile img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.5s var(--ease-brand);
+	}
+
+	/* Last tile of the track: the link out to the full gallery. */
+	.pan-more {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 0.5rem;
+		padding: 1.5rem;
+		background: var(--vt-accent-soft);
+		color: var(--vt-text);
+	}
+
+	.pan-more strong {
+		font-family: var(--font-display);
+		font-size: 1.35rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+	}
+
+	.pan-more span {
+		color: var(--vt-muted);
+		font-size: 0.9rem;
+	}
+
+	/* Pan mode. Switched on by the script in index.astro, and only once it has
+	   actually created the timeline: the section grows taller than the viewport,
+	   `.pan-sticky` pins, and the track travels sideways over exactly that extra
+	   height. The height itself is set inline by the script, which measures the
+	   track rather than recomputing the geometry a second time here. */
+	.pan.is-panning {
+		padding-block: 0;
+	}
+
+	.pan.is-panning .pan-sticky {
+		position: sticky;
+		top: var(--header-h);
+		display: flex;
+		height: calc(100svh - var(--header-h));
+		flex-direction: column;
+		justify-content: center;
+		gap: clamp(2rem, 5vh, 4rem);
+		overflow: hidden;
+	}
+
+	.pan.is-panning .pan-viewport {
+		overflow: visible;
+		scroll-snap-type: none;
+	}
+
+	/* ---- trailer ---- */
+
+	.trailer-frame {
+		width: 100%;
+		max-width: 60rem;
+		margin-inline: auto;
+		overflow: hidden;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--vt-shadow-2);
+		aspect-ratio: 16 / 9;
+	}
+
+	.trailer-frame iframe {
+		width: 100%;
+		height: 100%;
+		border: 0;
+	}
+
+	/* ---- join steps ---- */
+
+	.steps {
+		display: grid;
+		gap: 2.5rem;
+	}
+
+	.step {
+		position: relative;
+		padding-left: 3.5rem;
+	}
+
+	.step::before {
+		content: attr(data-step);
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: flex;
+		width: 2.25rem;
+		height: 2.25rem;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--vt-accent);
+		border-radius: var(--radius-md);
+		background: var(--vt-accent-soft);
+		color: var(--vt-accent);
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	/* Connector between the numbers, stopping short of the next one. */
+	.step:not(:last-child)::after {
+		content: '';
+		position: absolute;
+		top: 2.75rem;
+		bottom: -2.25rem;
+		left: calc(1.125rem - 1px);
+		width: 2px;
+		background: linear-gradient(to bottom, var(--vt-accent), transparent);
+	}
+
+	.step p {
+		margin-top: 0.35rem;
+		color: var(--vt-muted);
+		font-size: 0.95rem;
+	}
+
+	/* ---- server status ---- */
+
+	.status-card {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		padding: 1.5rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-lg);
+		background: var(--vt-raised);
+		box-shadow: var(--vt-shadow-1);
+	}
+
+	.status-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.25rem 0.6rem;
+		border-radius: var(--radius-sm);
+		background: var(--vt-accent-soft);
+		font-size: 0.8rem;
+		font-weight: 500;
+	}
+
+	/* The one round thing on the page: it is a live indicator, not decoration. */
+	.status-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 999px;
+		background: var(--vt-muted);
+	}
+
+	.status-address {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.4rem 0.6rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+		background: var(--vt-raised);
+		font-family: ui-monospace, sfmono-regular, menlo, monospace;
+		font-size: 0.9rem;
+		transition: border-color 0.2s var(--ease-brand);
+	}
+
+	.status-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.25rem;
+		color: var(--vt-muted);
+		font-size: 0.9rem;
+	}
+
+	.status-meta strong {
+		color: var(--vt-text);
+		font-weight: 600;
+	}
+
+	/* Always dark, in both themes: the Minecraft colour palette (white, yellow)
+	   is built for a dark server list and would be unreadable on a light field. */
+	.status-motd {
+		border: 1px solid rgb(255 255 255 / 12%);
+		border-radius: var(--radius-sm);
+		background: #14121a;
+		padding: 0.4rem 0.6rem;
+		color: #e8e6ef;
+		font-family: ui-monospace, sfmono-regular, menlo, monospace;
+		font-size: 0.85rem;
+		white-space: pre-line;
+	}
+
+	/* ---- footer ---- */
+
+	/* Two rows at every width: brand and links up top, copyright below its own
+	   hairline. A single row put the copyright's `ml-auto` on the cross axis as
+	   soon as the column kicked in, which right-aligned it against everything
+	   else. */
+	.footer-inner {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding-block: 3rem 2.5rem;
+	}
+
+	.footer-top {
+		display: flex;
+		flex-wrap: wrap;
+		/* baseline, not center: the two blocks have different font sizes. */
+		align-items: baseline;
+		gap: 1rem 2rem;
+	}
+
+	.footer-copyright {
+		border-top: 1px solid var(--vt-line);
+		padding-top: 1.25rem;
+	}
+
+	/* ---- hover ---- */
+
+	/* Every hand-written `:hover` in this file, in one place and behind the
+	   capability query. A touch browser keeps `:hover` latched on the last
+	   tapped element until something else is tapped, which reads as a button
+	   stuck in its focus ring. `:focus-visible` stays outside - keyboard focus
+	   has to work on any device. Tailwind's `hover:` utilities need nothing,
+	   the variant is gated the same way in v4. */
+	@media (hover: hover) {
+		.btn:hover {
+			border-color: var(--vt-accent);
+			color: var(--vt-text);
+		}
+
+		.btn-primary:hover,
+		.btn-modrinth:hover {
+			border-color: transparent;
+			filter: brightness(1.08);
+			transform: translateY(-1px);
+		}
+
+		.btn-primary:hover {
+			color: var(--vt-accent-ink);
+		}
+
+		.btn-modrinth:hover {
+			color: #fff;
+		}
+
+		.icon-btn:hover {
+			border-color: var(--vt-accent);
+			color: var(--vt-text);
+		}
+
+		.nav-link:hover {
+			color: var(--vt-text);
+		}
+
+		.nav-link:hover::after {
+			transform: scaleX(1);
+		}
+
+		.scroll-cue:hover {
+			background: var(--vt-accent);
+			color: var(--vt-accent-ink);
+			transform: translateY(2px);
+		}
+
+		.pan-tile:hover {
+			border-color: var(--vt-accent);
+		}
+
+		.pan-tile:hover img {
+			transform: scale(1.04);
+		}
+
+		.status-address:hover {
+			border-color: var(--vt-accent);
+		}
+	}
+
+	/* Mirror of the hover block for pointers without hover. `:active` needs no
+	   capability query: it releases itself on pointer-up everywhere, so nothing
+	   stays latched on touch, and on desktop it adds mousedown feedback.
+	   ponytail: iOS Safari only fires `:active` reliably on natively
+	   interactive elements - every target here is an <a> or <button>. If it
+	   ever fails on an iPhone, the fix is `ontouchstart=""` on <body>. */
+	.btn:active,
+	.icon-btn:active {
+		border-color: var(--vt-accent);
+		color: var(--vt-text);
+	}
+
+	.btn-primary:active,
+	.btn-modrinth:active {
+		border-color: transparent;
+		filter: brightness(1.08);
+		transform: translateY(-1px);
+	}
+
+	.btn-primary:active {
+		color: var(--vt-accent-ink);
+	}
+
+	.btn-modrinth:active {
+		color: #fff;
+	}
+
+	.nav-link:active {
+		color: var(--vt-text);
+	}
+
+	.nav-link:active::after {
+		transform: scaleX(1);
+	}
+
+	.scroll-cue:active {
+		background: var(--vt-accent);
+		color: var(--vt-accent-ink);
+		transform: translateY(2px);
+	}
+
+	.status-address:active,
+	.pan-more:active {
+		border-color: var(--vt-accent);
+	}
+}
+
+/* ------------------------------------------------------------- motion --- */
+
+/* Entrances are opt-in through @supports: without scroll-driven animation the
+   elements are simply visible from the start. Nothing can get stuck at
+   opacity 0 because opacity 0 is never the default. */
+
+@keyframes vt-rise {
+	from {
+		opacity: 0;
+		transform: translateY(1.5rem);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes vt-nudge {
+	0%,
+	60%,
+	100% {
+		transform: none;
+	}
+	22% {
+		transform: translateY(5px);
+	}
+	40% {
+		transform: translateY(1px);
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	/* Hero copy: staggered on load, because it is above the fold. */
+	.hero-body > * {
+		animation: vt-rise 0.7s var(--ease-brand) both;
+		animation-delay: calc(var(--i, 0) * 90ms);
+	}
+
+	/* The nudge lives on the inner icon: the button itself is already busy with
+	   the entrance animation above, and with its own hover transform. */
+	.scroll-cue svg {
+		animation: vt-nudge 1.9s var(--ease-brand) infinite;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	/* Explicit end states, so nothing is left invisible or offset. */
+	.hero-body > *,
+	.scroll-cue svg,
+	.rise {
+		animation: none !important;
+		opacity: 1 !important;
+		transform: none !important;
+	}
+}

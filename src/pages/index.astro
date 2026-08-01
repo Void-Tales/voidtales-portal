@@ -1,0 +1,377 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ServerStatus from '../components/ServerStatus.astro';
+import { siteConfig, storySections, galleryImages } from '../config/site.js';
+import { socialLinks } from '../config/navigation.js';
+
+const { hero, gallery, trailer, join, social, modrinthUrl, galleryUrl } = siteConfig;
+
+// `titleAccent` is the trailing word of `hero.title` that carries the accent colour.
+const accentAt = hero.title.lastIndexOf(hero.titleAccent);
+const heroLead = hero.title.slice(0, accentAt).trim();
+
+// Scroll cues form a chain: hero -> realm 1 -> realm 2 -> gallery. Each one is a
+// real anchor, so the label names the section it actually jumps to.
+const anchorOf = (i: number) => (i < storySections.length ? `realm-${i + 1}` : 'gallery');
+const titleOf = (i: number) => (i < storySections.length ? storySections[i].title : gallery.title);
+---
+
+<BaseLayout>
+	{/* 1 - Hero: full-bleed screenshot, copy anchored to the bottom edge */}
+	<section class="hero">
+		<div class="hero-bg"></div>
+		<div class="hero-scrim"></div>
+
+		<div class="shell hero-body">
+			<span class="eyebrow" style="--i: 0">{hero.eyebrow}</span>
+			<h1 class="hero-title" style="--i: 1">
+				{heroLead}{' '}<span class="accent">{hero.titleAccent}</span>
+			</h1>
+			<p class="hero-subtitle" style="--i: 2">{hero.subtitle}</p>
+
+			<div class="hero-actions" style="--i: 3">
+				<a href={modrinthUrl} target="_blank" rel="noopener" class="btn btn-primary">
+					{hero.ctaLabel}
+				</a>
+				<ServerStatus variant="inline" />
+
+				<a href={`#${anchorOf(0)}`} class="scroll-cue" aria-label={`Scroll to ${titleOf(0)}`}>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M12 4v15M5 12.5l7 7 7-7"></path>
+					</svg>
+				</a>
+			</div>
+		</div>
+	</section>
+
+	{
+		/* 2 - The realms, as a sticky stack: panel 2 slides over panel 1.
+	    The wrapper is load-bearing: it is the containing block that lets the
+	    panels unstick again, otherwise they stay pinned under every section
+	    that follows. */
+	}
+	<div class="story-stack">
+		{
+			storySections.map((section, i) => (
+				<section class="story-panel" id={`realm-${i + 1}`}>
+					<div class="shell story-grid">
+						<div class:list={['story-copy', i % 2 === 1 && 'lg:order-2']}>
+							<h2>{section.title}</h2>
+							<p class="section-lead">{section.body}</p>
+							<ul class="story-points">
+								{section.points.map((point) => (
+									<li>{point}</li>
+								))}
+							</ul>
+						</div>
+
+						<figure
+							class:list={['story-figure', i % 2 === 1 && ['story-figure--left', 'lg:order-1']]}
+						>
+							<img
+								src={section.image}
+								alt={section.imageAlt}
+								width="1200"
+								height="675"
+								loading="lazy"
+								decoding="async"
+							/>
+						</figure>
+					</div>
+
+					<a
+						href={`#${anchorOf(i + 1)}`}
+						class="scroll-cue scroll-cue--panel"
+						aria-label={`Scroll to ${titleOf(i + 1)}`}
+					>
+						<svg
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M12 4v15M5 12.5l7 7 7-7" />
+						</svg>
+					</a>
+				</section>
+			))
+		}
+	</div>
+
+	{
+		/* 3 - Gallery: the track pans sideways with the scroll where that is
+	    supported, and stays a manual scroll-snap strip everywhere else. */
+	}
+	<section class="section pan border-t border-line" id="gallery">
+		<div class="pan-sticky">
+			<div class="shell rise">
+				<h2>{gallery.title}</h2>
+				<p class="section-lead">{gallery.body}</p>
+			</div>
+
+			<div
+				class="pan-viewport"
+				tabindex="0"
+				role="region"
+				aria-label="Screenshots from the Void Tales realms"
+			>
+				<div class="pan-track">
+					{
+						galleryImages.map((image) => (
+							<div class="pan-tile">
+								<img
+									src={image.src}
+									alt={image.alt}
+									width="1200"
+									height="675"
+									loading="lazy"
+									decoding="async"
+								/>
+							</div>
+						))
+					}
+					<a href={galleryUrl} target="_blank" rel="noopener" class="pan-tile pan-more">
+						<strong>{gallery.moreLabel}</strong>
+						<span>{gallery.moreHint}</span>
+					</a>
+				</div>
+			</div>
+
+			<a
+				href="#trailer"
+				class="scroll-cue scroll-cue--panel"
+				aria-label={`Scroll to ${trailer.title}`}
+			>
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M12 4v15M5 12.5l7 7 7-7"></path>
+				</svg>
+			</a>
+		</div>
+	</section>
+
+	{/* 4 - Trailer */}
+	<section class="section border-t border-line" id="trailer">
+		<div class="shell rise">
+			<h2>{trailer.title}</h2>
+			<p class="section-lead mb-10">{trailer.subtitle}</p>
+
+			<div class="trailer-frame">
+				<iframe
+					src={trailer.embedUrl}
+					title="Void Tales Trailer"
+					loading="lazy"
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+					allowfullscreen></iframe>
+			</div>
+
+			<div class="mt-12 flex justify-end">
+				<a href="#join" class="scroll-cue" aria-label={`Scroll to ${join.title}`}>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<path d="M12 4v15M5 12.5l7 7 7-7"></path>
+					</svg>
+				</a>
+			</div>
+		</div>
+	</section>
+
+	{/* 5 - Join: the three steps, the live server card, and the social links */}
+	<section class="section border-t border-line" id="join">
+		<div class="shell">
+			<h2 class="rise">{join.title}</h2>
+
+			<div class="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+				<ol class="steps rise">
+					{
+						join.steps.map((step, i) => (
+							<li class="step" data-step={i + 1}>
+								<h3>{step.title}</h3>
+								<p>{step.body}</p>
+								{i === 0 && (
+									<a
+										href={modrinthUrl}
+										target="_blank"
+										rel="noopener"
+										class="btn btn-modrinth mt-4"
+									>
+										{hero.ctaLabel}
+										<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+											<path d="M12.252.004a11.78 11.768 0 0 0-8.92 3.73a11 11 0 0 0-2.17 3.11a11.37 11.359 0 0 0-1.16 5.169c0 1.42.17 2.5.6 3.77c.24.759.77 1.899 1.17 2.529a12.3 12.298 0 0 0 8.85 5.639c.44.05 2.54.07 2.76.02c.2-.04.22.1-.26-1.7l-.36-1.37l-1.01-.06a8.5 8.489 0 0 1-5.18-1.8a5.3 5.3 0 0 1-1.3-1.26c0-.05.34-.28.74-.5a37.572 37.545 0 0 1 2.88-1.629c.03 0 .5.45 1.06.98l1 .97l2.07-.43l2.06-.43l1.47-1.47c.8-.8 1.48-1.5 1.48-1.52c0-.09-.42-1.63-.46-1.7c-.04-.06-.2-.03-1.02.18c-.53.13-1.2.3-1.45.4l-.48.15l-.53.53l-.53.53l-.93.1l-.93.07l-.52-.5a2.7 2.7 0 0 1-.96-1.7l-.13-.6l.43-.57c.68-.9.68-.9 1.46-1.1c.4-.1.65-.2.83-.33c.13-.099.65-.579 1.14-1.069l.9-.9l-.7-.7l-.7-.7l-1.95.54c-1.07.3-1.96.53-1.97.53c-.03 0-2.23 2.48-2.63 2.97l-.29.35l.28 1.03c.16.56.3 1.16.31 1.34l.03.3l-.34.23c-.37.23-2.22 1.3-2.84 1.63c-.36.2-.37.2-.44.1c-.08-.1-.23-.6-.32-1.03c-.18-.86-.17-2.75.02-3.73a8.84 8.84 0 0 1 7.9-6.93c.43-.03.77-.08.78-.1c.06-.17.5-2.999.47-3.039c-.01-.02-.1-.02-.2-.03Zm3.68.67c-.2 0-.3.1-.37.38c-.06.23-.46 2.42-.46 2.52c0 .04.1.11.22.16a8.51 8.499 0 0 1 2.99 2a8.38 8.379 0 0 1 2.16 3.449a6.9 6.9 0 0 1 .4 2.8c0 1.07 0 1.27-.1 1.73a9.4 9.4 0 0 1-1.76 3.769c-.32.4-.98 1.06-1.37 1.38c-.38.32-1.54 1.1-1.7 1.14c-.1.03-.1.06-.07.26c.03.18.64 2.56.7 2.78l.06.06a12.07 12.058 0 0 0 7.27-9.4c.13-.77.13-2.58 0-3.4a11.96 11.948 0 0 0-5.73-8.578c-.7-.42-2.05-1.06-2.25-1.06Z" />
+										</svg>
+									</a>
+								)}
+							</li>
+						))
+					}
+				</ol>
+
+				<ServerStatus variant="full" />
+			</div>
+
+			<div class="mt-16 border-t border-line pt-10">
+				<h3>{social.title}</h3>
+				<div class="mt-5 flex flex-wrap gap-3">
+					{
+						socialLinks.map((link) => (
+							<a href={link.href} target="_blank" rel="noopener" class="btn">
+								{link.label}
+							</a>
+						))
+					}
+				</div>
+			</div>
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+	// Scroll-linked motion. Driven by IntersectionObserver plus a
+	// requestAnimationFrame loop that only runs while the subject is on screen.
+	//
+	// Deliberately not CSS `animation-timeline` / the ViewTimeline API: both are
+	// Chromium-only, and the gallery pan is the section's whole point, so
+	// Safari and Firefox should not be left with a static strip. This is not a
+	// scroll listener either - nothing is computed while the section is out of
+	// view, and the loop only writes a transform.
+	//
+	// If you ever move this back to CSS: `animation-timeline` must not share a
+	// declaration block with the `animation` shorthand. The CSS minifier folds
+	// the two together, and a shorthand carrying a timeline is invalid, so the
+	// whole declaration is dropped without warning.
+	//
+	// Without JS every element stays visible, the hero image sits still and the
+	// gallery is a manual scroll-snap strip. That is the designed fallback.
+	const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+	/** Runs `tick` once per frame, but only while `el` intersects the viewport. */
+	function whileVisible(el: Element, tick: () => void) {
+		let running = false;
+		const frame = () => {
+			if (!running) return;
+			tick();
+			requestAnimationFrame(frame);
+		};
+		new IntersectionObserver(([entry]) => {
+			if (entry.isIntersecting === running) return;
+			running = entry.isIntersecting;
+			if (running) requestAnimationFrame(frame);
+		}).observe(el);
+	}
+
+	const clamp = (n: number) => Math.min(1, Math.max(0, n));
+
+	if (!reduced.matches) {
+		// Entrances: the observer fires the animation once, so nothing is ever
+		// left sitting at opacity 0 waiting for a trigger that may not come.
+		const entrances = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+					entry.target.animate(
+						{ opacity: [0, 1], transform: ['translateY(1.5rem)', 'none'] },
+						{ duration: 700, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
+					);
+					entrances.unobserve(entry.target);
+				}
+			},
+			{ threshold: 0.15 }
+		);
+		for (const el of document.querySelectorAll('.rise')) entrances.observe(el);
+
+		// Hero: the background drifts as the hero scrolls away.
+		const hero = document.querySelector<HTMLElement>('.hero');
+		const heroBg = document.querySelector<HTMLElement>('.hero-bg');
+		if (hero && heroBg) {
+			whileVisible(hero, () => {
+				const p = clamp(-hero.getBoundingClientRect().top / window.innerHeight);
+				heroBg.style.transform = `scale(1.14) translateY(${p * 6}%)`;
+			});
+		}
+
+		// Gallery: pin the section and pan the track sideways across the extra
+		// height. On every width - a phone gets the same effect, and manual
+		// swiping is off in pan mode anyway (`.pan-viewport { overflow: visible }`).
+		const pan = document.querySelector<HTMLElement>('.pan');
+		const track = pan?.querySelector<HTMLElement>('.pan-track');
+		const sticky = pan?.querySelector<HTMLElement>('.pan-sticky');
+
+		if (pan && track && sticky) {
+			// The inner row, not <header>: it is the `--header-h` line and never
+			// grows, while the header itself gets taller with the mobile menu open.
+			const headerH = document.querySelector('.site-header-inner')?.clientHeight ?? 0;
+			let travel = 0;
+
+			const measure = () => {
+				pan.classList.remove('is-panning');
+				pan.style.removeProperty('height');
+				track.style.removeProperty('transform');
+				travel = 0;
+
+				pan.classList.add('is-panning');
+
+				// Measured rather than recomputed from the CSS, so the geometry has
+				// exactly one source of truth: track content plus both insets, minus
+				// what already fits on screen.
+				const first = track.firstElementChild?.getBoundingClientRect().left ?? 0;
+				const last = track.lastElementChild?.getBoundingClientRect().right ?? 0;
+				const inset = parseFloat(getComputedStyle(track).paddingInlineStart);
+				travel = Math.max(0, last - first + 2 * inset - window.innerWidth);
+
+				if (travel === 0) {
+					pan.classList.remove('is-panning');
+					return;
+				}
+				// The pinned child's real height, not `window.innerHeight`: the CSS
+				// sizes it in `svh`, and on mobile `innerHeight` follows the URL bar.
+				// Two sources would disagree by exactly the URL bar's height.
+				pan.style.height = `${sticky.offsetHeight + travel}px`;
+			};
+
+			measure();
+
+			whileVisible(pan, () => {
+				if (travel === 0) return;
+				const p = clamp((headerH - pan.getBoundingClientRect().top) / travel);
+				track.style.transform = `translateX(${-p * travel}px)`;
+			});
+
+			// Resize changes the tile width and therefore the travel. Width only:
+			// mobile Chrome fires `resize` on every URL bar toggle, and re-measuring
+			// tears `is-panning` down and back up in the middle of a scroll.
+			let lastW = window.innerWidth;
+			let pending = 0;
+			window.addEventListener('resize', () => {
+				if (window.innerWidth === lastW) return;
+				lastW = window.innerWidth;
+				cancelAnimationFrame(pending);
+				pending = requestAnimationFrame(measure);
+			});
+		}
+	}
+</script>

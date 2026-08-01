@@ -1,36 +1,31 @@
 {
 	"name": "void-tales-portal",
-	"version": "1.0.0",
+	"type": "module",
+	"version": "2.0.0",
 	"private": true,
+	"packageManager": "pnpm@9.0.5",
 	"scripts": {
-		"build": "nuxt build",
-		"dev": "nuxt dev",
-		"start": "node .output/server/index.mjs",
-		"generate": "nuxt generate",
-		"preview": "nuxt preview",
+		"dev": "astro dev",
+		"start": "astro dev",
+		"build": "astro check && astro build",
+		"preview": "astro preview",
+		"astro": "astro",
+		"check": "astro check",
+		"test": "node src/utils/motd.test.ts",
 		"format": "prettier --write .",
 		"format:check": "prettier --check ."
 	},
-	"devDependencies": {
-		"@nuxt/image": "^2.0.0",
-		"@unhead/vue": "^2.1.2",
-		"autoprefixer": "^10.4.24",
-		"eslint": "^9.39.2",
-		"eslint-plugin-unused-imports": "^4.3.0",
-		"nuxt": "^4.3.0",
-		"postcss": "^8.5.6",
-		"prettier-plugin-organize-imports": "^4.3.0",
-		"sharp": "^0.34.5",
-		"tailwindcss": "^4.1.18",
-		"unstorage": "^1.17.4"
-	},
 	"dependencies": {
-		"@nuxt/fonts": "^0.13.0",
-		"@nuxtjs/color-mode": "^4.0.0",
-		"@tailwindcss/postcss": "^4.1.18",
-		"embla-carousel-vue": "^8.6.0",
-		"prettier": "^3.8.1",
-		"vue": "^3.5.27"
+		"@astrojs/check": "^0.9.10",
+		"@astrojs/sitemap": "^3.7.3",
+		"@tailwindcss/vite": "^4.3.3",
+		"astro": "^7.1.4",
+		"tailwindcss": "^4.3.3",
+		"typescript": "^5.9.3"
 	},
-	"packageManager": "pnpm@9.0.5"
+	"devDependencies": {
+		"prettier": "^3.8.1",
+		"prettier-plugin-astro": "^0.14.1",
+		"sharp": "^0.35.3"
+	}
 }
