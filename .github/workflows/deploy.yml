@@ -2,7 +2,6 @@ name: Build Docker images
 # Workflow name displayed in the GitHub Actions UI.
 permissions: # Grant minimal permissions required for this workflow:
   contents: read # read is needed to check out the repository code
-  pull-requests: write # write is needed if the workflow interacts with pull requests (e.g., status updates)
 
 on:
   push:
@@ -24,18 +23,22 @@ jobs:
     steps:
       - name: 📥 Checkout repo
         # Checks out your repository code so the job can access it.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
+
+      - name: 🔧 Set up Docker Buildx
+        # Needed for the GHA cache backend below.
+        uses: docker/setup-buildx-action@v3
 
       - name: 🔧 Log in to Docker Hub
         # Logs in to Docker Hub using secrets for secure authentication.
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }} # Make sure to add the secrets in your repository in -> Settings -> Secrets (Actions) -> New repository secret
           password: ${{ secrets.DOCKERHUB_TOKEN }} # Make sure to add the secrets in your repository in -> Settings -> Secrets (Actions) -> New repository secret
 
       - name: 🔨 Build and push Docker image
         # Builds the Docker image from your Dockerfile and pushes it to Docker Hub.
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
@@ -43,18 +46,19 @@ jobs:
           # Defines the image tags, including your Docker Hub namespace.
           tags: |
             inventory69/voidtales-portal:latest
+            inventory69/voidtales-portal:${{ github.sha }}
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # Adds this step at the end of your existing workflow
       - name: 🚀 Trigger Dokploy Deployment
         # Triggers a new deployment by sending a POST request to the Dokploy API.
+        # -fsS: fail on 4xx/5xx instead of leaving the run green on a Dokploy-side error.
         id: 'laststep'
         run: |
-          curl -X POST \
+          curl -fsS -X POST \
           -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_TOKEN }}" \
           -H "Content-Type: application/json" \
           -d '{ "image_tag": "inventory69/voidtales-portal:latest" }' \
           "${{ secrets.API_HOST }}/api/deploy/${{ secrets.DOKPLOY_APP_ID }}"
-        env:
-          DOKPLOY_API_TOKEN: ${{ secrets.DOKPLOY_API_TOKEN }}
-          DOKPLOY_APP_ID: ${{ secrets.DOKPLOY_APP_ID }}
