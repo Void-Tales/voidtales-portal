@@ -293,16 +293,24 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 			(entries) => {
 				for (const entry of entries) {
 					if (!entry.isIntersecting) continue;
-					entry.target.animate(
+					const el = entry.target as HTMLElement;
+					el.style.removeProperty('opacity');
+					el.animate(
 						{ opacity: [0, 1], transform: ['translateY(1.5rem)', 'none'] },
 						{ duration: 700, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' }
 					);
-					entrances.unobserve(entry.target);
+					entrances.unobserve(el);
 				}
 			},
 			{ threshold: 0.15 }
 		);
-		for (const el of document.querySelectorAll('.rise')) entrances.observe(el);
+		for (const el of document.querySelectorAll<HTMLElement>('.rise')) {
+			// Already on screen when the script runs: it has already painted,
+			// an entrance here would be exactly the flash we're removing.
+			if (el.getBoundingClientRect().top <= innerHeight) continue;
+			el.style.opacity = '0';
+			entrances.observe(el);
+		}
 
 		// Hero: the background drifts as the hero scrolls away.
 		const hero = document.querySelector<HTMLElement>('.hero');

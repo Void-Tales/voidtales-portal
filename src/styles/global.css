@@ -1100,9 +1100,11 @@ body::before {
 
 /* ------------------------------------------------------------- motion --- */
 
-/* Entrances are opt-in through @supports: without scroll-driven animation the
-   elements are simply visible from the start. Nothing can get stuck at
-   opacity 0 because opacity 0 is never the default. */
+/* Hero stagger runs as CSS (`vt-rise` below). Section entrances (`.rise`) have
+   no base rule here — they're driven by the IntersectionObserver in
+   index.astro, which sets opacity 0 only on elements not yet on screen and
+   animates them in via WAAPI once they scroll into view. Without JS, `.rise`
+   elements are simply visible from the start. */
 
 @keyframes vt-rise {
 	from {
