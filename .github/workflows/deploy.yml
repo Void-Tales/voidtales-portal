@@ -53,12 +53,10 @@ jobs:
 
       # Adds this step at the end of your existing workflow
       - name: 🚀 Trigger Dokploy Deployment
-        # Triggers a new deployment by sending a POST request to the Dokploy API.
+        # Deploy webhook (Settings → General → Deployments in Dokploy): no
+        # auth header needed, Dokploy re-pulls whatever image is configured.
         # -fsS: fail on 4xx/5xx instead of leaving the run green on a Dokploy-side error.
         id: 'laststep'
         run: |
-          curl -fsS -X POST \
-          -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_TOKEN }}" \
-          -H "Content-Type: application/json" \
-          -d '{ "image_tag": "inventory69/voidtales-portal:latest" }' \
-          "${{ secrets.API_HOST }}/api/deploy/${{ secrets.DOKPLOY_APP_ID }}"
+          curl -fsS -X POST -H "Content-Type: application/json" -d '{}' \
+          "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}"
