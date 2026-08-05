@@ -36,6 +36,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }} # Make sure to add the secrets in your repository in -> Settings -> Secrets (Actions) -> New repository secret
           password: ${{ secrets.DOCKERHUB_TOKEN }} # Make sure to add the secrets in your repository in -> Settings -> Secrets (Actions) -> New repository secret
 
+      - name: 🔑 Hash the media host listing
+        # The media layer in the Dockerfile downloads ~550 MB of news/devlog
+        # originals and re-encodes them to WebP. It must only rerun when a file
+        # on the media host was actually added or removed, so the layer is keyed
+        # on a digest of both directory listings rather than on the commit.
+        id: media
+        run: |
+          key=$( { curl -fsS --max-time 30 https://media.voidtales.win/news/ \
+                   && curl -fsS --max-time 30 https://media.voidtales.win/devlog/ ; } \
+                 | grep -o 'href="[^"]*"' | sort | sha256sum | cut -c1-16 )
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "media key: $key"
+
       - name: 🔨 Build and push Docker image
         # Builds the Docker image from your Dockerfile and pushes it to Docker Hub.
         uses: docker/build-push-action@v6
@@ -43,6 +56,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          build-args: |
+            MEDIA_KEY=${{ steps.media.outputs.key }}
           # Defines the image tags, including your Docker Hub namespace.
           tags: |
             inventory69/voidtales-portal:latest

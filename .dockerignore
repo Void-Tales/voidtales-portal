@@ -7,3 +7,10 @@ CLAUDE.md
 .env
 dist
 .astro
+
+# Media is fetched inside the build (scripts/media.mjs), never shipped in the
+# context — .media-cache alone is ~550 MB.
+.media-cache
+public/images/news
+public/images/devlog
+src/generated

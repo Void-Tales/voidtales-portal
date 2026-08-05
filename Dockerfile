@@ -10,6 +10,15 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
+# News/devlog media, in its own layer before the source copy: ~550 MB of
+# originals are fetched once and re-encoded to WebP, and the layer is reused on
+# every later build. MEDIA_KEY is a digest of the media host's file listing —
+# it changes only when a file is added there, which is what busts the layer.
+# Only the WebP output ends up in dist/; the originals stay in .media-cache.
+COPY scripts/media.mjs ./scripts/
+ARG MEDIA_KEY=local
+RUN echo "media key: $MEDIA_KEY" && node scripts/media.mjs
+
 COPY . .
 ENV NODE_ENV=production
 RUN pnpm run build
