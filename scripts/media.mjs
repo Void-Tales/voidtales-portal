@@ -7,7 +7,7 @@
 //
 // Idempotent: an existing cache file is not re-fetched, an existing WebP is not
 // re-encoded. In CI the whole step is one Docker layer, invalidated by the
-// MEDIA_KEY build arg (see .github/workflows/deploy.yml).
+// MEDIA_DIGEST build arg (see .github/workflows/deploy.yml).
 
 import fs from 'node:fs';
 import path from 'node:path';
