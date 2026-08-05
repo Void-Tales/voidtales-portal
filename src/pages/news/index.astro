@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const entries = (await getCollection('news')).sort(
+	(a, b) => b.data.pubDatetime.valueOf() - a.data.pubDatetime.valueOf()
+);
+
+// Grouped by year with a jump list rather than paginated: this is 40 text-only
+// entries. Paginating would hide half of a list that fits comfortably in one
+// page and costs nothing to load.
+const years: { year: number; entries: typeof entries }[] = [];
+for (const entry of entries) {
+	const year = entry.data.pubDatetime.getUTCFullYear();
+	const last = years.at(-1);
+	if (last && last.year === year) last.entries.push(entry);
+	else years.push({ year, entries: [entry] });
+}
+
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'UTC',
+});
+---
+
+<BaseLayout
+	title="News"
+	description="Announcements from the world of Void Tales — updates, events and patch notes."
+>
+	<section class="section">
+		<div class="shell shell-narrow">
+			<p class="eyebrow">Announcements</p>
+			<h1 class="page-title">News</h1>
+			<p class="section-lead">
+				Everything announced for Void Tales, newest first. The day-to-day progress lives in the <a
+					href="/devlog">devlog</a
+				>.
+			</p>
+
+			<nav class="month-nav" aria-label="News archive">
+				{years.map(({ year }) => <a href={`#${year}`}>{year}</a>)}
+			</nav>
+
+			{
+				years.map(({ year, entries: yearEntries }) => (
+					<>
+						<h2 class="month-heading" id={String(year)}>
+							{year}
+						</h2>
+						<ul class="entry-list">
+							{yearEntries.map((entry) => (
+								<li>
+									<article class="entry-card">
+										<time datetime={entry.data.pubDatetime.toISOString()}>
+											{dateFormat.format(entry.data.pubDatetime)}
+										</time>
+										<h3>
+											<a href={`/news/${entry.data.slug}`}>{entry.data.title}</a>
+										</h3>
+										{entry.data.description && <p>{entry.data.description}</p>}
+									</article>
+								</li>
+							))}
+						</ul>
+					</>
+				))
+			}
+		</div>
+	</section>
+</BaseLayout>

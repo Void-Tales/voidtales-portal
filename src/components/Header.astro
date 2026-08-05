@@ -1,6 +1,6 @@
 ---
 import { siteConfig } from '../config/site.js';
-import { navigationLinks } from '../config/navigation.js';
+import { navigationLinks, isExternal } from '../config/navigation.js';
 
 // ponytail: no CTA in the header. Six nav links plus the mark plus the toggle
 // already fill the desktop row; a seventh item risks a two-line nav. If
@@ -42,7 +42,12 @@ import { navigationLinks } from '../config/navigation.js';
 		<nav class="mx-auto hidden items-center gap-6 md:flex" aria-label="Main navigation">
 			{
 				navigationLinks.map((link) => (
-					<a href={link.href} target="_blank" rel="noopener" class="nav-link">
+					<a
+						href={link.href}
+						target={isExternal(link.href) ? '_blank' : undefined}
+						rel={isExternal(link.href) ? 'noopener' : undefined}
+						class="nav-link"
+					>
 						{link.label}
 					</a>
 				))
@@ -114,7 +119,12 @@ import { navigationLinks } from '../config/navigation.js';
 		<nav class="shell flex flex-col gap-3 py-4" aria-label="Mobile navigation">
 			{
 				navigationLinks.map((link) => (
-					<a href={link.href} target="_blank" rel="noopener" class="nav-link">
+					<a
+						href={link.href}
+						target={isExternal(link.href) ? '_blank' : undefined}
+						rel={isExternal(link.href) ? 'noopener' : undefined}
+						class="nav-link"
+					>
 						{link.label}
 					</a>
 				))

@@ -15,3 +15,7 @@ logs
 
 # Non-code assets
 public
+
+# Content collections: prose imported from Discord, not source code. Prettier
+# would rewrap the author's own line breaks.
+src/content

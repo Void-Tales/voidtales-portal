@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ServerStatus from '../components/ServerStatus.astro';
 import { siteConfig, storySections, galleryImages } from '../config/site.js';
-import { socialLinks } from '../config/navigation.js';
+import { socialLinks, isExternal } from '../config/navigation.js';
 
 const { hero, gallery, trailer, join, social, modrinthUrl, galleryUrl } = siteConfig;
 
@@ -239,7 +239,12 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 				<div class="mt-5 flex flex-wrap gap-3">
 					{
 						socialLinks.map((link) => (
-							<a href={link.href} target="_blank" rel="noopener" class="btn">
+							<a
+								href={link.href}
+								target={isExternal(link.href) ? '_blank' : undefined}
+								rel={isExternal(link.href) ? 'noopener' : undefined}
+								class="btn"
+							>
 								{link.label}
 							</a>
 						))

@@ -131,6 +131,26 @@ h3 {
 	font-size: clamp(1.1rem, 1.6vw, 1.35rem);
 }
 
+/* Heading sizes for the long-form pages (news, devlog). These sit outside
+   `@layer components` on purpose: the element rules above are unlayered, and
+   unlayered CSS beats any layer regardless of specificity — put them in the
+   components layer and the h1/h2 sizes above simply win. */
+.page-title {
+	font-size: clamp(2rem, 5vw, 3.25rem);
+}
+
+.entry-card h3 {
+	font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+}
+
+.devlog-day h3 {
+	font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+}
+
+.month-heading {
+	font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
 :focus-visible {
 	border-radius: var(--radius-sm);
 	outline: 2px solid var(--vt-accent);
@@ -1162,5 +1182,208 @@ body::before {
 		animation: none !important;
 		opacity: 1 !important;
 		transform: none !important;
+	}
+}
+
+/* ---------------------------------------------------- news + devlog --- */
+
+/* Long-form pages. The homepage is full-bleed and sectioned; these two are a
+   single column of text, so they get their own narrow shell and a `.prose`
+   block for the Markdown that the content collections render. */
+@layer components {
+	.shell-narrow {
+		max-width: 48rem;
+	}
+
+	.page-title {
+		margin-top: 1rem;
+	}
+
+	.entry-list {
+		display: grid;
+		gap: 1rem;
+		margin-top: 3rem;
+		list-style: none;
+		padding: 0;
+	}
+
+	.entry-card {
+		display: block;
+		padding: 1.5rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+		background: var(--vt-raised);
+		box-shadow: var(--vt-shadow-1);
+		transition:
+			border-color 0.2s ease,
+			transform 0.2s ease;
+	}
+
+	.entry-card:hover {
+		border-color: var(--vt-accent);
+		transform: translateY(-2px);
+	}
+
+	.entry-card h3 {
+		margin-top: 0.35rem;
+	}
+
+	.entry-card h3 a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	/* The whole card is the hit area, the heading link just carries the href. */
+	.entry-card h3 a::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+	}
+
+	.entry-list li {
+		position: relative;
+	}
+
+	.entry-card p {
+		margin-top: 0.75rem;
+		color: var(--vt-muted);
+	}
+
+	.entry-card time,
+	.devlog-author {
+		color: var(--vt-muted);
+		font-family: ui-monospace, sfmono-regular, menlo, monospace;
+		font-size: 0.75rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	/* Archive jump list: months on the devlog, years on the news index. Wraps
+	   instead of scrolling sideways — 13 months fit in two rows and a hidden
+	   horizontal scroller is a link nobody finds. */
+	.month-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 2.5rem;
+	}
+
+	.month-nav a {
+		padding: 0.35rem 0.75rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-sm);
+		color: var(--vt-muted);
+		font-size: 0.85rem;
+		text-decoration: none;
+	}
+
+	.month-nav a:hover {
+		border-color: var(--vt-accent);
+		color: var(--vt-text);
+	}
+
+	.month-nav a[aria-current='page'] {
+		border-color: var(--vt-accent);
+		background: var(--vt-accent-soft);
+		color: var(--vt-text);
+	}
+
+	.month-heading {
+		margin-top: 3rem;
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+
+	.back-link {
+		display: inline-block;
+		margin-bottom: 2rem;
+		color: var(--vt-muted);
+		text-decoration: none;
+	}
+
+	.back-link:hover {
+		color: var(--vt-accent);
+	}
+
+	.prose {
+		margin-top: 1.5rem;
+		line-height: 1.7;
+	}
+
+	.prose > * + * {
+		margin-top: 1.1rem;
+	}
+
+	.prose a {
+		color: var(--vt-accent);
+		text-underline-offset: 3px;
+	}
+
+	.prose img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+	}
+
+	/* Tailwind's preflight strips list markers globally. The authors write
+	   bullet lists in the devlog, so put them back inside prose only. */
+	.prose ul,
+	.prose ol {
+		padding-left: 1.25rem;
+		list-style: revert;
+	}
+
+	.prose li + li {
+		margin-top: 0.35rem;
+	}
+
+	.prose blockquote {
+		padding-left: 1rem;
+		border-left: 2px solid var(--vt-accent);
+		color: var(--vt-muted);
+	}
+
+	.prose code {
+		padding: 0.15em 0.4em;
+		border-radius: var(--radius-sm);
+		background: var(--vt-accent-soft);
+		font-size: 0.9em;
+	}
+
+	.prose pre {
+		overflow-x: auto;
+		padding: 1rem;
+		border-radius: var(--radius-md);
+		background: var(--vt-raised);
+	}
+
+	.devlog-day {
+		padding-top: 2.5rem;
+		margin-top: 2.5rem;
+		border-top: 1px solid var(--vt-line);
+		/* The day anchors are linked from elsewhere; keep the heading clear of
+		   the sticky header when one is jumped to. */
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+
+	.devlog-day:first-of-type {
+		border-top: 0;
+	}
+
+	.devlog-day h2 {
+	}
+
+	.devlog-day h3 a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.devlog-day h3 a:hover {
+		color: var(--vt-accent);
+	}
+
+	.devlog-author {
+		margin-top: 0.4rem;
 	}
 }

@@ -1,0 +1,115 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// One page per month rather than per N entries: a month URL still points at the
+// same entries a year from now, while /devlog/2 shifts by one every time
+// something is posted. `/devlog` itself serves the newest month.
+export async function getStaticPaths() {
+	const all = (await getCollection('devlog')).sort(
+		(a, b) => a.data.date.valueOf() - b.data.date.valueOf()
+	);
+
+	const months = [...new Set(all.map((e) => e.data.date.toISOString().slice(0, 7)))].reverse();
+
+	const page = (month: string) => ({
+		month,
+		months,
+		entries: all.filter((e) => e.data.date.toISOString().startsWith(month)),
+	});
+
+	return [
+		{ params: { month: undefined }, props: page(months[0]) },
+		...months.map((month) => ({ params: { month }, props: page(month) })),
+	];
+}
+
+const { month, months, entries } = Astro.props;
+
+// A day of messages by the same person is one thought, so it renders as one
+// block with the messages as consecutive paragraphs. Grouping lives here and
+// not in the import, which keeps the n8n side at "write one file".
+type Group = { day: string; author?: string; date: Date; entries: typeof entries };
+const groups: Group[] = [];
+for (const entry of entries) {
+	const day = entry.data.date.toISOString().slice(0, 10);
+	const last = groups.at(-1);
+	if (last && last.day === day && last.author === entry.data.author) {
+		last.entries.push(entry);
+	} else {
+		groups.push({ day, author: entry.data.author, date: entry.data.date, entries: [entry] });
+	}
+}
+groups.reverse();
+
+const rendered = await Promise.all(
+	groups.map(async (group) => ({
+		...group,
+		parts: await Promise.all(
+			group.entries.map(async (entry) => ({ entry, Content: (await render(entry)).Content }))
+		),
+	}))
+);
+
+const monthFormat = new Intl.DateTimeFormat('en-GB', {
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'UTC',
+});
+const dayFormat = new Intl.DateTimeFormat('en-GB', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'UTC',
+});
+
+const label = (m: string) => monthFormat.format(new Date(`${m}-01T00:00:00Z`));
+const href = (m: string) => (m === months[0] ? '/devlog' : `/devlog/${m}`);
+const current = label(month);
+---
+
+<BaseLayout
+	title={`Devlog — ${current}`}
+	description={`What was built on Void Tales in ${current}, day by day.`}
+>
+	<section class="section">
+		<div class="shell shell-narrow">
+			<p class="eyebrow">From the workbench</p>
+			<h1 class="page-title">Devlog</h1>
+			<p class="section-lead">
+				Day-by-day progress on Void Tales. Bigger announcements land in the <a href="/news">news</a
+				>.
+			</p>
+
+			<nav class="month-nav" aria-label="Devlog archive">
+				{
+					months.map((m) => (
+						<a href={href(m)} aria-current={m === month ? 'page' : undefined}>
+							{label(m)}
+						</a>
+					))
+				}
+			</nav>
+
+			<h2 class="month-heading">{current}</h2>
+
+			{
+				rendered.map((group) => (
+					<article class="devlog-day" id={group.day}>
+						<h3>
+							<a href={`${href(month)}#${group.day}`}>
+								<time datetime={group.day}>{dayFormat.format(group.date)}</time>
+							</a>
+						</h3>
+						{group.author && <p class="devlog-author">{group.author}</p>}
+						{group.parts.map(({ Content }) => (
+							<div class="prose">
+								<Content />
+							</div>
+						))}
+					</article>
+				))
+			}
+		</div>
+	</section>
+</BaseLayout>
