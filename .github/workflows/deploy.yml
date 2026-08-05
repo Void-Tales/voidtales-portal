@@ -8,6 +8,13 @@ on:
     branches: ['main']
 # Triggers the workflow on every push to the 'main' branch.
 
+concurrency:
+  # Zwei Devlog-Posts kurz hintereinander = sonst zwei parallele Builds, und
+  # welcher Deploy-Webhook zuletzt feuert, ist Zufall. Nicht abbrechen: ein
+  # laufender Build muss seinen Commit noch ausliefern duerfen.
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   build-and-push-dockerfile-image:
     # A single job to build and push the Docker image.
@@ -43,8 +50,12 @@ jobs:
         # on a digest of both directory listings rather than on the commit.
         id: media
         run: |
-          key=$( { curl -fsS --max-time 30 https://media.voidtales.win/news/ \
-                   && curl -fsS --max-time 30 https://media.voidtales.win/devlog/ ; } \
+          # Cache-Buster: nginx-Autoindex ignoriert die Query, Cloudflare sieht
+          # eine eigene URL. Ohne das friert eine Edge-Cache-Regel fuer den
+          # Media-Host den Digest ein und neue Bilder gehen als 404 live.
+          cb=$(date +%s)
+          key=$( { curl -fsS --max-time 30 "https://media.voidtales.win/news/?cb=$cb" \
+                   && curl -fsS --max-time 30 "https://media.voidtales.win/devlog/?cb=$cb" ; } \
                  | grep -o 'href="[^"]*"' | sort | sha256sum | cut -c1-16 )
           echo "key=$key" >> "$GITHUB_OUTPUT"
           echo "media digest: $key"
