@@ -47,7 +47,7 @@ jobs:
                    && curl -fsS --max-time 30 https://media.voidtales.win/devlog/ ; } \
                  | grep -o 'href="[^"]*"' | sort | sha256sum | cut -c1-16 )
           echo "key=$key" >> "$GITHUB_OUTPUT"
-          echo "media key: $key"
+          echo "media digest: $key"
 
       - name: 🔨 Build and push Docker image
         # Builds the Docker image from your Dockerfile and pushes it to Docker Hub.
@@ -57,7 +57,7 @@ jobs:
           file: ./Dockerfile
           push: true
           build-args: |
-            MEDIA_KEY=${{ steps.media.outputs.key }}
+            MEDIA_DIGEST=${{ steps.media.outputs.key }}
           # Defines the image tags, including your Docker Hub namespace.
           tags: |
             inventory69/voidtales-portal:latest
