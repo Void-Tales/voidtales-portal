@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site.js';
 
 // One page per month rather than per N entries: a month URL still points at the
 // same entries a year from now, while /devlog/2 shifts by one every time
@@ -66,13 +67,44 @@ const dayFormat = new Intl.DateTimeFormat('en-GB', {
 const label = (m: string) => monthFormat.format(new Date(`${m}-01T00:00:00Z`));
 const href = (m: string) => (m === months[0] ? '/devlog' : `/devlog/${m}`);
 const current = label(month);
+
+// /devlog und /devlog/<neuester-monat> liefern denselben Inhalt. Fuer Google
+// ist das Duplicate Content, und in der Pagefind-Suche standen beide Seiten
+// mit identischem Textausschnitt untereinander. Die Monats-URL ist die
+// bleibende, also zeigt der Alias per canonical dorthin und wird nicht
+// mitindexiert. Der Alias bleibt trotzdem: er ist der Navigationslink.
+const isAlias = Astro.params.month === undefined;
+
+// The day blocks are the real items here, and each one already carries an
+// anchor — so the month page is a CollectionPage of dated postings, not one
+// article. Without this a crawler sees one long page and no dates at all.
+const schema = {
+	'@type': 'CollectionPage',
+	'@id': `${new URL(href(month), siteConfig.url).toString()}#collection`,
+	name: `Devlog — ${current}`,
+	isPartOf: { '@id': `${siteConfig.url}/#website` },
+	hasPart: rendered.map((group) => ({
+		'@type': 'BlogPosting',
+		headline: `Devlog — ${dayFormat.format(group.date)}`,
+		datePublished: group.date.toISOString(),
+		...(group.author ? { author: { '@type': 'Person', name: group.author } } : {}),
+		url: new URL(`${href(month)}#${group.day}`, siteConfig.url).toString(),
+	})),
+};
 ---
 
 <BaseLayout
 	title={`Devlog — ${current}`}
 	description={`What was built on Void Tales in ${current}, day by day.`}
+	ogImage={`/images/og/devlog-${month}.webp`}
+	schema={schema}
+	canonical={`/devlog/${month}`}
 >
-	<section class="section">
+	<section
+		class="section"
+		data-pagefind-ignore={isAlias ? 'all' : undefined}
+		data-pagefind-meta={isAlias ? undefined : `title:Devlog — ${current}`}
+	>
 		<div class="shell shell-narrow">
 			<p class="eyebrow">From the workbench</p>
 			<h1 class="page-title">Devlog</h1>

@@ -13,6 +13,52 @@ const mediaSizes = fs.existsSync('./src/generated/media-sizes.json')
 	: {};
 
 /**
+ * Path -> ISO date, for the sitemap's `lastmod`.
+ *
+ * Read from the frontmatter with fs rather than from the content layer: the
+ * sitemap integration builds its list outside `astro:content`, and a config
+ * file cannot await a collection. The shapes are flat and known, so a regex is
+ * enough — the same reasoning as in scripts/og.mjs.
+ */
+const contentDates = (() => {
+	const dates = {};
+	const read = (dir, field) =>
+		fs.existsSync(dir)
+			? fs.readdirSync(dir).flatMap((file) => {
+					if (!file.endsWith('.md')) return [];
+					const raw = fs.readFileSync(`${dir}/${file}`, 'utf8');
+					const value = raw.match(new RegExp(`^${field}:\\s*"?([^"\\n]+)"?`, 'm'))?.[1];
+					const slug = raw.match(/^slug:\s*"?([^"\n]+)"?/m)?.[1];
+					return value ? [{ date: new Date(value), slug }] : [];
+				})
+			: [];
+
+	for (const { date, slug } of read('./src/content/news', 'pubDatetime')) {
+		if (slug) dates[`/news/${slug}`] = date.toISOString();
+	}
+
+	// The devlog has no per-entry page: a month URL is as fresh as its newest
+	// entry, and /devlog itself mirrors the newest month.
+	const devlog = read('./src/content/devlog', 'date');
+	for (const { date } of devlog) {
+		const key = `/devlog/${date.toISOString().slice(0, 7)}`;
+		if (!dates[key] || date.toISOString() > dates[key]) dates[key] = date.toISOString();
+	}
+	const newest = devlog.map((e) => e.date).sort((a, b) => b - a)[0];
+	if (newest) {
+		dates['/devlog'] = newest.toISOString();
+		dates['/news'] = Object.entries(dates)
+			.filter(([k]) => k.startsWith('/news/'))
+			.map(([, v]) => v)
+			.sort()
+			.at(-1);
+	}
+	// Die Startseite zeigt den neuesten Stand von beidem.
+	dates['/'] = Object.values(dates).sort().at(-1);
+	return dates;
+})();
+
+/**
  * Stamps every Markdown image with its real width/height plus lazy loading.
  * News and devlog entries carry their images inline in the body, so the
  * templates never see an `<img>` — this is the one place that can size them,
@@ -58,11 +104,18 @@ export default defineConfig({
 				"default-src 'self'",
 				"img-src 'self' data: https://media.voidtales.win",
 				"connect-src 'self' https://api.mcstatus.io", // ServerStatus.astro
-				"frame-src https://www.youtube-nocookie.com", // trailer embed
+				'frame-src https://www.youtube-nocookie.com', // trailer embed
 				"base-uri 'self'",
 				"form-action 'none'",
 				"object-src 'none'",
 			],
+			// Pagefind sucht in einem WebAssembly-Modul. Ohne 'wasm-unsafe-eval'
+			// blockt Chrome die Instanziierung und /search bleibt stumm. Das
+			// Schluesselwort erlaubt WASM und sonst nichts - insbesondere kein
+			// eval() und kein Inline-Script; die Hashes bleiben unangetastet.
+			scriptDirective: {
+				resources: ["'self'", "'wasm-unsafe-eval'"],
+			},
 			// Card animations carry their stagger index as style="--i: n".
 			// Attribute styles cannot be hashed and cannot execute anything, so
 			// this stays scoped to style-src-attr; script-src is untouched.
@@ -74,7 +127,21 @@ export default defineConfig({
 		},
 	},
 
-	integrations: [sitemap()],
+	integrations: [
+		sitemap({
+			// Raus aus der Sitemap:
+			//  /search  - eine Eingabemaske, kein Inhalt (traegt zusaetzlich noindex)
+			//  /devlog/ - Alias auf den neuesten Monat, canonical zeigt auf die
+			//             Monats-URL. Beide anzumelden waere Duplicate Content.
+			filter: (page) => !page.includes('/search/') && !page.endsWith('/devlog/'),
+			// Ohne lastmod sieht fuer einen Crawler jede der ~56 URLs gleich alt aus.
+			serialize(item) {
+				const path = new URL(item.url).pathname.replace(/\/$/, '') || '/';
+				const lastmod = contentDates[path];
+				return lastmod ? { ...item, lastmod } : item;
+			},
+		}),
+	],
 
 	markdown: {
 		processor: satteri({ hastPlugins: [satteriImageSizes] }),

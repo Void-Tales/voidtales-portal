@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site.js';
+import { excerpt } from '../../utils/excerpt';
 
 export async function getStaticPaths() {
 	const entries = await getCollection('news');
@@ -16,9 +18,37 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 	year: 'numeric',
 	timeZone: 'UTC',
 });
+
+// The imported description is cut at 100 characters mid-word, which is exactly
+// what a search snippet shows. Fall back to the body whenever it looks cut.
+const description =
+	entry.data.description && !entry.data.description.trim().endsWith('...')
+		? entry.data.description
+		: excerpt(entry.body ?? '');
+
+const ogImage = `/images/og/news-${entry.data.slug}.webp`;
+const url = new URL(`/news/${entry.data.slug}`, siteConfig.url).toString();
+
+const schema = {
+	'@type': 'NewsArticle',
+	'@id': `${url}#article`,
+	headline: entry.data.title,
+	description,
+	datePublished: entry.data.pubDatetime.toISOString(),
+	image: new URL(ogImage, siteConfig.url).toString(),
+	mainEntityOfPage: url,
+	isPartOf: { '@id': `${siteConfig.url}/#website` },
+	publisher: { '@type': 'Organization', name: siteConfig.name, url: `${siteConfig.url}/` },
+};
 ---
 
-<BaseLayout title={entry.data.title} description={entry.data.description}>
+<BaseLayout
+	title={entry.data.title}
+	description={description}
+	ogImage={ogImage}
+	published={entry.data.pubDatetime}
+	schema={schema}
+>
 	<section class="section">
 		<div class="shell shell-narrow">
 			<a class="back-link" href="/news">← All news</a>

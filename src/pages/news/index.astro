@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site.js';
 
 const entries = (await getCollection('news')).sort(
 	(a, b) => b.data.pubDatetime.valueOf() - a.data.pubDatetime.valueOf()
@@ -23,11 +24,30 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 	year: 'numeric',
 	timeZone: 'UTC',
 });
+
+// The whole archive as an ordered list, so this reads as an archive and not as
+// a page that happens to contain links.
+const schema = {
+	'@type': 'CollectionPage',
+	'@id': `${siteConfig.url}/news#collection`,
+	name: 'News',
+	isPartOf: { '@id': `${siteConfig.url}/#website` },
+	mainEntity: {
+		'@type': 'ItemList',
+		itemListElement: entries.map((entry, i) => ({
+			'@type': 'ListItem',
+			position: i + 1,
+			url: new URL(`/news/${entry.data.slug}`, siteConfig.url).toString(),
+			name: entry.data.title,
+		})),
+	},
+};
 ---
 
 <BaseLayout
 	title="News"
 	description="Announcements from the world of Void Tales — updates, events and patch notes."
+	schema={schema}
 >
 	<section class="section">
 		<div class="shell shell-narrow">
