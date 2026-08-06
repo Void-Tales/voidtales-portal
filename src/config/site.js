@@ -21,7 +21,7 @@ export const siteConfig = {
 	mcServerPort: 25565,
 
 	modrinthUrl: 'https://modrinth.com/modpack/void-tales',
-	discordUrl: 'https://discord.voidtales.win',
+	discordUrl: 'https://discord.gg/QEMQsFect6',
 	galleryUrl: 'https://gallery.voidtales.win',
 
 	hero: {

@@ -6,7 +6,7 @@ export const navigationLinks = [
 	{ label: 'News', href: '/news' },
 	{ label: 'Devlog', href: '/devlog' },
 	{ label: 'Search', href: '/search' },
-	{ label: 'Discord', href: 'https://discord.voidtales.win' },
+	{ label: 'Discord', href: 'https://discord.gg/QEMQsFect6' },
 	// The old mobile menu pointed at bluemap.voidtales.win, which is a 404.
 	{ label: 'World Map', href: 'https://dynmap.voidtales.win' },
 ];
