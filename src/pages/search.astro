@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Pagefind indexiert nach dem Build das fertige dist/ und legt seinen Index
+// unter /pagefind/ ab - im Dev-Server gibt es den also nicht, die Seite bleibt
+// dort leer. Das ist der Preis dafuer, dass die Suche ohne Backend auskommt
+// und trotzdem den gerenderten Text findet, nicht nur Frontmatter.
+//
+// data-pagefind-ignore: sonst indexiert Pagefind seine eigene Suchseite mit.
+---
+
+<BaseLayout
+	title="Search"
+	description="Search every announcement and devlog entry from Void Tales."
+	noindex
+>
+	<section class="section" data-pagefind-ignore>
+		<div class="shell shell-narrow">
+			<p class="eyebrow">Archive</p>
+			<h1 class="page-title">Search</h1>
+			<p class="section-lead">
+				Everything from <a href="/news">news</a> and the <a href="/devlog">devlog</a>, full text.
+			</p>
+
+			<div id="search"></div>
+
+			<noscript>
+				<p class="section-lead">
+					The search needs JavaScript. The full archive is browsable at <a href="/news">/news</a> and
+					<a href="/devlog">/devlog</a>.
+				</p>
+			</noscript>
+		</div>
+	</section>
+</BaseLayout>
+
+<link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+
+<script>
+	// Kein Import: die Datei entsteht erst nach dem Build durch Pagefind, ein
+	// Bundler-Import wuerde den Build hier abbrechen lassen.
+	const load = () =>
+		new Promise((resolve, reject) => {
+			const el = document.createElement('script');
+			el.src = '/pagefind/pagefind-ui.js';
+			el.onload = resolve;
+			el.onerror = reject;
+			document.head.appendChild(el);
+		});
+
+	load()
+		.then(() => {
+			// @ts-expect-error - kommt aus dem oben nachgeladenen Script.
+			new PagefindUI({ element: '#search', showSubResults: true, showImages: false });
+
+			// Erlaubt /search/?q=... - genau das, was die SearchAction im JSON-LD
+			// der Startseite Google verspricht.
+			const q = new URLSearchParams(location.search).get('q');
+			if (q) {
+				const input = document.querySelector<HTMLInputElement>('#search input');
+				if (input) {
+					input.value = q;
+					input.dispatchEvent(new Event('input', { bubbles: true }));
+				}
+			}
+		})
+		.catch(() => {
+			const el = document.getElementById('search');
+			if (el) el.textContent = 'Search index unavailable.';
+		});
+</script>
+
+<style>
+	/* Pagefind bringt eigene Custom Properties mit; hier nur an das Theme
+	   angeglichen statt das Stylesheet zu ueberschreiben. */
+	#search {
+		--pagefind-ui-scale: 0.85;
+		--pagefind-ui-primary: var(--color-accent, #a78bfa);
+		--pagefind-ui-text: currentColor;
+		--pagefind-ui-background: transparent;
+		--pagefind-ui-border: color-mix(in oklab, currentColor 20%, transparent);
+		--pagefind-ui-border-width: 1px;
+		--pagefind-ui-border-radius: 0.75rem;
+		--pagefind-ui-font: inherit;
+		margin-top: 2rem;
+	}
+</style>

@@ -4,6 +4,11 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
+# woff2_decompress fuer scripts/og.mjs: die OG-Karten werden mit den echten
+# Markenfonts gerendert, und die liegen nach dem Build nur als woff2 vor —
+# fontconfig, das librsvg in sharp benutzt, liest kein woff2.
+RUN apk add --no-cache woff2
+
 WORKDIR /app
 
 # Copy manifests first so the dependency layer is cached independently of source changes.
