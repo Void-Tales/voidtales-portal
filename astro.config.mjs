@@ -45,6 +45,35 @@ export default defineConfig({
 	// Fully static: the site has no data source and no server-side secrets.
 	output: 'static',
 
+	// The Discord -> Markdown -> site pipeline turns a chat channel into a trust
+	// boundary, and Markdown may carry raw HTML. Astro hashes every inline
+	// script and style at build time, so this stays strict without
+	// 'unsafe-inline' on script-src.
+	//
+	// `frame-ancestors` is deliberately absent: browsers ignore it inside a
+	// <meta> CSP. Clickjacking is covered by X-Frame-Options at the edge.
+	security: {
+		csp: {
+			directives: [
+				"default-src 'self'",
+				"img-src 'self' data: https://media.voidtales.win",
+				"connect-src 'self' https://api.mcstatus.io", // ServerStatus.astro
+				"frame-src https://www.youtube-nocookie.com", // trailer embed
+				"base-uri 'self'",
+				"form-action 'none'",
+				"object-src 'none'",
+			],
+			// Card animations carry their stagger index as style="--i: n".
+			// Attribute styles cannot be hashed and cannot execute anything, so
+			// this stays scoped to style-src-attr; script-src is untouched.
+			// (`style-src*` is rejected inside `directives` on purpose - Astro
+			// wants it here so it can keep its own hashes in style-src-elem.)
+			styleDirective: {
+				resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
+			},
+		},
+	},
+
 	integrations: [sitemap()],
 
 	markdown: {
