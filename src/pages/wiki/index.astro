@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site.js';
+
+const entries = (await getCollection('wiki')).sort(
+	(a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title)
+);
+
+const schema = {
+	'@type': 'CollectionPage',
+	'@id': `${siteConfig.url}/wiki#collection`,
+	name: 'Wiki',
+	isPartOf: { '@id': `${siteConfig.url}/#website` },
+	mainEntity: {
+		'@type': 'ItemList',
+		itemListElement: entries.map((entry, i) => ({
+			'@type': 'ListItem',
+			position: i + 1,
+			url: new URL(`/wiki/${entry.id}`, siteConfig.url).toString(),
+			name: entry.data.title,
+		})),
+	},
+};
+---
+
+<BaseLayout
+	title="Wiki"
+	description="Rules, lore, guides and reference pages for the Void Tales server."
+	schema={schema}
+>
+	<section class="section">
+		<div class="shell shell-narrow">
+			<p class="eyebrow">Reference</p>
+			<h1 class="page-title">Wiki</h1>
+			<p class="section-lead">
+				Everything you need to get started, explore the world, and join the community.
+			</p>
+
+			<ul class="entry-list">
+				{
+					entries.map((entry) => (
+						<li>
+							<article class="entry-card">
+								<h3>
+									<a href={`/wiki/${entry.id}`}>{entry.data.title}</a>
+								</h3>
+								{entry.data.description && <p>{entry.data.description}</p>}
+							</article>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+</BaseLayout>

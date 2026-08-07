@@ -1,7 +1,7 @@
 // Single source for the header navigation. Rendered twice (desktop bar +
 // mobile dropdown) from this one list — never duplicate the links again.
 export const navigationLinks = [
-	{ label: 'Wiki', href: 'https://wiki.voidtales.win' },
+	{ label: 'Wiki', href: '/wiki' },
 	{ label: 'Gallery', href: 'https://gallery.voidtales.win' },
 	{ label: 'News', href: '/news' },
 	{ label: 'Devlog', href: '/devlog' },

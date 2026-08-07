@@ -11,7 +11,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout
 	title="Search"
-	description="Search every announcement and devlog entry from Void Tales."
+	description="Search every announcement, devlog entry and wiki page from Void Tales."
 	noindex
 >
 	<section class="section" data-pagefind-ignore>
@@ -19,15 +19,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 			<p class="eyebrow">Archive</p>
 			<h1 class="page-title">Search</h1>
 			<p class="section-lead">
-				Everything from <a href="/news">news</a> and the <a href="/devlog">devlog</a>, full text.
+				Everything from <a href="/news">news</a>, the <a href="/devlog">devlog</a> and the <a
+					href="/wiki">wiki</a
+				>, full text.
 			</p>
 
 			<div id="search"></div>
 
 			<noscript>
 				<p class="section-lead">
-					The search needs JavaScript. The full archive is browsable at <a href="/news">/news</a> and
-					<a href="/devlog">/devlog</a>.
+					The search needs JavaScript. The full archive is browsable at <a href="/news">/news</a>,
+					<a href="/devlog">/devlog</a> and <a href="/wiki">/wiki</a>.
 				</p>
 			</noscript>
 		</div>

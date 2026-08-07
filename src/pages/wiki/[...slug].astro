@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site.js';
+import { excerpt } from '../../utils/excerpt';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('wiki');
+	return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const description = entry.data.description ?? excerpt(entry.body ?? '');
+const url = new URL(`/wiki/${entry.id}`, siteConfig.url).toString();
+
+const schema = {
+	'@type': 'TechArticle',
+	'@id': `${url}#article`,
+	headline: entry.data.title,
+	description,
+	mainEntityOfPage: url,
+	isPartOf: { '@id': `${siteConfig.url}/#website` },
+	publisher: { '@type': 'Organization', name: siteConfig.name, url: `${siteConfig.url}/` },
+};
+---
+
+<BaseLayout title={entry.data.title} description={description} schema={schema}>
+	<section class="section">
+		<div class="shell shell-narrow">
+			<a class="back-link" href="/wiki">← All wiki pages</a>
+			<article>
+				<h1 class="page-title">{entry.data.title}</h1>
+				<div class="prose">
+					<Content />
+				</div>
+			</article>
+		</div>
+	</section>
+</BaseLayout>

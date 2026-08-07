@@ -27,4 +27,15 @@ const devlog = defineCollection({
 	}),
 });
 
-export const collections = { news, devlog };
+// Static pages carried over from the old Quartz wiki. Unlike news/devlog
+// there's no date and no pipeline — a human maintains these by hand.
+const wiki = defineCollection({
+	loader: glob({ base: './src/content/wiki', pattern: '**/*.md' }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string().optional(),
+		order: z.number().default(99), // position in the index, else alphabetical
+	}),
+});
+
+export const collections = { news, devlog, wiki };
