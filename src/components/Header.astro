@@ -2,9 +2,11 @@
 import { siteConfig } from '../config/site.js';
 import { navigationLinks, isExternal } from '../config/navigation.js';
 
-// ponytail: no CTA in the header. Six nav links plus the mark plus the toggle
-// already fill the desktop row; a seventh item risks a two-line nav. If
-// conversion ever needs one, move "World Map" into the mobile menu first.
+// ponytail: no CTA in the header. Six nav links (Search lives as an icon
+// button next to the theme toggle instead, not a seventh nav-link) plus the
+// mark plus the toggle already fill the desktop row; a seventh nav-link
+// risks a two-line nav. If conversion ever needs one, move "World Map" into
+// the mobile menu first.
 ---
 
 <header class="site-header">
@@ -112,6 +114,21 @@ import { navigationLinks, isExternal } from '../config/navigation.js';
 					></path>
 				</svg>
 			</button>
+
+			<a href="/search" class="icon-btn" aria-label="Search" title="Search">
+				<svg
+					class="h-[1.05rem] w-[1.05rem]"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.7"
+					stroke-linecap="round"
+					aria-hidden="true"
+				>
+					<circle cx="11" cy="11" r="7"></circle>
+					<path d="M21 21l-4.3-4.3"></path>
+				</svg>
+			</a>
 		</div>
 	</div>
 
