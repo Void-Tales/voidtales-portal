@@ -26,9 +26,19 @@ const year = new Date().getFullYear();
 			</nav>
 		</div>
 
-		<p class="footer-copyright text-muted text-[0.8rem]">
-			{/* One expression: Prettier collapses the whitespace between two of them. */}
-			{`© ${year} ${siteConfig.footer}`}
-		</p>
+		<div class="footer-copyright text-muted text-[0.8rem]">
+			<p>
+				{/* One expression: Prettier collapses the whitespace between two of them. */}
+				{`© ${year} ${siteConfig.footer}`}
+			</p>
+
+			{/* Eigene Zeile statt navigationLinks: die Liste speist auch den Header und
+			    "Follow the Journey" und erzwingt oben target="_blank" — Pflichtseiten
+			    der eigenen Domain gehören in denselben Tab. */}
+			<nav class="mt-3 flex flex-wrap gap-x-5 gap-y-1" aria-label="Rechtliches">
+				<a href="/impressum" class="transition-colors hover:text-accent">Impressum</a>
+				<a href="/datenschutz" class="transition-colors hover:text-accent">Datenschutz</a>
+			</nav>
+		</div>
 	</div>
 </footer>

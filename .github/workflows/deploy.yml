@@ -67,8 +67,13 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          # Die beiden Impressum-Secrets sind einzeilig (Felder mit " | " getrennt):
+          # build-args liest hier pro Zeile genau ein KEY=VALUE, ein mehrzeiliger
+          # Wert zerfiele in kaputte Args.
           build-args: |
             MEDIA_DIGEST=${{ steps.media.outputs.key }}
+            IMPRESSUM_ADDRESS=${{ secrets.IMPRESSUM_ADDRESS }}
+            IMPRESSUM_PHONE=${{ secrets.IMPRESSUM_PHONE }}
           # Defines the image tags, including your Docker Hub namespace.
           tags: |
             inventory69/voidtales-portal:latest

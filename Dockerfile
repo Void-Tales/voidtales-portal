@@ -26,6 +26,18 @@ RUN echo "media digest: $MEDIA_DIGEST" && node scripts/media.mjs
 
 COPY . .
 ENV NODE_ENV=production
+
+# Ladungsfaehige Anschrift fuer /impressum und /datenschutz. Kommt aus GH-Secrets,
+# damit sie nicht im oeffentlichen Repo und nicht in der Commit-History steht.
+# Einzeilig, Felder mit " | " getrennt: build-args parst pro Zeile ein KEY=VALUE,
+# ein mehrzeiliges Secret zerfiele dort in kaputte Args.
+# Nur diese Stage sieht die Werte — Stage 2 kopiert allein das fertige dist/ und
+# erbt weder ARG noch ENV, die Image-History bleibt sauber.
+ARG IMPRESSUM_ADDRESS=""
+ARG IMPRESSUM_PHONE=""
+ENV IMPRESSUM_ADDRESS=$IMPRESSUM_ADDRESS
+ENV IMPRESSUM_PHONE=$IMPRESSUM_PHONE
+
 RUN pnpm run build
 
 # ------------------------------------------------------------
