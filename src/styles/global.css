@@ -399,11 +399,34 @@ body::before {
 		transform: none;
 	}
 
-	/* No background of its own: the panel sits inside `.site-header`, so the
-	   header's tinted, blurred surface shows through and the menu is the same
-	   material by construction. Only the hairline separates the two. */
+	/* Out of flow, like the gallery's: in flow inside the sticky header the open
+	   panel grows the header box and pushes the whole page down under it.
+	   Absolute against `.site-header` (sticky, so it is the containing block),
+	   and its own raised surface + shadow, because over the page content the
+	   header's translucent blur alone reads as a smear. */
 	.mobile-menu {
+		position: absolute;
+		z-index: 1;
+		top: 100%;
+		right: 0;
+		left: 0;
 		border-top: 1px solid var(--vt-line);
+		border-bottom: 1px solid var(--vt-line);
+		background: var(--vt-raised);
+		box-shadow: var(--vt-shadow-2);
+	}
+
+	/* Animation, not transition: the unlayered universal `transition` rule at
+	   the top of this file beats anything declared in a layer. */
+	.mobile-menu:not([hidden]) {
+		animation: vt-menu-in 0.2s var(--ease-brand);
+	}
+
+	@keyframes vt-menu-in {
+		from {
+			opacity: 0;
+			transform: translateY(-8px);
+		}
 	}
 
 	/* ---- nav ---- */
