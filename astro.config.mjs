@@ -103,7 +103,12 @@ export default defineConfig({
 			directives: [
 				"default-src 'self'",
 				"img-src 'self' data: https://media.voidtales.win",
-				"connect-src 'self' https://api.mcstatus.io", // ServerStatus.astro
+				// stats.hzwd.xyz = Umami. Beide Richtungen noetig: script-src fuer das
+				// Laden, connect-src fuer den Beacon. Ohne connect-src laedt der
+				// Tracker, initialisiert sich und sendet nie etwas - lautlos, weil
+				// Astro das CSP-<meta> ans ENDE des <head> setzt: alles davor
+				// (unser <script>) ist noch ungeregelt, jeder spaetere Request nicht.
+				"connect-src 'self' https://api.mcstatus.io https://stats.hzwd.xyz", // ServerStatus.astro, Umami
 				'frame-src https://www.youtube-nocookie.com', // trailer embed
 				"base-uri 'self'",
 				"form-action 'none'",
@@ -114,7 +119,7 @@ export default defineConfig({
 			// Schluesselwort erlaubt WASM und sonst nichts - insbesondere kein
 			// eval() und kein Inline-Script; die Hashes bleiben unangetastet.
 			scriptDirective: {
-				resources: ["'self'", "'wasm-unsafe-eval'"],
+				resources: ["'self'", "'wasm-unsafe-eval'", 'https://stats.hzwd.xyz'],
 			},
 			// Card animations carry their stagger index as style="--i: n".
 			// Attribute styles cannot be hashed and cannot execute anything, so
