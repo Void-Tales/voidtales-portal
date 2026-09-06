@@ -86,8 +86,19 @@ jobs:
       - name: 🚀 Trigger Dokploy Deployment
         # Deploy webhook (Settings → General → Deployments in Dokploy): no
         # auth header needed, Dokploy re-pulls whatever image is configured.
-        # -fsS: fail on 4xx/5xx instead of leaving the run green on a Dokploy-side error.
+        #
+        # -f alone is not enough, and that cost eight days: it fails from 400 up,
+        # so when Cloudflare Access moved in front of dokploy.hzwd.xyz the webhook
+        # got a 302 to the login page, curl exited 0 and the run stayed green while
+        # nothing deployed. No -L either - following the redirect would just fetch
+        # the login page with a 200. Anything but 200 is a failed deploy.
         id: 'laststep'
         run: |
-          curl -fsS -X POST -H "Content-Type: application/json" -d '{}' \
-          "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}"
+          code=$(curl -sS -o "$RUNNER_TEMP/dokploy.txt" -w '%{http_code}' \
+            -X POST -H "Content-Type: application/json" -d '{}' \
+            "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK }}")
+          cat "$RUNNER_TEMP/dokploy.txt"; echo
+          [ "$code" = "200" ] || {
+            echo "::error::Dokploy answered $code - a 3xx means an edge swallowed the webhook and nothing was deployed"
+            exit 1
+          }
