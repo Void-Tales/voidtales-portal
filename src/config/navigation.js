@@ -7,7 +7,8 @@ export const navigationLinks = [
 	{ label: 'News', href: '/news' },
 	{ label: 'Devlog', href: '/devlog' },
 	{ label: 'Discord', href: 'https://discord.gg/QEMQsFect6' },
-	// The old mobile menu pointed at bluemap.voidtales.win, which is a 404.
+	// BlueMap since the 26.2 update, but the hostname stayed: it is in links and
+	// bookmarks. bluemap.voidtales.win is a 301 to this one, not a second origin.
 	{ label: 'World Map', href: 'https://dynmap.voidtales.win' },
 ];
 
