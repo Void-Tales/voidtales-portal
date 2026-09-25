@@ -6,7 +6,14 @@ permissions: # Grant minimal permissions required for this workflow:
 on:
   push:
     branches: ['main']
-# Triggers the workflow on every push to the 'main' branch.
+  # Nightly rebuild for the item catalogue: the bundle on the media host is
+  # renewed at 05:00 Berlin time, this runs after it in summer and winter.
+  # GitHub disables schedules in public repos after 60 days without activity;
+  # the devlog commits keep it alive, and ItemKatalogStale catches it anyway.
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+# Triggers the workflow on every push to the 'main' branch, nightly, and by hand.
 
 concurrency:
   # Zwei Devlog-Posts kurz hintereinander = sonst zwei parallele Builds, und
@@ -60,6 +67,16 @@ jobs:
           echo "key=$key" >> "$GITHUB_OUTPUT"
           echo "media digest: $key"
 
+      - name: 🔑 Hash the item bundle
+        # Same idea for the item catalogue: the build layer must rerun when the
+        # nightly bundle changed, even though the commit did not.
+        id: items
+        run: |
+          key=$(curl -fsS --max-time 30 "https://media.voidtales.win/items/items.json?cb=$(date +%s)" \
+                | sha256sum | cut -c1-16)
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "items digest: $key"
+
       - name: 🔨 Build and push Docker image
         # Builds the Docker image from your Dockerfile and pushes it to Docker Hub.
         uses: docker/build-push-action@v6
@@ -72,6 +89,7 @@ jobs:
           # Wert zerfiele in kaputte Args.
           build-args: |
             MEDIA_DIGEST=${{ steps.media.outputs.key }}
+            ITEMS_DIGEST=${{ steps.items.outputs.key }}
             IMPRESSUM_ADDRESS=${{ secrets.IMPRESSUM_ADDRESS }}
             IMPRESSUM_PHONE=${{ secrets.IMPRESSUM_PHONE }}
           # Defines the image tags, including your Docker Hub namespace.
