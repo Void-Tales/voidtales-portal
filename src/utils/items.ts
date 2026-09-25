@@ -12,7 +12,7 @@ export interface Item {
 	lore: string[];
 	type: string[];
 	status: ItemStatus;
-	category: 'equipment' | 'consumable' | 'gem';
+	category: 'equipment' | 'consumable' | 'statgem' | 'effectgem';
 	region: string | null;
 	group: string;
 	file: string;
@@ -24,7 +24,8 @@ export interface Item {
 export const CATEGORIES = [
 	{ key: 'equipment', label: 'Equipment' },
 	{ key: 'consumable', label: 'Consumables' },
-	{ key: 'gem', label: 'Gems' },
+	{ key: 'statgem', label: 'Stat Gems' },
+	{ key: 'effectgem', label: 'Effect Gems' },
 ] as const;
 
 export const STATUS_LABEL: Record<ItemStatus, string | null> = {
@@ -39,13 +40,19 @@ export const generated = new Date(data.generated);
 
 const order = (i: Item) => CATEGORIES.findIndex((c) => c.key === i.category);
 
-export const items: Item[] = (data.items as Item[]).toSorted(
-	(a, b) =>
-		order(a) - order(b) ||
-		regionLabel(a).localeCompare(regionLabel(b)) ||
-		a.group.localeCompare(b.group) ||
-		plainText(a.name).localeCompare(plainText(b.name))
-);
+// The bundle has one "gem" category; the page splits it by id, the same prefix
+// export.py lets through.
+const gemKind = (id: string) => (id.startsWith('StatGem') ? 'statgem' : 'effectgem');
+
+export const items: Item[] = data.items
+	.map((i) => ({ ...i, category: i.category === 'gem' ? gemKind(i.id) : i.category }) as Item)
+	.toSorted(
+		(a, b) =>
+			order(a) - order(b) ||
+			regionLabel(a).localeCompare(regionLabel(b)) ||
+			a.group.localeCompare(b.group) ||
+			plainText(a.name).localeCompare(plainText(b.name))
+	);
 
 /** The flavour text: every line after the "—" separator. */
 export function flavour(item: Item): string {
