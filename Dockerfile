@@ -38,7 +38,11 @@ ARG IMPRESSUM_PHONE=""
 ENV IMPRESSUM_ADDRESS=$IMPRESSUM_ADDRESS
 ENV IMPRESSUM_PHONE=$IMPRESSUM_PHONE
 
-RUN pnpm run build
+# Item-Katalog: scripts/items.mjs holt das Buendel im prebuild. Ohne dieses
+# Arg waere der Build-Layer beim naechtlichen Lauf (gleicher Commit, gleicher
+# Kontext) ein Cache-Treffer und der Katalog froere auf dem alten Stand ein.
+ARG ITEMS_DIGEST=local
+RUN echo "items digest: $ITEMS_DIGEST" && pnpm run build
 
 # ------------------------------------------------------------
 
