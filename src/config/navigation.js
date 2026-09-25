@@ -3,6 +3,7 @@
 export const navigationLinks = [
 	{ label: 'Home', href: '/' },
 	{ label: 'Wiki', href: '/wiki' },
+	{ label: 'Items', href: '/items' },
 	{ label: 'Gallery', href: 'https://gallery.voidtales.win' },
 	{ label: 'News', href: '/news' },
 	{ label: 'Devlog', href: '/devlog' },
@@ -15,9 +16,10 @@ export const navigationLinks = [
 // Buttons in the "Follow the Journey" section at the bottom of the page.
 // Home and World Map are places you get to from the nav already, not things
 // to "follow" - same reasoning that used to keep Search out before it moved
-// to an icon button in the header.
+// to an icon button in the header. Items is a page to look things up in, not a
+// channel to follow.
 export const socialLinks = navigationLinks.filter(
-	(l) => l.label !== 'World Map' && l.label !== 'Home'
+	(l) => !['World Map', 'Home', 'Items'].includes(l.label)
 );
 
 // News and Devlog live on this site now, so the link list is no longer purely
