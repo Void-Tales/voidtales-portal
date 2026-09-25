@@ -42,6 +42,8 @@ ENV IMPRESSUM_PHONE=$IMPRESSUM_PHONE
 # Arg waere der Build-Layer beim naechtlichen Lauf (gleicher Commit, gleicher
 # Kontext) ein Cache-Treffer und der Katalog froere auf dem alten Stand ein.
 ARG ITEMS_DIGEST=local
+# Landet in /items/build.txt, daran entscheidet der naechtliche Lauf (scripts/build-needed.sh).
+ARG GIT_SHA=local
 RUN echo "items digest: $ITEMS_DIGEST" && pnpm run build
 
 # ------------------------------------------------------------
