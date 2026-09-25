@@ -23,8 +23,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The nightly run rebuilds (and restarts the container) only when the live
+  # site is not made from this commit and the current catalogue. The decision
+  # lives in scripts/build-needed.sh so it can be run by hand, unchanged.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.check.outputs.build }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: 🔍 Anything to deploy?
+        id: check
+        env:
+          EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
+        run: scripts/build-needed.sh >> "$GITHUB_OUTPUT"
+
   build-and-push-dockerfile-image:
     # A single job to build and push the Docker image.
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
     runs-on: ubuntu-latest
 
     # 1. Define an Environment for the job
@@ -33,6 +51,10 @@ jobs:
       name: production
       # Provides a URL link to the deployed application.
       url: https://portal.voidtales.win/
+      # Every deployment object ends up as a "deployment success" post in
+      # Discord (n8n listens for deployment_status). The nightly catalogue
+      # rebuild is routine and records none.
+      deployment: ${{ github.event_name != 'schedule' }}
 
     steps:
       - name: 📥 Checkout repo
@@ -90,6 +112,7 @@ jobs:
           build-args: |
             MEDIA_DIGEST=${{ steps.media.outputs.key }}
             ITEMS_DIGEST=${{ steps.items.outputs.key }}
+            GIT_SHA=${{ github.sha }}
             IMPRESSUM_ADDRESS=${{ secrets.IMPRESSUM_ADDRESS }}
             IMPRESSUM_PHONE=${{ secrets.IMPRESSUM_PHONE }}
           # Defines the image tags, including your Docker Hub namespace.

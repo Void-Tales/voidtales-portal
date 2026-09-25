@@ -126,11 +126,16 @@ for (const item of bundle.items) {
 	}
 }
 
-// The age of the bundle, read by the monitoring at the far end of the chain:
-// one number that goes stale whether the export, the pull, the build or the
-// nightly schedule stops.
+// What this build was made from. The nightly run (scripts/build-needed.sh)
+// rebuilds only when the live site differs from this commit and this catalogue,
+// and the monitoring reads the items line to tell whether the site follows the
+// bundle. The digest leaves out the export time, so an unchanged catalogue
+// keeps its digest from night to night.
 fs.mkdirSync(path.resolve('public/items'), { recursive: true });
-fs.writeFileSync(path.resolve('public/items/stand.txt'), `${bundle.generated}\n`);
+fs.writeFileSync(
+	path.resolve('public/items/build.txt'),
+	`commit ${process.env.GIT_SHA || 'local'}\nitems ${bundle.digest || 'none'}\n`
+);
 
 fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 fs.writeFileSync(
