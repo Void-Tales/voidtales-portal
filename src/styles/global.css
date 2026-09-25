@@ -1553,12 +1553,15 @@ body::before {
 		margin-top: 0.4rem;
 	}
 
-	/* The inventory slot: vanilla's grey bevel, in both themes. */
+	/* No box around the icon, a soft glow instead; the shadow keeps dark icons
+	   (Forest armour) off the background. */
 	.item-slot {
 		padding: 0.75rem;
-		border: 3px solid;
-		border-color: #373737 #ffffff #ffffff #373737;
-		background: #8b8b8b;
+		background: radial-gradient(closest-side, rgb(140 100 255 / 0.25), transparent);
+	}
+
+	.item-slot img {
+		filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.7));
 	}
 
 	/* The in-game tooltip. Dark in both themes for the same reason as the MOTD:
