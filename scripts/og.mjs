@@ -161,12 +161,14 @@ const heroCard = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="$
 
 // --- Eintragskarte ---------------------------------------------------------
 
-const entryCard = ({ eyebrow, title, body }) => {
+const entryCard = ({ eyebrow, title, body, icon }) => {
 	// Titelgroesse stuft sich nach Laenge, damit ein langer Discord-Titel nicht
 	// aus dem Bild laeuft und ein kurzer nicht verloren wirkt.
 	const size = title.length <= 34 ? 56 : title.length <= 70 ? 46 : 40;
-	const titleLines = wrap(title, size, 0.62, 1010, 3);
-	const bodyLines = body ? wrap(body, 23, 0.5, 1000, 2) : [];
+	// With an item icon on the right the text column gets narrower.
+	const textWidth = icon ? 700 : 1010;
+	const titleLines = wrap(title, size, 0.62, textWidth, 3);
+	const bodyLines = body ? wrap(body, 23, 0.5, textWidth - 10, icon ? 3 : 2) : [];
 
 	const titleTop = 232;
 	const lineHeight = size * 1.22;
@@ -190,6 +192,7 @@ const entryCard = ({ eyebrow, title, body }) => {
   <text x="84" y="160" font-family="monospace" font-size="19" letter-spacing="5" fill="${muted}">${escape(eyebrow)}</text>
   ${titleSvg}
   ${bodySvg}
+  ${icon ? `<image href="${icon}" x="${W - 84 - 288}" y="${(H - 288) / 2 - 20}" width="288" height="288"/>` : ''}
   ${badge(H - 130)}
 </svg>`;
 };
@@ -281,6 +284,43 @@ for (const month of months) {
 			body: 'Day-to-day progress on Void Tales, straight from the team.',
 		}),
 		`${OUT_DIR}/devlog-${month}.webp`
+	);
+	count++;
+}
+
+// Items: je Item eine Karte mit dem Inventarbild. Das Icon wird vorher mit
+// nearest-neighbour hochskaliert - librsvg wuerde die Pixelkunst sonst weich
+// zeichnen. Liest src/generated/items.json (scripts/items.mjs, prebuild).
+const itemsFile = 'src/generated/items.json';
+const plain = (s) =>
+	String(s)
+		.replace(/<[^>]*>/g, '')
+		.replace(/[&\u00a7][0-9a-fk-or]/gi, '')
+		.trim();
+for (const item of JSON.parse(readFileSync(itemsFile, 'utf8')).items) {
+	const png = await sharp(`public${item.icon}`)
+		.resize(288, 288, { kernel: 'nearest' })
+		.png()
+		.toBuffer();
+	const at = item.lore.findIndex((l) => plain(l) === '—');
+	const flavour =
+		at < 0
+			? ''
+			: item.lore
+					.slice(at + 1)
+					.map(plain)
+					.join(' ');
+	await render(
+		entryCard({
+			eyebrow: ['ITEM', item.region, item.status === 'experimental' ? 'EXPERIMENTAL' : null]
+				.filter(Boolean)
+				.join(' · ')
+				.toUpperCase(),
+			title: plain(item.name),
+			body: flavour || item.type.join(' · '),
+			icon: `data:image/png;base64,${png.toString('base64')}`,
+		}),
+		`${OUT_DIR}/item-${item.id}.webp`
 	);
 	count++;
 }

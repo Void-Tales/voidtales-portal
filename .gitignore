@@ -20,4 +20,6 @@ logs
 .media-cache/
 public/images/news/
 public/images/devlog/
+public/images/items/
+public/items/
 src/generated/

@@ -1,0 +1,174 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MiniText from '../../components/MiniText.astro';
+import { siteConfig } from '../../config/site.js';
+import { CATEGORIES, STATUS_LABEL, generated, items, regionLabel } from '../../utils/items.ts';
+import { plainText } from '../../utils/minimessage.ts';
+
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'UTC',
+});
+
+const sections = CATEGORIES.map((c) => ({
+	...c,
+	items: items.filter((i) => i.category === c.key),
+}));
+const regions = [...new Set(items.map(regionLabel))].sort();
+
+const filters = [
+	{ key: 'category', label: 'Type', values: CATEGORIES.map((c) => [c.key, c.label]) },
+	{ key: 'region', label: 'Region', values: regions.map((r) => [r, r]) },
+	{
+		key: 'status',
+		label: 'Status',
+		values: [
+			['live', 'In game'],
+			['experimental', 'Experimental'],
+		],
+	},
+];
+
+// "Changes in testing" is a live item: it filters with the live ones.
+const statusKey = (s: string) => (s === 'experimental' ? 'experimental' : 'live');
+
+const schema = {
+	'@type': 'CollectionPage',
+	'@id': `${siteConfig.url}/items#collection`,
+	name: 'Items',
+	isPartOf: { '@id': `${siteConfig.url}/#website` },
+	mainEntity: {
+		'@type': 'ItemList',
+		numberOfItems: items.length,
+		itemListElement: items.map((item, i) => ({
+			'@type': 'ListItem',
+			position: i + 1,
+			url: new URL(`/items/${item.id}`, siteConfig.url).toString(),
+			name: plainText(item.name),
+		})),
+	},
+};
+---
+
+<BaseLayout
+	title="Items"
+	description="Every weapon, armour piece, gem and consumable in Void Tales, straight from the game files — including what is being tested right now."
+	schema={schema}
+>
+	<section class="section">
+		<div class="shell">
+			<p class="eyebrow">Catalogue</p>
+			<h1 class="page-title">Items</h1>
+			<p class="section-lead">
+				Weapons, armour, gems and consumables, straight from the game files. Items marked
+				<span class="item-badge">Experimental</span> are on the test server and can still change.
+			</p>
+			<p class="item-stand">
+				Updated <time datetime={generated.toISOString()}>{dateFormat.format(generated)}</time> ·
+				{items.length} items
+			</p>
+
+			<div class="item-filters" data-item-filters hidden>
+				{
+					filters.map((f) => (
+						<div class="item-filter-row" role="group" aria-label={f.label}>
+							<span class="item-filter-label">{f.label}</span>
+							{f.values.map(([value, label]) => (
+								<button
+									type="button"
+									class="chip"
+									data-key={f.key}
+									data-value={value}
+									aria-pressed="false"
+								>
+									{label}
+								</button>
+							))}
+						</div>
+					))
+				}
+				<p class="item-count" aria-live="polite" data-item-count></p>
+			</div>
+
+			{
+				sections.map((section) => (
+					<section class="item-section" data-item-section>
+						<h2 class="month-heading" id={section.key}>
+							{section.label}
+						</h2>
+						<ul class="item-grid">
+							{section.items.map((item) => (
+								<li
+									data-item
+									data-category={item.category}
+									data-region={regionLabel(item)}
+									data-status={statusKey(item.status)}
+								>
+									<a class="item-card" href={`/items/${item.id}`}>
+										<img
+											class="item-icon"
+											src={item.icon}
+											alt=""
+											width="64"
+											height="64"
+											loading="lazy"
+											decoding="async"
+										/>
+										<span class="item-card-name">
+											<MiniText text={item.name} />
+										</span>
+										<span class="item-card-meta">
+											{[item.type[0], regionLabel(item)].filter(Boolean).join(' · ')}
+										</span>
+										{STATUS_LABEL[item.status] && (
+											<span class="item-badge">{STATUS_LABEL[item.status]}</span>
+										)}
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				))
+			}
+		</div>
+	</section>
+</BaseLayout>
+
+<script>
+	// Filter chips: within one row the chips are OR, across rows AND. Without JS
+	// the row stays hidden and every item is simply listed.
+	const bar = document.querySelector<HTMLElement>('[data-item-filters]');
+	if (bar) {
+		bar.hidden = false;
+		const chips = [...bar.querySelectorAll<HTMLButtonElement>('.chip')];
+		const cards = [...document.querySelectorAll<HTMLElement>('[data-item]')];
+		const count = bar.querySelector<HTMLElement>('[data-item-count]')!;
+
+		const apply = () => {
+			const active: Record<string, Set<string>> = {};
+			for (const c of chips) {
+				if (c.getAttribute('aria-pressed') !== 'true') continue;
+				(active[c.dataset.key!] ??= new Set()).add(c.dataset.value!);
+			}
+			let shown = 0;
+			for (const card of cards) {
+				const ok = Object.entries(active).every(([k, set]) => set.has(card.dataset[k]!));
+				card.hidden = !ok;
+				if (ok) shown++;
+			}
+			for (const s of document.querySelectorAll<HTMLElement>('[data-item-section]')) {
+				s.hidden = !s.querySelector('[data-item]:not([hidden])');
+			}
+			count.textContent = shown === cards.length ? '' : `Showing ${shown} of ${cards.length} items`;
+		};
+
+		for (const c of chips) {
+			c.addEventListener('click', () => {
+				c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
+				apply();
+			});
+		}
+	}
+</script>

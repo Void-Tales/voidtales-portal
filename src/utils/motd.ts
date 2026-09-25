@@ -15,7 +15,7 @@ export interface MotdSegment {
 	strike: boolean;
 }
 
-const COLORS: Record<string, string> = {
+export const COLORS: Record<string, string> = {
 	'0': '#000000',
 	'1': '#0000aa',
 	'2': '#00aa00',
