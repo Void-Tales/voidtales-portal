@@ -48,6 +48,13 @@ RUN echo "items digest: $ITEMS_DIGEST" && pnpm run build
 
 # Stage 2: Serve the static output with nginx. No Node process in production.
 FROM nginx:alpine
+# Carry the previous build's hashed assets over. Cloudflare holds HTML for up to
+# five minutes, and that HTML still points at the old CSS; without the old file
+# the page renders unstyled until the edge copy expires. The hash changes more
+# often than the code does: Tailwind also scans the catalogue data fetched
+# during the build, so a changed item lore alone can mean a new CSS file.
+# Grows by one CSS/JS set per change; a build without this line resets it.
+COPY --from=inventory69/voidtales-portal:latest /usr/share/nginx/html/_astro /usr/share/nginx/html/_astro
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
