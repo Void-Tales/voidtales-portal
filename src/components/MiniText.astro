@@ -1,0 +1,39 @@
+---
+// Renders one line of item text (MiniMessage + legacy codes) as spans. The
+// parser hands over data, not markup; Astro escapes every text node.
+import { parseMiniMessage, toRuns, type MiniSegment } from '../utils/minimessage.ts';
+
+interface Props {
+	text: string;
+}
+
+const runs = toRuns(parseMiniMessage(Astro.props.text));
+
+const style = (s: MiniSegment, withColor: boolean) =>
+	[
+		withColor && s.color && `color:${s.color}`,
+		s.bold && 'font-weight:700',
+		s.italic && 'font-style:italic',
+		(s.underline || s.strike) &&
+			`text-decoration:${[s.underline && 'underline', s.strike && 'line-through'].filter(Boolean).join(' ')}`,
+	]
+		.filter(Boolean)
+		.join(';') || undefined;
+---
+
+{
+	runs.map((run) =>
+		run.gradient ? (
+			<span
+				class="mc-gradient"
+				style={`background-image:linear-gradient(90deg,${run.gradient.join(',')})`}
+			>
+				{run.segments.map((s) => (
+					<span style={style(s, false)}>{s.text}</span>
+				))}
+			</span>
+		) : (
+			run.segments.map((s) => <span style={style(s, true)}>{s.text}</span>)
+		)
+	)
+}
