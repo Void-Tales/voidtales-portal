@@ -12,7 +12,7 @@ export interface Item {
 	lore: string[];
 	type: string[];
 	status: ItemStatus;
-	category: 'equipment' | 'consumable' | 'statgem' | 'effectgem';
+	category: 'equipment' | 'consumable' | 'statgem' | 'effectgem' | 'other';
 	region: string | null;
 	group: string;
 	file: string;
@@ -26,6 +26,7 @@ export const CATEGORIES = [
 	{ key: 'consumable', label: 'Consumables' },
 	{ key: 'statgem', label: 'Stat Gems' },
 	{ key: 'effectgem', label: 'Effect Gems' },
+	{ key: 'other', label: 'Other' },
 ] as const;
 
 export const STATUS_LABEL: Record<ItemStatus, string | null> = {

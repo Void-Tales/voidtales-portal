@@ -15,11 +15,11 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 const sections = CATEGORIES.map((c) => ({
 	...c,
 	items: items.filter((i) => i.category === c.key),
-}));
+})).filter((s) => s.items.length);
 const regions = [...new Set(items.map(regionLabel))].sort();
 
 const filters = [
-	{ key: 'category', label: 'Type', values: CATEGORIES.map((c) => [c.key, c.label]) },
+	{ key: 'category', label: 'Type', values: sections.map((s) => [s.key, s.label]) },
 	{ key: 'region', label: 'Region', values: regions.map((r) => [r, r]) },
 	{
 		key: 'status',
