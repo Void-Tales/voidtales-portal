@@ -137,6 +137,9 @@ const jsonLd = {
 					/* No storage access: dark is the design target. */
 				}
 				document.documentElement.classList.toggle('dark', isDark);
+				// Halloween: 24.10. to 1.11. by the visitor's clock, gone by itself after (rules: global.css, html.halloween)
+				var d = new Date(), m = d.getMonth(), t = d.getDate();
+				if ((m === 9 && t >= 24) || (m === 10 && t <= 1)) document.documentElement.classList.add('halloween');
 
 				var link = document.createElement('link');
 				link.rel = 'preload';
