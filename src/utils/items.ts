@@ -12,7 +12,7 @@ export interface Item {
 	lore: string[];
 	type: string[];
 	status: ItemStatus;
-	category: 'equipment' | 'consumable' | 'statgem' | 'effectgem' | 'other';
+	category: 'equipment' | 'consumable' | 'statgem' | 'effectgem' | 'heirloom' | 'gemtool' | 'other';
 	region: string | null;
 	group: string;
 	file: string;
@@ -26,6 +26,8 @@ export const CATEGORIES = [
 	{ key: 'consumable', label: 'Consumables' },
 	{ key: 'statgem', label: 'Stat Gems' },
 	{ key: 'effectgem', label: 'Effect Gems' },
+	{ key: 'heirloom', label: 'Heirlooms' },
+	{ key: 'gemtool', label: 'Gem Tools' },
 	{ key: 'other', label: 'Other' },
 ] as const;
 
@@ -43,7 +45,14 @@ const order = (i: Item) => CATEGORIES.findIndex((c) => c.key === i.category);
 
 // The bundle has one "gem" category; the page splits it by id, the same prefix
 // export.py lets through.
-const gemKind = (id: string) => (id.startsWith('StatGem') ? 'statgem' : 'effectgem');
+const gemKind = (id: string) =>
+	id.startsWith('StatGem')
+		? 'statgem'
+		: id.startsWith('EffectGem')
+			? 'effectgem'
+			: id.startsWith('Heirloom')
+				? 'heirloom'
+				: 'gemtool';
 
 export const items: Item[] = data.items
 	.map((i) => ({ ...i, category: i.category === 'gem' ? gemKind(i.id) : i.category }) as Item)
