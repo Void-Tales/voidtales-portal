@@ -26,6 +26,8 @@ interface Props {
 	 * under two paths — `/devlog` is an alias for the newest month.
 	 */
 	canonical?: string;
+	/** Language of the page; Impressum and Datenschutz are German. */
+	lang?: string;
 }
 
 const {
@@ -36,6 +38,7 @@ const {
 	schema,
 	noindex = false,
 	canonical: canonicalOverride,
+	lang = 'en',
 } = Astro.props;
 
 const pageTitle = title ? siteConfig.titleTemplate.replace('%s', title) : siteConfig.name;
@@ -73,7 +76,7 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
