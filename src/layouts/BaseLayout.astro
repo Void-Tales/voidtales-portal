@@ -108,7 +108,15 @@ const jsonLd = {
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={twitterImage} />
 
-		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
+		{
+			/* Titles come from Discord. "<" escaped keeps a "</script>" in one inside
+			   the script; this tag sits before the CSP <meta>, so nothing else would. */
+		}
+		<script
+			type="application/ld+json"
+			set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')}
+			is:inline
+		/>
 
 		{
 			/* Filter the preload by style, never by weight: in the build all weights
