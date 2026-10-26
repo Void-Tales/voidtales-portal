@@ -17,7 +17,7 @@ const schema = {
 		itemListElement: entries.map((entry, i) => ({
 			'@type': 'ListItem',
 			position: i + 1,
-			url: new URL(`/wiki/${entry.id}`, siteConfig.url).toString(),
+			url: new URL(`/wiki/${entry.id}/`, siteConfig.url).toString(),
 			name: entry.data.title,
 		})),
 	},
@@ -38,18 +38,16 @@ const schema = {
 			</p>
 
 			<ul class="entry-list">
-				{
-					entries.map((entry) => (
-						<li>
-							<article class="entry-card">
-								<h3>
-									<a href={`/wiki/${entry.id}`}>{entry.data.title}</a>
-								</h3>
-								{entry.data.description && <p>{entry.data.description}</p>}
-							</article>
-						</li>
-					))
-				}
+				{entries.map((entry) => (
+					<li>
+						<article class="entry-card">
+							<h3>
+								<a href={`/wiki/${entry.id}/`}>{entry.data.title}</a>
+							</h3>
+							{entry.data.description && <p>{entry.data.description}</p>}
+						</article>
+					</li>
+				))}
 			</ul>
 		</div>
 	</section>

@@ -16,10 +16,8 @@ const { mcServerHost, mcServerPort } = siteConfig;
 const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcServerPort}`;
 ---
 
-{
-	/* Static shell, JS fills in the live values. Without JS the address and the
-	   copy button still work, the status just stays "Checking…". */
-}
+{/* Static shell, JS fills in the live values. Without JS the address and the
+	   copy button still work, the status just stays "Checking…". */}
 <div
 	class:list={[variant === 'full' ? 'status-card' : 'flex flex-wrap items-center gap-3']}
 	data-server-status
@@ -33,16 +31,19 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 			<span data-label>Checking…</span>
 		</span>
 
-		{
-			variant === 'full' && (
-				<button type="button" data-refresh class="btn px-3 py-1 text-[0.8rem]">
-					Refresh
-				</button>
-			)
-		}
+		{variant === 'full' && (
+			<button type="button" data-refresh class="btn px-3 py-1 text-[0.8rem]">
+				Refresh
+			</button>
+		)}
 	</div>
 
-	<button type="button" data-copy class="status-address" aria-label="Copy server address">
+	<button
+		type="button"
+		data-copy
+		class="status-address"
+		aria-label={`Copy server address ${address}`}
+	>
 		<span>{address}</span>
 		<svg
 			data-copy-idle
@@ -74,39 +75,76 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 	</button>
 
 	<div class="status-meta">
-		<div>Players: <strong data-players>-</strong></div>
-		{
-			variant === 'full' && (
-				<div data-version-wrap hidden>
-					Version: <strong data-version />
-				</div>
-			)
-		}
+		<div>
+			Players: <strong data-players>-</strong>
+		</div>
+		{variant === 'full' && (
+			<div data-version-wrap hidden>
+				Version: <strong data-version />
+			</div>
+		)}
 	</div>
 
-	{
-		variant === 'full' && (
-			<div data-motd-wrap hidden>
-				{/* Always dark: the Minecraft palette is built for a dark server list. */}
-				<code data-motd class="status-motd block" />
-			</div>
-		)
-	}
+	{variant === 'full' && (
+		<div data-motd-wrap hidden>
+			{/* Always dark: the Minecraft palette is built for a dark server list. */}
+			<code data-motd class="status-motd block" />
+		</div>
+	)}
 </div>
 
 <script>
 	import { parseMotd } from '../utils/motd.ts';
 
-	// The component can appear twice on a page (hero line + card), so every root
-	// is wired up on its own. Astro bundles this script once either way.
-	for (const root of document.querySelectorAll<HTMLElement>('[data-server-status]')) {
-		const { host, port, address } = root.dataset;
+	type Status = { state: 'online' | 'offline' | 'unknown'; data?: any };
+
+	// The component can appear twice on a page (hero line + card). One request
+	// serves both, so mcstatus.io sees one visitor as one call, and both show the
+	// same answer. Every root renders that answer on its own.
+	const roots = [...document.querySelectorAll<HTMLElement>('[data-server-status]')];
+	const renderers: ((s: Status) => void)[] = [];
+	const refreshButtons: HTMLButtonElement[] = [];
+
+	async function fetchStatus(host: string, port: string): Promise<Status> {
+		try {
+			// api.mcstatus.io sends `access-control-allow-origin: *`, so the browser
+			// can query it directly, no proxy needed.
+			const res = await fetch(`https://api.mcstatus.io/v2/status/java/${host}:${port}`, {
+				signal: AbortSignal.timeout(8000),
+			});
+			// 429 or a 5xx says nothing about our server: "unavailable", not "offline".
+			if (!res.ok) return { state: 'unknown' };
+			const data = await res.json();
+			return { state: data.online ? 'online' : 'offline', data };
+		} catch {
+			return { state: 'unknown' };
+		}
+	}
+
+	async function load() {
+		const { host, port } = roots[0].dataset;
+		for (const b of refreshButtons) {
+			b.disabled = true;
+			b.textContent = 'Refreshing…';
+		}
+		const status = await fetchStatus(host ?? '', port ?? '');
+		for (const render of renderers) render(status);
+		for (const b of refreshButtons) {
+			b.disabled = false;
+			b.textContent = 'Refresh';
+		}
+	}
+
+	roots.forEach((root, i) => {
+		const { address } = root.dataset;
 		const q = <T extends Element>(sel: string) => root.querySelector<T>(sel);
 
 		const badge = q<HTMLElement>('[data-badge]')!;
 		const dot = q<HTMLElement>('[data-dot]')!;
 		const label = q<HTMLElement>('[data-label]')!;
 		const players = q<HTMLElement>('[data-players]')!;
+		// Announce the status change once, not once per copy of the component.
+		if (i === 0) badge.setAttribute('aria-live', 'polite');
 
 		// Only present on the `full` variant.
 		const refresh = q<HTMLButtonElement>('[data-refresh]');
@@ -115,14 +153,15 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 		const motdWrap = q<HTMLElement>('[data-motd-wrap]');
 		const motd = q<HTMLElement>('[data-motd]');
 
-		const ONLINE = 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
-		const OFFLINE = 'bg-rose-500/15 text-rose-700 dark:text-rose-300';
-
-		function setBadge(state: 'online' | 'offline', text: string) {
-			badge.className = `status-badge ${state === 'online' ? ONLINE : OFFLINE}`;
-			dot.className = `status-dot ${state === 'online' ? 'bg-emerald-500' : 'bg-rose-500'}`;
-			label.textContent = text;
-		}
+		const BADGE = {
+			online: [
+				'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+				'bg-emerald-500',
+				'Online',
+			],
+			offline: ['bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-rose-500', 'Offline'],
+			unknown: ['bg-zinc-500/15 text-muted', 'bg-zinc-400', 'Status unavailable'],
+		};
 
 		// Builds the MOTD from text nodes. Colours are set from the parser's fixed
 		// table, never from the response string, so nothing here can inject markup.
@@ -141,49 +180,32 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 			}
 		}
 
-		async function load() {
-			if (refresh) {
-				refresh.disabled = true;
-				refresh.textContent = 'Refreshing…';
-			}
-			try {
-				// api.mcstatus.io sends `access-control-allow-origin: *`, so the browser
-				// can query it directly, no proxy needed.
-				const res = await fetch(`https://api.mcstatus.io/v2/status/java/${host}:${port}`, {
-					signal: AbortSignal.timeout(8000),
-				});
-				const data = await res.json();
-
-				setBadge(data.online ? 'online' : 'offline', data.online ? 'Online' : 'Offline');
-				players.textContent = data.online
+		renderers.push(({ state, data }) => {
+			const [badgeClass, dotClass, text] = BADGE[state];
+			badge.className = `status-badge ${badgeClass}`;
+			dot.className = `status-dot ${dotClass}`;
+			label.textContent = text;
+			players.textContent =
+				state === 'online'
 					? `${data.players?.online ?? 0}${data.players?.max ? ` / ${data.players.max}` : ''}`
 					: '-';
 
-				const name = data.version?.name_clean;
-				if (versionWrap) versionWrap.hidden = !name;
-				if (version) version.textContent = name ?? '';
+			const name = state === 'online' ? data.version?.name_clean : undefined;
+			if (versionWrap) versionWrap.hidden = !name;
+			if (version) version.textContent = name ?? '';
 
-				// Colours come from parsing the § codes ourselves into text nodes,
-				// deliberately not from `motd.html`, which would mean injecting
-				// third-party markup into the page.
-				const raw = data.motd?.raw?.trim();
-				if (motdWrap) motdWrap.hidden = !raw;
-				renderMotd(raw ?? '');
-			} catch {
-				setBadge('offline', 'Offline');
-				players.textContent = '-';
-				if (versionWrap) versionWrap.hidden = true;
-				if (motdWrap) motdWrap.hidden = true;
-			} finally {
-				if (refresh) {
-					refresh.disabled = false;
-					refresh.textContent = 'Refresh';
-				}
-			}
+			// Colours come from parsing the § codes ourselves into text nodes,
+			// deliberately not from `motd.html`, which would mean injecting
+			// third-party markup into the page.
+			const raw = state === 'online' ? data.motd?.raw?.trim() : undefined;
+			if (motdWrap) motdWrap.hidden = !raw;
+			renderMotd(raw ?? '');
+		});
+
+		if (refresh) {
+			refreshButtons.push(refresh);
+			refresh.addEventListener('click', load);
 		}
-
-		refresh?.addEventListener('click', load);
-		load();
 
 		const copy = q<HTMLButtonElement>('[data-copy]')!;
 		const idle = q<SVGElement>('[data-copy-idle]')!;
@@ -203,5 +225,7 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 				// still readable in the button either way.
 			}
 		});
-	}
+	});
+
+	if (roots.length) load();
 </script>

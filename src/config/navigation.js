@@ -6,12 +6,12 @@ import { siteConfig } from './site.js';
 // (voidtales-gallery src/config/navigation.js): a change here goes there too.
 export const navigationLinks = [
 	{ label: 'Home', href: '/' },
-	{ label: 'Wiki', href: '/wiki' },
-	{ label: 'Items', href: '/items' },
-	{ label: 'Gallery', href: 'https://gallery.voidtales.win' },
-	{ label: 'News', href: '/news' },
-	{ label: 'Devlog', href: '/devlog' },
-	{ label: 'Discord', href: 'https://discord.gg/QEMQsFect6' },
+	{ label: 'Wiki', href: '/wiki/' },
+	{ label: 'Items', href: '/items/' },
+	{ label: 'Gallery', href: siteConfig.galleryUrl },
+	{ label: 'News', href: '/news/' },
+	{ label: 'Devlog', href: '/devlog/' },
+	{ label: 'Discord', href: siteConfig.discordUrl },
 	// BlueMap since the 26.2 update, but the hostname stayed: it is in links and
 	// bookmarks. bluemap.voidtales.win is a 301 to this one, not a second origin.
 	{ label: 'World Map', href: 'https://dynmap.voidtales.win' },
@@ -42,8 +42,8 @@ export const footerColumns = [
 	{
 		title: 'Legal',
 		links: [
-			{ label: 'Impressum', href: '/impressum' },
-			{ label: 'Datenschutz', href: '/datenschutz' },
+			{ label: 'Impressum', href: '/impressum/' },
+			{ label: 'Datenschutz', href: '/datenschutz/' },
 		],
 	},
 ];
@@ -54,8 +54,10 @@ export const isExternal = (href) =>
 	!href.startsWith('/') && !/^https:\/\/(portal|gallery)\.voidtales\.win/.test(href);
 
 // Header highlight: Home only on the start page, every other entry for its
-// whole subtree (/news/<slug> lights up News, /newsletter would not).
-export const isCurrent = (href, path) =>
-	href === '/'
-		? path === '/'
-		: href.startsWith('/') && (path === href || path.startsWith(`${href}/`));
+// whole subtree (/news/<slug>/ lights up News, /newsletter would not). The
+// hrefs end in "/" (no 301 from nginx); the path may or may not.
+export const isCurrent = (href, path) => {
+	if (href === '/') return path === '/';
+	const base = href.replace(/\/$/, '');
+	return href.startsWith('/') && (path === base || path.startsWith(`${base}/`));
+};

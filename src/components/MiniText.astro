@@ -21,19 +21,17 @@ const style = (s: MiniSegment, withColor: boolean) =>
 		.join(';') || undefined;
 ---
 
-{
-	runs.map((run) =>
-		run.gradient ? (
-			<span
-				class="mc-gradient"
-				style={`background-image:linear-gradient(90deg,${run.gradient.join(',')})`}
-			>
-				{run.segments.map((s) => (
-					<span style={style(s, false)}>{s.text}</span>
-				))}
-			</span>
-		) : (
-			run.segments.map((s) => <span style={style(s, true)}>{s.text}</span>)
-		)
+{runs.map((run) =>
+	run.gradient ? (
+		<span
+			class="mc-gradient"
+			style={`background-image:linear-gradient(90deg,${run.gradient.join(',')})`}
+		>
+			{run.segments.map((s) => (
+				<span style={style(s, false)}>{s.text}</span>
+			))}
+		</span>
+	) : (
+		run.segments.map((s) => <span style={style(s, true)}>{s.text}</span>)
 	)
-}
+)}

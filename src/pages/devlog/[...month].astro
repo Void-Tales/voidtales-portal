@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../config/site.js';
+import { berlinDay, berlinMonth } from '../../utils/berlin.js';
 
 // One page per month rather than per N entries: a month URL still points at the
 // same entries a year from now, while /devlog/2 shifts by one every time
@@ -11,12 +12,12 @@ export async function getStaticPaths() {
 		(a, b) => a.data.date.valueOf() - b.data.date.valueOf()
 	);
 
-	const months = [...new Set(all.map((e) => e.data.date.toISOString().slice(0, 7)))].reverse();
+	const months = [...new Set(all.map((e) => berlinMonth(e.data.date)))].reverse();
 
 	const page = (month: string) => ({
 		month,
 		months,
-		entries: all.filter((e) => e.data.date.toISOString().startsWith(month)),
+		entries: all.filter((e) => berlinMonth(e.data.date) === month),
 	});
 
 	return [
@@ -30,15 +31,29 @@ const { month, months, entries } = Astro.props;
 // A day of messages by the same person is one thought, so it renders as one
 // block with the messages as consecutive paragraphs. Grouping lives here and
 // not in the import, which keeps the n8n side at "write one file".
-type Group = { day: string; author?: string; date: Date; entries: typeof entries };
+// The anchor is day plus author: two people posting on the same day gave two
+// blocks with the same id. Counted in time order, so a new post never renumbers
+// an older block.
+type Group = { id: string; day: string; author?: string; date: Date; entries: typeof entries };
 const groups: Group[] = [];
+const seen = new Map<string, number>();
+const slug = (s = '') =>
+	s
+		.toLowerCase()
+		.normalize('NFKD')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '');
 for (const entry of entries) {
-	const day = entry.data.date.toISOString().slice(0, 10);
+	const day = berlinDay(entry.data.date);
 	const last = groups.at(-1);
 	if (last && last.day === day && last.author === entry.data.author) {
 		last.entries.push(entry);
 	} else {
-		groups.push({ day, author: entry.data.author, date: entry.data.date, entries: [entry] });
+		const base = [day, slug(entry.data.author)].filter(Boolean).join('-');
+		const n = (seen.get(base) ?? 0) + 1;
+		seen.set(base, n);
+		const id = n === 1 ? base : `${base}-${n}`;
+		groups.push({ id, day, author: entry.data.author, date: entry.data.date, entries: [entry] });
 	}
 }
 groups.reverse();
@@ -61,11 +76,13 @@ const dayFormat = new Intl.DateTimeFormat('en-GB', {
 	day: 'numeric',
 	month: 'long',
 	year: 'numeric',
-	timeZone: 'UTC',
+	timeZone: 'Europe/Berlin',
 });
 
 const label = (m: string) => monthFormat.format(new Date(`${m}-01T00:00:00Z`));
-const href = (m: string) => (m === months[0] ? '/devlog' : `/devlog/${m}`);
+// Trailing slash: that is where nginx serves the directory; without it every
+// link and the canonical went through a 301.
+const href = (m: string) => (m === months[0] ? '/devlog/' : `/devlog/${m}/`);
 const current = label(month);
 
 // /devlog und /devlog/<neuester-monat> liefern denselben Inhalt. Fuer Google
@@ -88,7 +105,7 @@ const schema = {
 		headline: `Devlog — ${dayFormat.format(group.date)}`,
 		datePublished: group.date.toISOString(),
 		...(group.author ? { author: { '@type': 'Person', name: group.author } } : {}),
-		url: new URL(`${href(month)}#${group.day}`, siteConfig.url).toString(),
+		url: new URL(`${href(month)}#${group.id}`, siteConfig.url).toString(),
 	})),
 };
 ---
@@ -98,7 +115,7 @@ const schema = {
 	description={`What was built on Void Tales in ${current}, day by day.`}
 	ogImage={`/images/og/devlog-${month}.webp`}
 	schema={schema}
-	canonical={`/devlog/${month}`}
+	canonical={`/devlog/${month}/`}
 >
 	<section
 		class="section"
@@ -109,39 +126,35 @@ const schema = {
 			<p class="eyebrow">From the workbench</p>
 			<h1 class="page-title">Devlog</h1>
 			<p class="section-lead">
-				Day-by-day progress on Void Tales. Bigger announcements land in the <a href="/news">news</a
-				>.
+				Day-by-day progress on Void Tales. Bigger announcements land in the{' '}
+				<a href="/news/">news</a>.
 			</p>
 
 			<nav class="month-nav" aria-label="Devlog archive">
-				{
-					months.map((m) => (
-						<a href={href(m)} aria-current={m === month ? 'page' : undefined}>
-							{label(m)}
-						</a>
-					))
-				}
+				{months.map((m) => (
+					<a href={href(m)} aria-current={m === month ? 'page' : undefined}>
+						{label(m)}
+					</a>
+				))}
 			</nav>
 
 			<h2 class="month-heading">{current}</h2>
 
-			{
-				rendered.map((group) => (
-					<article class="devlog-day" id={group.day}>
-						<h3>
-							<a href={`${href(month)}#${group.day}`}>
-								<time datetime={group.day}>{dayFormat.format(group.date)}</time>
-							</a>
-						</h3>
-						{group.author && <p class="devlog-author">{group.author}</p>}
-						{group.parts.map(({ Content }) => (
-							<div class="prose">
-								<Content />
-							</div>
-						))}
-					</article>
-				))
-			}
+			{rendered.map((group) => (
+				<article class="devlog-day" id={group.id}>
+					<h3>
+						<a href={`${href(month)}#${group.id}`}>
+							<time datetime={group.day}>{dayFormat.format(group.date)}</time>
+						</a>
+					</h3>
+					{group.author && <p class="devlog-author">{group.author}</p>}
+					{group.parts.map(({ Content }) => (
+						<div class="prose">
+							<Content />
+						</div>
+					))}
+				</article>
+			))}
 		</div>
 	</section>
 </BaseLayout>

@@ -25,7 +25,7 @@ const description =
 	`${typeLine || category} from ${regionLabel(item) === 'General' ? 'Void Tales' : regionLabel(item)}.`;
 
 const ogImage = `/images/og/item-${item.id}.webp`;
-const url = new URL(`/items/${item.id}`, siteConfig.url).toString();
+const url = new URL(`/items/${item.id}/`, siteConfig.url).toString();
 
 const schema = {
 	'@type': 'WebPage',
@@ -55,7 +55,9 @@ const note = {
 <BaseLayout title={name} description={description} ogImage={ogImage} schema={schema}>
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/items">← All items</a>
+			<a class="back-link" href="/items/">
+				← All items
+			</a>
 			<article class="item-detail">
 				<div class="item-slot">
 					<img
@@ -68,7 +70,9 @@ const note = {
 				</div>
 				<div>
 					{STATUS_LABEL[item.status] && <span class="item-badge">{STATUS_LABEL[item.status]}</span>}
-					<h1 class="page-title item-title"><MiniText text={item.name} /></h1>
+					<h1 class="page-title item-title">
+						<MiniText text={item.name} />
+					</h1>
 					<p class="item-card-meta">
 						{[typeLine, regionLabel(item), category].filter(Boolean).join(' · ')}
 					</p>
@@ -76,18 +80,18 @@ const note = {
 			</article>
 
 			<div class="mc-tooltip">
-				<p class="mc-tooltip-name"><MiniText text={item.name} /></p>
-				{
-					item.lore.map((line) =>
-						line === '' ? (
-							<p class="mc-tooltip-gap" aria-hidden="true" />
-						) : (
-							<p>
-								<MiniText text={line} />
-							</p>
-						)
+				<p class="mc-tooltip-name">
+					<MiniText text={item.name} />
+				</p>
+				{item.lore.map((line) =>
+					line === '' ? (
+						<p class="mc-tooltip-gap" aria-hidden="true" />
+					) : (
+						<p>
+							<MiniText text={line} />
+						</p>
 					)
-				}
+				)}
 			</div>
 
 			{note && <p class="item-note">{note}</p>}

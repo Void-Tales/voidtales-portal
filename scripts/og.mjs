@@ -24,6 +24,9 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
+import { siteConfig } from '../src/config/site.js';
+import { berlinMonth } from '../src/utils/berlin.js';
+import { newsSummary } from '../src/utils/excerpt.ts';
 
 const OUT_DIR = 'dist/images/og';
 
@@ -146,16 +149,23 @@ const render = async (svg, file) => {
 };
 
 // --- Startseiten-Karte -----------------------------------------------------
-// Ersetzt das frueher von Hand angestossene gen-og.mjs. Copy spiegelt
-// siteConfig.hero in src/config/site.js.
+// Ersetzt das frueher von Hand angestossene gen-og.mjs. Der Text kommt aus
+// siteConfig.hero, wie auf der Startseite: die Karte zeigte noch einen alten
+// Untertitel, nachdem die Seite laengst einen neuen hatte.
 
+const { hero } = siteConfig;
+const heroLead = hero.title.replace(hero.titleAccent, '').trim();
 const heroCard = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   ${defs}${backdrop}
-  <text x="84" y="176" font-family="monospace" font-size="19" letter-spacing="5" fill="${muted}">MINECRAFT MODPACK AND SERVER</text>
-  <text x="84" y="266" font-family="Unbounded" font-weight="800" font-size="62" fill="${text}">Void</text>
-  <text x="84" y="352" font-family="Unbounded" font-weight="800" font-size="62" fill="${accent}" filter="url(#titleGlow)">Tales</text>
-  <text x="84" y="414" font-family="Instrument Sans" font-size="24" fill="${muted}">Six shattered realms, the fragments of a fallen</text>
-  <text x="84" y="448" font-family="Instrument Sans" font-size="24" fill="${muted}">goddess, and the Soul Station between them.</text>
+  <text x="84" y="176" font-family="monospace" font-size="19" letter-spacing="5" fill="${muted}">${escape(hero.eyebrow.toUpperCase())}</text>
+  <text x="84" y="266" font-family="Unbounded" font-weight="800" font-size="62" fill="${text}">${escape(heroLead)}</text>
+  <text x="84" y="352" font-family="Unbounded" font-weight="800" font-size="62" fill="${accent}" filter="url(#titleGlow)">${escape(hero.titleAccent)}</text>
+  ${wrap(hero.subtitle, 24, 0.5, 1010, 2)
+		.map(
+			(l, i) =>
+				`<text x="84" y="${414 + i * 34}" font-family="Instrument Sans" font-size="24" fill="${muted}">${escape(l)}</text>`
+		)
+		.join('\n  ')}
   ${badge(500)}
 </svg>`;
 
@@ -221,23 +231,6 @@ const frontmatter = (file) => {
 	return data;
 };
 
-// Der Auszug kommt aus dem Markdown-Body, nicht aus data.description: die wird
-// vom Discord-Import hart auf 100 Zeichen gekappt und endet mitten im Wort
-// ("...loyal compan..."). Auf einer Vorschaukarte ist das gut sichtbar.
-// Dieselbe Regel steckt in src/utils/excerpt.ts fuer die Meta-Description -
-// beide Seiten muessen denselben Text zeigen.
-const excerpt = (body, max = 150) => {
-	const plain = body
-		.replace(/!\[[^\]]*\]\([^)]*\)/g, '') // Bilder
-		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // Links auf ihren Text
-		.replace(/[#*_>`~]/g, '')
-		.replace(/\s+/g, ' ')
-		.trim();
-	if (plain.length <= max) return plain;
-	const cut = plain.slice(0, max);
-	return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s.,;:!?-]+$/, '')}…`;
-};
-
 const dateLabel = (iso) =>
 	new Intl.DateTimeFormat('en-GB', {
 		day: 'numeric',
@@ -259,7 +252,8 @@ for (const file of globSync('src/content/news/**/*.md')) {
 		entryCard({
 			eyebrow: `NEWS · ${dateLabel(data.pubDatetime)}`,
 			title: data.title,
-			body: excerpt(data._body),
+			// Dieselbe Kurzfassung wie Meta-Description und News-Liste.
+			body: newsSummary(data.description, data._body),
 		}),
 		`${OUT_DIR}/news-${data.slug}.webp`
 	);
@@ -269,7 +263,7 @@ for (const file of globSync('src/content/news/**/*.md')) {
 const months = new Set();
 for (const file of globSync('src/content/devlog/**/*.md')) {
 	const data = frontmatter(file);
-	if (data?.date) months.add(new Date(data.date).toISOString().slice(0, 7));
+	if (data?.date) months.add(berlinMonth(new Date(data.date)));
 }
 for (const month of months) {
 	const label = new Intl.DateTimeFormat('en-GB', {

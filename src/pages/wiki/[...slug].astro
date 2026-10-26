@@ -13,7 +13,7 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 
 const description = entry.data.description ?? excerpt(entry.body ?? '');
-const url = new URL(`/wiki/${entry.id}`, siteConfig.url).toString();
+const url = new URL(`/wiki/${entry.id}/`, siteConfig.url).toString();
 
 const schema = {
 	'@type': 'TechArticle',
@@ -29,7 +29,9 @@ const schema = {
 <BaseLayout title={entry.data.title} description={description} schema={schema}>
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/wiki">← All wiki pages</a>
+			<a class="back-link" href="/wiki/">
+				← All wiki pages
+			</a>
 			<article>
 				<h1 class="page-title">{entry.data.title}</h1>
 				<div class="prose">

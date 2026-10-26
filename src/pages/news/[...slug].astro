@@ -2,7 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../config/site.js';
-import { excerpt } from '../../utils/excerpt';
+import { newsSummary } from '../../utils/excerpt';
 
 export async function getStaticPaths() {
 	const entries = await getCollection('news');
@@ -21,13 +21,10 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 
 // The imported description is cut at 100 characters mid-word, which is exactly
 // what a search snippet shows. Fall back to the body whenever it looks cut.
-const description =
-	entry.data.description && !entry.data.description.trim().endsWith('...')
-		? entry.data.description
-		: excerpt(entry.body ?? '');
+const description = newsSummary(entry.data.description, entry.body ?? '');
 
 const ogImage = `/images/og/news-${entry.data.slug}.webp`;
-const url = new URL(`/news/${entry.data.slug}`, siteConfig.url).toString();
+const url = new URL(`/news/${entry.data.slug}/`, siteConfig.url).toString();
 
 const schema = {
 	'@type': 'NewsArticle',
@@ -51,7 +48,9 @@ const schema = {
 >
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/news">← All news</a>
+			<a class="back-link" href="/news/">
+				← All news
+			</a>
 			<article>
 				<time datetime={entry.data.pubDatetime.toISOString()}>
 					{dateFormat.format(entry.data.pubDatetime)}

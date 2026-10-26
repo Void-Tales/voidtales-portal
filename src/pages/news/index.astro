@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../config/site.js';
+import { newsSummary } from '../../utils/excerpt';
 
 const entries = (await getCollection('news')).sort(
 	(a, b) => b.data.pubDatetime.valueOf() - a.data.pubDatetime.valueOf()
@@ -29,7 +30,7 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 // a page that happens to contain links.
 const schema = {
 	'@type': 'CollectionPage',
-	'@id': `${siteConfig.url}/news#collection`,
+	'@id': `${siteConfig.url}/news/#collection`,
 	name: 'News',
 	isPartOf: { '@id': `${siteConfig.url}/#website` },
 	mainEntity: {
@@ -37,7 +38,7 @@ const schema = {
 		itemListElement: entries.map((entry, i) => ({
 			'@type': 'ListItem',
 			position: i + 1,
-			url: new URL(`/news/${entry.data.slug}`, siteConfig.url).toString(),
+			url: new URL(`/news/${entry.data.slug}/`, siteConfig.url).toString(),
 			name: entry.data.title,
 		})),
 	},
@@ -54,39 +55,38 @@ const schema = {
 			<p class="eyebrow">Announcements</p>
 			<h1 class="page-title">News</h1>
 			<p class="section-lead">
-				Everything announced for Void Tales, newest first. The day-to-day progress lives in the <a
-					href="/devlog">devlog</a
-				>.
+				Everything announced for Void Tales, newest first. The day-to-day progress lives in the{' '}
+				<a href="/devlog/">devlog</a>.
 			</p>
 
 			<nav class="month-nav" aria-label="News archive">
-				{years.map(({ year }) => <a href={`#${year}`}>{year}</a>)}
+				{years.map(({ year }) => (
+					<a href={`#${year}`}>{year}</a>
+				))}
 			</nav>
 
-			{
-				years.map(({ year, entries: yearEntries }) => (
-					<>
-						<h2 class="month-heading" id={String(year)}>
-							{year}
-						</h2>
-						<ul class="entry-list">
-							{yearEntries.map((entry) => (
-								<li>
-									<article class="entry-card">
-										<time datetime={entry.data.pubDatetime.toISOString()}>
-											{dateFormat.format(entry.data.pubDatetime)}
-										</time>
-										<h3>
-											<a href={`/news/${entry.data.slug}`}>{entry.data.title}</a>
-										</h3>
-										{entry.data.description && <p>{entry.data.description}</p>}
-									</article>
-								</li>
-							))}
-						</ul>
-					</>
-				))
-			}
+			{years.map(({ year, entries: yearEntries }) => (
+				<>
+					<h2 class="month-heading" id={String(year)}>
+						{year}
+					</h2>
+					<ul class="entry-list">
+						{yearEntries.map((entry) => (
+							<li>
+								<article class="entry-card">
+									<time datetime={entry.data.pubDatetime.toISOString()}>
+										{dateFormat.format(entry.data.pubDatetime)}
+									</time>
+									<h3>
+										<a href={`/news/${entry.data.slug}/`}>{entry.data.title}</a>
+									</h3>
+									<p>{newsSummary(entry.data.description, entry.body ?? '')}</p>
+								</article>
+							</li>
+						))}
+					</ul>
+				</>
+			))}
 		</div>
 	</section>
 </BaseLayout>

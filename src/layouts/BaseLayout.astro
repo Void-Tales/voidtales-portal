@@ -26,6 +26,8 @@ interface Props {
 	 * under two paths — `/devlog` is an alias for the newest month.
 	 */
 	canonical?: string;
+	/** Language of the page; Impressum and Datenschutz are German. */
+	lang?: string;
 }
 
 const {
@@ -36,6 +38,7 @@ const {
 	schema,
 	noindex = false,
 	canonical: canonicalOverride,
+	lang = 'en',
 } = Astro.props;
 
 const pageTitle = title ? siteConfig.titleTemplate.replace('%s', title) : siteConfig.name;
@@ -73,7 +76,7 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -108,38 +111,51 @@ const jsonLd = {
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={twitterImage} />
 
-		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
-
-		{
-			/* Filter the preload by style, never by weight: in the build all weights
+		{/* Titles come from Discord. "<" escaped keeps a "</script>" in one inside
+			   the script; this tag sits before the CSP <meta>, so nothing else would. */}
+		<script
+			type="application/ld+json"
+			set:html={JSON.stringify(jsonLd).replaceAll('<', '\\u003c')}
+			is:inline
+		/>
+		{/* Filter the preload by style, never by weight: in the build all weights
 		    of a family collapse into one variable font file whose preload entry
 		    carries the weight of the first face, so a weight filter matches
-		    nothing. */
-		}
+		    nothing. */}
 		<Font cssVariable="--font-instrument-sans" preload={[{ style: 'normal' }]} />
 		<Font cssVariable="--font-unbounded" preload={[{ style: 'normal' }]} />
 
-		{
-			/* Runs before first paint so the theme never flashes. The hero preload
+		{/* Runs before first paint so the theme never flashes. The hero preload
 		    lives here too: a `media="(prefers-color-scheme: …)"` link would guess
-		    from the OS while the class below decides from localStorage, and every
+		    from the OS while the class below decides from the saved choice, and every
 		    time the two disagree the browser preloads the image nobody uses. The
 		    URLs must stay byte-identical to the ones in global.css, otherwise the
-		    request is not deduplicated. */
-		}
+		    request is not deduplicated. */}
 		<script is:inline>
 			(function () {
-				var isDark = true;
-				try {
-					var saved = localStorage.getItem('theme');
-					isDark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-				} catch (e) {
-					/* No storage access: dark is the design target. */
+				// Shared with the gallery: cookie `theme` on .voidtales.win, else
+				// localStorage (choices from before the cookie, copied into it), else
+				// dark, the design target. Header.astro writes both on toggle.
+				var m = document.cookie.match(/(?:^|; )theme=(dark|light)/);
+				var saved = m && m[1];
+				if (!saved) {
+					try {
+						saved = localStorage.getItem('theme');
+					} catch (e) {}
+					if (saved === 'dark' || saved === 'light')
+						document.cookie =
+							'theme=' +
+							saved +
+							'; Domain=.voidtales.win; Path=/; Max-Age=31536000; SameSite=Lax; Secure';
 				}
+				var isDark = saved !== 'light';
 				document.documentElement.classList.toggle('dark', isDark);
 				// Halloween: 24.10. to 1.11. by the visitor's clock, gone by itself after (rules: global.css, html.halloween)
-				var d = new Date(), m = d.getMonth(), t = d.getDate();
-				if ((m === 9 && t >= 24) || (m === 10 && t <= 1)) document.documentElement.classList.add('halloween');
+				var d = new Date(),
+					m = d.getMonth(),
+					t = d.getDate();
+				if ((m === 9 && t >= 24) || (m === 10 && t <= 1))
+					document.documentElement.classList.add('halloween');
 
 				var link = document.createElement('link');
 				link.rel = 'preload';
@@ -149,22 +165,19 @@ const jsonLd = {
 			})();
 		</script>
 
-		{
-			/* Analytics: self-hosted Umami on our own box, cookieless, nothing written to
+		{/* Analytics: self-hosted Umami on our own box, cookieless, nothing written to
 		    the visitor's device, no third party sees the numbers. Named in /datenschutz.
 		    One website id covers every host under voidtales.win - Umami records the
-		    hostname per event, so portal, gallery and wiki stay tellable apart. */
-		}
+		    hostname per event, so portal, gallery and wiki stay tellable apart. */}
 		<script
 			defer
 			src="https://stats.hzwd.xyz/script.js"
-			data-website-id="7c235267-8275-439c-8449-39b753460c67"></script>
+			data-website-id="7c235267-8275-439c-8449-39b753460c67"
+		></script>
 	</head>
 
-	{
-		/* <main> is unconstrained so sections can go full-bleed; the width limit
-	    lives on `.shell` inside each section. */
-	}
+	{/* <main> is unconstrained so sections can go full-bleed; the width limit
+	    lives on `.shell` inside each section. */}
 	<body class="flex min-h-[100svh] flex-col">
 		<Header />
 		<main class="flex-1">

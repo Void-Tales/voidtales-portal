@@ -1,5 +1,5 @@
 # Stage 1: Build the static site
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -12,7 +12,9 @@ RUN apk add --no-cache woff2
 WORKDIR /app
 
 # Copy manifests first so the dependency layer is cached independently of source changes.
-COPY package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml carries allowBuilds for sharp/esbuild; without it pnpm 11
+# aborts the install with ERR_PNPM_IGNORED_BUILDS.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # News/devlog media, in its own layer before the source copy: ~550 MB of

@@ -4,6 +4,7 @@ import { satteri } from '@astrojs/markdown-satteri';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { siteConfig } from './src/config/site.js';
+import { berlinMonth } from './src/utils/berlin.js';
 
 // Written by scripts/media.mjs (runs in `prebuild`). Missing on a bare checkout,
 // which is fine: images then render without intrinsic sizes instead of the
@@ -41,7 +42,7 @@ const contentDates = (() => {
 	// entry, and /devlog itself mirrors the newest month.
 	const devlog = read('./src/content/devlog', 'date');
 	for (const { date } of devlog) {
-		const key = `/devlog/${date.toISOString().slice(0, 7)}`;
+		const key = `/devlog/${berlinMonth(date)}`;
 		if (!dates[key] || date.toISOString() > dates[key]) dates[key] = date.toISOString();
 	}
 	const newest = devlog.map((e) => e.date).sort((a, b) => b - a)[0];
@@ -138,7 +139,10 @@ export default defineConfig({
 			//  /search  - eine Eingabemaske, kein Inhalt (traegt zusaetzlich noindex)
 			//  /devlog/ - Alias auf den neuesten Monat, canonical zeigt auf die
 			//             Monats-URL. Beide anzumelden waere Duplicate Content.
-			filter: (page) => !page.includes('/search/') && !page.endsWith('/devlog/'),
+			//  /impressum/, /datenschutz/ - tragen noindex, gehoeren in keinen Index.
+			filter: (page) =>
+				!['/search/', '/impressum/', '/datenschutz/'].some((p) => page.includes(p)) &&
+				!page.endsWith('/devlog/'),
 			// Ohne lastmod sieht fuer einen Crawler jede der ~56 URLs gleich alt aus.
 			serialize(item) {
 				const path = new URL(item.url).pathname.replace(/\/$/, '') || '/';

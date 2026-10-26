@@ -45,7 +45,7 @@ const schema = {
 		itemListElement: items.map((item, i) => ({
 			'@type': 'ListItem',
 			position: i + 1,
-			url: new URL(`/items/${item.id}`, siteConfig.url).toString(),
+			url: new URL(`/items/${item.id}/`, siteConfig.url).toString(),
 			name: plainText(item.name),
 		})),
 	},
@@ -71,67 +71,63 @@ const schema = {
 			</p>
 
 			<div class="item-filters" data-item-filters hidden>
-				{
-					filters.map((f) => (
-						<div class="item-filter-row" role="group" aria-label={f.label}>
-							<span class="item-filter-label">{f.label}</span>
-							{f.values.map(([value, label]) => (
-								<button
-									type="button"
-									class="chip"
-									data-key={f.key}
-									data-value={value}
-									aria-pressed="false"
-								>
-									{label}
-								</button>
-							))}
-						</div>
-					))
-				}
+				{filters.map((f) => (
+					<div class="item-filter-row" role="group" aria-label={f.label}>
+						<span class="item-filter-label">{f.label}</span>
+						{f.values.map(([value, label]) => (
+							<button
+								type="button"
+								class="chip"
+								data-key={f.key}
+								data-value={value}
+								aria-pressed="false"
+							>
+								{label}
+							</button>
+						))}
+					</div>
+				))}
 				<p class="item-count" aria-live="polite" data-item-count></p>
 			</div>
 
-			{
-				sections.map((section) => (
-					<section class="item-section" data-item-section>
-						<h2 class="month-heading" id={section.key}>
-							{section.label}
-						</h2>
-						<ul class="item-grid">
-							{section.items.map((item) => (
-								<li
-									data-item
-									data-category={item.category}
-									data-region={regionLabel(item)}
-									data-status={statusKey(item.status)}
-								>
-									<a class="item-card" href={`/items/${item.id}`}>
-										<img
-											class="item-icon"
-											src={item.icon}
-											alt=""
-											width="64"
-											height="64"
-											loading="lazy"
-											decoding="async"
-										/>
-										<span class="item-card-name">
-											<MiniText text={item.name} />
-										</span>
-										<span class="item-card-meta">
-											{[item.type[0], regionLabel(item)].filter(Boolean).join(' · ')}
-										</span>
-										{STATUS_LABEL[item.status] && (
-											<span class="item-badge">{STATUS_LABEL[item.status]}</span>
-										)}
-									</a>
-								</li>
-							))}
-						</ul>
-					</section>
-				))
-			}
+			{sections.map((section) => (
+				<section class="item-section" data-item-section>
+					<h2 class="month-heading" id={section.key}>
+						{section.label}
+					</h2>
+					<ul class="item-grid">
+						{section.items.map((item) => (
+							<li
+								data-item
+								data-category={item.category}
+								data-region={regionLabel(item)}
+								data-status={statusKey(item.status)}
+							>
+								<a class="item-card" href={`/items/${item.id}/`}>
+									<img
+										class="item-icon"
+										src={item.icon}
+										alt=""
+										width="64"
+										height="64"
+										loading="lazy"
+										decoding="async"
+									/>
+									<span class="item-card-name">
+										<MiniText text={item.name} />
+									</span>
+									<span class="item-card-meta">
+										{[item.type[0], regionLabel(item)].filter(Boolean).join(' · ')}
+									</span>
+									{STATUS_LABEL[item.status] && (
+										<span class="item-badge">{STATUS_LABEL[item.status]}</span>
+									)}
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+			))}
 		</div>
 	</section>
 </BaseLayout>

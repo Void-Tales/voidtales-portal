@@ -10,10 +10,13 @@ import { siteConfig } from '../config/site.js';
 	title="Datenschutzerklärung"
 	description="Wie personenbezogene Daten auf portal.voidtales.win und gallery.voidtales.win verarbeitet werden."
 	noindex
+	lang="de"
 >
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/">← Back to the Station</a>
+			<a class="back-link" href="/">
+				← Back to the Station
+			</a>
 			<article>
 				<h1 class="page-title">Datenschutzerklärung</h1>
 				<div class="prose">
@@ -21,14 +24,26 @@ import { siteConfig } from '../config/site.js';
 						Diese Erklärung beschreibt, welche personenbezogenen Daten beim Besuch von
 						<strong>portal.voidtales.win</strong> und der Community-Galerie
 						<strong>gallery.voidtales.win</strong> verarbeitet werden, zu welchem Zweck und auf
-						welcher Rechtsgrundlage. Die Abschnitte 2, 3, 8 und 9 gelten für beide Seiten,
-						Abschnitt 11 nur für die Galerie. Stand: Oktober 2026.
+						welcher Rechtsgrundlage. Die Abschnitte 2, 3, 8 und 9 gelten für beide Seiten, Abschnitt
+						11 nur für die Galerie. Stand: Oktober 2026.
 					</p>
 
 					<h2>1. Verantwortlicher</h2>
-					<p>{addressLines.map((line) => (<>{line}<br /></>))}</p>
 					<p>
-						{phone && (<>Telefon: <a href={`tel:${phoneHref}`}>{phone}</a><br /></>)}
+						{addressLines.map((line) => (
+							<>
+								{line}
+								<br />
+							</>
+						))}
+					</p>
+					<p>
+						{phone && (
+							<>
+								Telefon: <a href={`tel:${phoneHref}`}>{phone}</a>
+								<br />
+							</>
+						)}
 						E-Mail: <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
 					</p>
 					<p>
@@ -40,40 +55,39 @@ import { siteConfig } from '../config/site.js';
 					<p>
 						Diese Website wird auf einem selbst verwalteten Server ausgeliefert. Der Webserver
 						protokolliert bei jedem Abruf technische Zugriffsdaten: IP-Adresse, Zeitpunkt,
-						angeforderte Ressource, Statuscode, übertragene Datenmenge, Referrer und
-						Browserkennung. Diese Daten dienen ausschließlich dem sicheren Betrieb und der
-						Fehlersuche, werden nicht mit anderen Daten zusammengeführt und laufend überschrieben.
-						Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren und
-						störungsfreien Betrieb).
+						angeforderte Ressource, Statuscode, übertragene Datenmenge, Referrer und Browserkennung.
+						Diese Daten dienen ausschließlich dem sicheren Betrieb und der Fehlersuche, werden nicht
+						mit anderen Daten zusammengeführt und laufend überschrieben. Rechtsgrundlage ist Art. 6
+						Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren und störungsfreien Betrieb).
 					</p>
 
 					<h2>3. Auslieferung über Cloudflare</h2>
 					<p>
-						Der Zugriff auf diese Website läuft über das Netzwerk der Cloudflare, Inc. (101
-						Townsend St, San Francisco, CA 94107, USA). Cloudflare leitet die Anfragen an den
-						Server weiter, filtert Angriffe und stellt die TLS-Verschlüsselung bereit. Dabei
-						verarbeitet Cloudflare technisch notwendige Verbindungsdaten einschließlich der
-						IP-Adresse. Cloudflare handelt insoweit als Auftragsverarbeiter; es besteht ein
-						Auftragsverarbeitungsvertrag, die Übermittlung in Drittländer ist über
-						EU-Standardvertragsklauseln abgesichert. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO
-						(berechtigtes Interesse an einer sicheren und erreichbaren Website).
+						Der Zugriff auf diese Website läuft über das Netzwerk der Cloudflare, Inc. (101 Townsend
+						St, San Francisco, CA 94107, USA). Cloudflare leitet die Anfragen an den Server weiter,
+						filtert Angriffe und stellt die TLS-Verschlüsselung bereit. Dabei verarbeitet Cloudflare
+						technisch notwendige Verbindungsdaten einschließlich der IP-Adresse. Cloudflare handelt
+						insoweit als Auftragsverarbeiter; es besteht ein Auftragsverarbeitungsvertrag, die
+						Übermittlung in Drittländer ist über EU-Standardvertragsklauseln abgesichert.
+						Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer sicheren
+						und erreichbaren Website).
 					</p>
 
 					<h2>4. YouTube-Video auf der Startseite</h2>
 					<p>
-						Auf der Startseite ist ein Trailer als Video der YouTube-Plattform eingebettet
-						(Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland). Die
-						Einbindung erfolgt über den erweiterten Datenschutzmodus
-						(<code>youtube-nocookie.com</code>): YouTube setzt dabei keine Cookies für
-						personalisierte Werbung, bevor das Video abgespielt wird. Beim Laden des Videorahmens
-						wird jedoch in jedem Fall Ihre IP-Adresse an YouTube übertragen; beim Abspielen kommen
-						weitere Nutzungsdaten hinzu. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO
-						(berechtigtes Interesse an der Vorstellung des Projekts). Wenn Sie das vermeiden
-						möchten, rufen Sie die Startseite nicht auf oder blockieren Sie die Einbindung in
-						Ihrem Browser. Weitere Informationen:
-						<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer"
-							>Datenschutzerklärung von Google</a
-						>.
+						Auf der Startseite ist ein Trailer als Video der YouTube-Plattform eingebettet (Google
+						Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland). Die Einbindung erfolgt
+						über den erweiterten Datenschutzmodus (<code>youtube-nocookie.com</code>): YouTube setzt
+						dabei keine Cookies für personalisierte Werbung, bevor das Video abgespielt wird. Beim
+						Laden des Videorahmens wird jedoch in jedem Fall Ihre IP-Adresse an YouTube übertragen;
+						beim Abspielen kommen weitere Nutzungsdaten hinzu. Rechtsgrundlage ist Art. 6 Abs. 1
+						lit. f DSGVO (berechtigtes Interesse an der Vorstellung des Projekts). Wenn Sie das
+						vermeiden möchten, rufen Sie die Startseite nicht auf oder blockieren Sie die Einbindung
+						in Ihrem Browser. Weitere Informationen:
+						<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+							Datenschutzerklärung von Google
+						</a>
+						.
 					</p>
 
 					<h2>5. Serverstatus-Abfrage (api.mcstatus.io)</h2>
@@ -87,13 +101,12 @@ import { siteConfig } from '../config/site.js';
 
 					<h2>6. Speicherung auf Ihrem Endgerät</h2>
 					<p>
-						Das Portal setzt keine Cookies. Gespeichert wird allein Ihre gewählte
-						Darstellung (hell oder dunkel) im <code>localStorage</code> Ihres Browsers, in der
-						Galerie zusätzlich die gewählte Sortierung. Diese
-						Angabe verlässt Ihr Gerät nicht und wird nicht ausgewertet; sie ist für die von Ihnen
-						ausdrücklich gewünschte Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).
-						Sie können sie jederzeit über die Website-Daten Ihres Browsers löschen. Zu den Cookies
-						der Galerie-Anmeldung siehe Abschnitt 11.
+						Das Portal setzt keine Cookies. Gespeichert wird allein Ihre gewählte Darstellung (hell
+						oder dunkel) im <code>localStorage</code> Ihres Browsers, in der Galerie zusätzlich die
+						gewählte Sortierung. Diese Angabe verlässt Ihr Gerät nicht und wird nicht ausgewertet;
+						sie ist für die von Ihnen ausdrücklich gewünschte Funktion unbedingt erforderlich (§ 25
+						Abs. 2 Nr. 2 TDDDG). Sie können sie jederzeit über die Website-Daten Ihres Browsers
+						löschen. Zu den Cookies der Galerie-Anmeldung siehe Abschnitt 11.
 					</p>
 
 					<h2>7. Suche</h2>
@@ -105,17 +118,18 @@ import { siteConfig } from '../config/site.js';
 
 					<h2>8. Schriften, Bilder und Skripte</h2>
 					<p>
-						Schriftarten, Bilder, Stylesheets und Skripte werden von diesem Server ausgeliefert.
-						Es kommt kein Content Delivery Network Dritter und keine externe Schriftquelle zum
-						Einsatz; einzige Ausnahme sind die Discord-Profilbilder in der Galerie (Abschnitt 11). Trackingdienste Dritter werden nicht eingesetzt; zur Reichweitenmessung
-						siehe den folgenden Abschnitt.
+						Schriftarten, Bilder, Stylesheets und Skripte werden von diesem Server ausgeliefert. Es
+						kommt kein Content Delivery Network Dritter und keine externe Schriftquelle zum Einsatz;
+						einzige Ausnahme sind die Discord-Profilbilder in der Galerie (Abschnitt 11).
+						Trackingdienste Dritter werden nicht eingesetzt; zur Reichweitenmessung siehe den
+						folgenden Abschnitt.
 					</p>
 
 					<h2>9. Reichweitenmessung</h2>
 					<p>
 						Um zu sehen, welche Seiten gelesen werden, wird die Software „Umami“ eingesetzt. Sie
-						läuft auf einem eigenen Server des Betreibers in Deutschland; die Zahlen werden nicht
-						an Dritte weitergegeben und nicht mit anderen Datenquellen zusammengeführt.
+						läuft auf einem eigenen Server des Betreibers in Deutschland; die Zahlen werden nicht an
+						Dritte weitergegeben und nicht mit anderen Datenquellen zusammengeführt.
 					</p>
 					<p>
 						Erfasst werden ausschließlich anonyme Angaben: aufgerufene Seite, zuvor besuchte Seite,
@@ -137,9 +151,9 @@ import { siteConfig } from '../config/site.js';
 					<p>
 						Wenn Sie eine E-Mail an die oben genannte Adresse schreiben, werden Ihre Angaben
 						ausschließlich zur Bearbeitung Ihres Anliegens verarbeitet und gelöscht, sobald sie
-						nicht mehr benötigt werden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO
-						(berechtigtes Interesse an der Beantwortung von Anfragen), bei vertragsbezogenen
-						Anfragen Art. 6 Abs. 1 lit. b DSGVO.
+						nicht mehr benötigt werden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
+						Interesse an der Beantwortung von Anfragen), bei vertragsbezogenen Anfragen Art. 6 Abs.
+						1 lit. b DSGVO.
 					</p>
 
 					<h2>11. Galerie: Anmeldung mit Discord, Likes und Kommentare</h2>
@@ -152,9 +166,10 @@ import { siteConfig } from '../config/site.js';
 						<strong>Anmeldung.</strong> Mit dem Klick auf „Log in“ werden Sie zu Discord
 						weitergeleitet (für Nutzer im EWR verantwortlich: Discord Netherlands BV, Schiphol
 						Boulevard 195, 1118 BG Schiphol, Niederlande); dort gilt die
-						<a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer"
-							>Datenschutzerklärung von Discord</a
-						>. Nach Ihrer Freigabe übermittelt Discord Ihre Discord-ID, Ihren Benutzer-, Anzeige- und
+						<a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">
+							Datenschutzerklärung von Discord
+						</a>
+						. Nach Ihrer Freigabe übermittelt Discord Ihre Discord-ID, Ihren Benutzer-, Anzeige- und
 						Servernamen, Ihr Profilbild sowie Ihre Mitgliedschaft und Rollen auf dem
 						Void-Tales-Server. Daraus ergibt sich, ob Sie schreiben dürfen und ob Sie zum Team
 						gehören. Der von Discord ausgestellte Zugriffsschlüssel wird nur für diese eine Abfrage
@@ -162,66 +177,63 @@ import { siteConfig } from '../config/site.js';
 					</p>
 					<p>
 						<strong>Was gespeichert wird.</strong> Ihre Discord-ID, Ihr Name, die Adresse Ihres
-						Profilbilds und die Angabe, ob Sie zum Team gehören (für die Dauer der Sitzung), dazu die
-						Bilder, die Sie geliked haben, und Ihre Kommentare jeweils mit Zeitpunkt. Kommentare
+						Profilbilds und die Angabe, ob Sie zum Team gehören (für die Dauer der Sitzung), dazu
+						die Bilder, die Sie geliked haben, und Ihre Kommentare jeweils mit Zeitpunkt. Kommentare
 						werden mit Name und Profilbild öffentlich angezeigt, bei Likes nur deren Anzahl.
 						Gespeichert wird auf einem Server des Betreibers in Deutschland.
 					</p>
 					<p>
-						<strong>Cookies.</strong> Für die Anmeldung setzt die Galerie zwei technisch
-						notwendige Cookies: <code>__Host-vt_oauth</code> sichert den Anmeldevorgang gegen
-						Fälschung ab und läuft nach 10 Minuten ab, <code>__Host-vt_sess</code> hält Sie
-						angemeldet und läuft nach 7 Tagen oder beim Abmelden ab. Auf dem Server liegt nur eine
-						Prüfsumme des Sitzungs-Cookies. Ohne Anmeldung werden keine Cookies gesetzt
-						(§ 25 Abs. 2 Nr. 2 TDDDG).
+						<strong>Cookies.</strong> Für die Anmeldung setzt die Galerie zwei technisch notwendige
+						Cookies: <code>__Host-vt_oauth</code> sichert den Anmeldevorgang gegen Fälschung ab und
+						läuft nach 10 Minuten ab, <code>__Host-vt_sess</code> hält Sie angemeldet und läuft nach
+						7 Tagen oder beim Abmelden ab. Auf dem Server liegt nur eine Prüfsumme des
+						Sitzungs-Cookies. Ohne Anmeldung werden keine Cookies gesetzt (§ 25 Abs. 2 Nr. 2 TDDDG).
 					</p>
 					<p>
 						<strong>Abgleich mit Discord.</strong> Die Bilder der Galerie stammen aus Beiträgen im
-						Void-Tales-Discord. Reaktionen mit 👍 oder ❤️ auf einen solchen Beitrag zählen als
-						Like für dessen Bilder, Antworten im Thread des Beitrags erscheinen als Kommentar
+						Void-Tales-Discord. Reaktionen mit 👍 oder ❤️ auf einen solchen Beitrag zählen als Like
+						für dessen Bilder, Antworten im Thread des Beitrags erscheinen als Kommentar
 						(Discord-ID, Name, Profilbild, Text, Zeitpunkt). Wird eine Reaktion oder Antwort in
 						Discord entfernt, verschwindet sie spätestens am folgenden Tag auch in der Galerie.
-						Umgekehrt erscheint jeder Kommentar aus der Galerie mit Name, Profilbild, Text und
-						Link zum Bild im Thread des Beitrags im Void-Tales-Discord, gekennzeichnet mit „via
-						Gallery“. Löschen Sie ihn in der Galerie, wird er auch dort entfernt; entfernt ihn das
-						Team in Discord, verschwindet er spätestens am folgenden Tag auch in der Galerie.
+						Umgekehrt erscheint jeder Kommentar aus der Galerie mit Name, Profilbild, Text und Link
+						zum Bild im Thread des Beitrags im Void-Tales-Discord, gekennzeichnet mit „via Gallery“.
+						Löschen Sie ihn in der Galerie, wird er auch dort entfernt; entfernt ihn das Team in
+						Discord, verschwindet er spätestens am folgenden Tag auch in der Galerie.
 						Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse daran, die
 						Rückmeldungen der Community an beiden Stellen gleich zu zeigen).
 					</p>
 					<p>
-						<strong>Profilbilder.</strong> Profilbilder werden direkt von Discord
-						(<code>cdn.discordapp.com</code>) geladen, sobald Sie Kommentare ansehen oder
-						angemeldet sind. Dabei wird Ihre IP-Adresse an Discord übertragen.
+						<strong>Profilbilder.</strong> Profilbilder werden direkt von Discord (
+						<code>cdn.discordapp.com</code>) geladen, sobald Sie Kommentare ansehen oder angemeldet
+						sind. Dabei wird Ihre IP-Adresse an Discord übertragen.
 					</p>
 					<p>
 						<strong>Moderation.</strong> Jeder neue Kommentar aus der Galerie wird mit Name, Text
 						und Link zum Bild in einen internen Kanal des Teams im Void-Tales-Discord gemeldet,
-						damit unpassende Beiträge schnell entfernt werden können. Das Team kann jeden
-						Kommentar löschen.
+						damit unpassende Beiträge schnell entfernt werden können. Das Team kann jeden Kommentar
+						löschen.
 					</p>
 					<p>
-						<strong>Speicherdauer.</strong> Sitzungen enden beim Abmelden, spätestens nach 7
-						Tagen. Likes und Kommentare bleiben gespeichert, bis Sie sie zurücknehmen bzw. löschen
-						oder die Löschung verlangen. Gelöschte Kommentare werden sofort ausgeblendet und 30
-						Tage später endgültig entfernt; bis dahin bleibt nachvollziehbar, wer sie gelöscht hat.
-						Tägliche Sicherungskopien werden turnusmäßig überschrieben.
+						<strong>Speicherdauer.</strong> Sitzungen enden beim Abmelden, spätestens nach 7 Tagen.
+						Likes und Kommentare bleiben gespeichert, bis Sie sie zurücknehmen bzw. löschen oder die
+						Löschung verlangen. Gelöschte Kommentare werden sofort ausgeblendet und 30 Tage später
+						endgültig entfernt; bis dahin bleibt nachvollziehbar, wer sie gelöscht hat. Tägliche
+						Sicherungskopien werden turnusmäßig überschrieben.
 					</p>
 					<p>
 						Rechtsgrundlage für Anmeldung, Likes und Kommentare ist Art. 6 Abs. 1 lit. b DSGVO
-						(Bereitstellung der von Ihnen genutzten Funktion), für die Meldung an das Team
-						Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer moderierten Galerie). Die
-						Meldung, der Thread in Discord und die Anmeldung über Discord können mit einer
-						Übermittlung in die USA
-						verbunden sein; Discord und seine US-Gesellschaften nehmen nach eigener Angabe am
-						EU-US Data Privacy Framework teil.
+						(Bereitstellung der von Ihnen genutzten Funktion), für die Meldung an das Team Art. 6
+						Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer moderierten Galerie). Die Meldung,
+						der Thread in Discord und die Anmeldung über Discord können mit einer Übermittlung in
+						die USA verbunden sein; Discord und seine US-Gesellschaften nehmen nach eigener Angabe
+						am EU-US Data Privacy Framework teil.
 					</p>
 
 					<h2>12. Verlinkte Angebote</h2>
 					<p>
 						Von dieser Website führen Links zu externen Angeboten, unter anderem Discord und
-						Modrinth. Sobald Sie einem solchen Link folgen, gilt die
-						Datenschutzerklärung des jeweiligen Anbieters. Auf deren Datenverarbeitung habe ich
-						keinen Einfluss.
+						Modrinth. Sobald Sie einem solchen Link folgen, gilt die Datenschutzerklärung des
+						jeweiligen Anbieters. Auf deren Datenverarbeitung habe ich keinen Einfluss.
 					</p>
 
 					<h2>13. Ihre Rechte</h2>
@@ -233,8 +245,7 @@ import { siteConfig } from '../config/site.js';
 						<li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
 						<li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
 						<li>
-							Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen
-							(Art. 21 DSGVO)
+							Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21 DSGVO)
 						</li>
 					</ul>
 					<p>
@@ -250,7 +261,7 @@ import { siteConfig } from '../config/site.js';
 					</p>
 
 					<p>
-						Anbieterkennzeichnung: <a href="/impressum">Impressum</a>
+						Anbieterkennzeichnung: <a href="/impressum/">Impressum</a>
 					</p>
 				</div>
 			</article>

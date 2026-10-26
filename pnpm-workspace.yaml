@@ -1,0 +1,6 @@
+# pnpm >=10 runs no dependency build scripts unless allowed here, and aborts
+# with ERR_PNPM_IGNORED_BUILDS otherwise. sharp encodes the media and OG cards,
+# esbuild runs the Astro build. Same list as voidtales-gallery.
+allowBuilds:
+  esbuild: true
+  sharp: true

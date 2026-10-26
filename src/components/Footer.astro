@@ -16,29 +16,29 @@ const year = new Date().getFullYear();
 					{siteConfig.name}
 				</a>
 				<p>{siteConfig.hero.subtitle}</p>
-				<a href="/#join" class="footer-address">{siteConfig.mcServerHost}</a>
+				<a href="/#join" class="footer-address">
+					{siteConfig.mcServerHost}
+				</a>
 			</div>
 
-			{
-				footerColumns.map((col) => (
-					<nav class="footer-col" aria-label={col.title}>
-						<p class="footer-col-title">{col.title}</p>
-						<ul>
-							{col.links.map((link) => (
-								<li>
-									<a
-										href={link.href}
-										target={isExternal(link.href) ? '_blank' : undefined}
-										rel={isExternal(link.href) ? 'noopener' : undefined}
-									>
-										{link.label}
-									</a>
-								</li>
-							))}
-						</ul>
-					</nav>
-				))
-			}
+			{footerColumns.map((col) => (
+				<nav class="footer-col" aria-label={col.title}>
+					<p class="footer-col-title">{col.title}</p>
+					<ul>
+						{col.links.map((link) => (
+							<li>
+								<a
+									href={link.href}
+									target={isExternal(link.href) ? '_blank' : undefined}
+									rel={isExternal(link.href) ? 'noopener' : undefined}
+								>
+									{link.label}
+								</a>
+							</li>
+						))}
+					</ul>
+				</nav>
+			))}
 		</div>
 
 		<p class="footer-copyright">
