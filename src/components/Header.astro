@@ -155,11 +155,14 @@ const path = Astro.url.pathname;
 	matchMedia('(width >= 64rem)').addEventListener('change', () => setMenu(false));
 
 	document.getElementById('theme-toggle')?.addEventListener('click', () => {
-		const isDark = document.documentElement.classList.toggle('dark');
+		const value = document.documentElement.classList.toggle('dark') ? 'dark' : 'light';
+		// The cookie carries the choice over to the gallery; localStorage covers local
+		// dev, where the browser drops a cookie for another domain.
+		document.cookie = `theme=${value}; Domain=.voidtales.win; Path=/; Max-Age=31536000; SameSite=Lax; Secure`;
 		try {
-			localStorage.setItem('theme', isDark ? 'dark' : 'light');
+			localStorage.setItem('theme', value);
 		} catch {
-			// Private mode / storage disabled: the toggle still works for this page view.
+			// Private mode / storage disabled: the cookie still carries the choice.
 		}
 	});
 </script>

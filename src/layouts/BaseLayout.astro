@@ -122,20 +122,29 @@ const jsonLd = {
 		{
 			/* Runs before first paint so the theme never flashes. The hero preload
 		    lives here too: a `media="(prefers-color-scheme: …)"` link would guess
-		    from the OS while the class below decides from localStorage, and every
+		    from the OS while the class below decides from the saved choice, and every
 		    time the two disagree the browser preloads the image nobody uses. The
 		    URLs must stay byte-identical to the ones in global.css, otherwise the
 		    request is not deduplicated. */
 		}
 		<script is:inline>
 			(function () {
-				var isDark = true;
-				try {
-					var saved = localStorage.getItem('theme');
-					isDark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-				} catch (e) {
-					/* No storage access: dark is the design target. */
+				// Shared with the gallery: cookie `theme` on .voidtales.win, else
+				// localStorage (choices from before the cookie, copied into it), else
+				// dark, the design target. Header.astro writes both on toggle.
+				var m = document.cookie.match(/(?:^|; )theme=(dark|light)/);
+				var saved = m && m[1];
+				if (!saved) {
+					try {
+						saved = localStorage.getItem('theme');
+					} catch (e) {}
+					if (saved === 'dark' || saved === 'light')
+						document.cookie =
+							'theme=' +
+							saved +
+							'; Domain=.voidtales.win; Path=/; Max-Age=31536000; SameSite=Lax; Secure';
 				}
+				var isDark = saved !== 'light';
 				document.documentElement.classList.toggle('dark', isDark);
 				// Halloween: 24.10. to 1.11. by the visitor's clock, gone by itself after (rules: global.css, html.halloween)
 				var d = new Date(), m = d.getMonth(), t = d.getDate();
