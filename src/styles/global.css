@@ -1,5 +1,15 @@
 @import 'tailwindcss';
 
+/* Tailwind skips what .gitignore lists, but the Docker build has neither
+   .gitignore nor .git (.dockerignore drops both). There it scans the item
+   catalogue fetched during the build: a utility-like word in item lore becomes a
+   class, and the CSS hash changes with the data (tested 26.10.2026 with a token
+   placed in items.json). Same exclusions, stated where they hold. */
+@source not '../generated';
+@source not '../../.media-cache';
+@source not '../../public/items';
+@source not '../../public/images';
+
 /* Class-based dark mode: the inline script in BaseLayout puts `.dark` on <html>. */
 @custom-variant dark (&:where(.dark, .dark *));
 
