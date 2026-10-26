@@ -8,7 +8,7 @@ import { siteConfig } from '../config/site.js';
 
 <BaseLayout
 	title="Datenschutzerklärung"
-	description="Wie personenbezogene Daten auf portal.voidtales.win verarbeitet werden."
+	description="Wie personenbezogene Daten auf portal.voidtales.win und gallery.voidtales.win verarbeitet werden."
 	noindex
 >
 	<section class="section">
@@ -19,8 +19,10 @@ import { siteConfig } from '../config/site.js';
 				<div class="prose">
 					<p>
 						Diese Erklärung beschreibt, welche personenbezogenen Daten beim Besuch von
-						<strong>portal.voidtales.win</strong> verarbeitet werden, zu welchem Zweck und auf
-						welcher Rechtsgrundlage. Stand: September 2026.
+						<strong>portal.voidtales.win</strong> und der Community-Galerie
+						<strong>gallery.voidtales.win</strong> verarbeitet werden, zu welchem Zweck und auf
+						welcher Rechtsgrundlage. Die Abschnitte 2, 3, 8 und 9 gelten für beide Seiten,
+						Abschnitt 11 nur für die Galerie. Stand: Oktober 2026.
 					</p>
 
 					<h2>1. Verantwortlicher</h2>
@@ -85,11 +87,13 @@ import { siteConfig } from '../config/site.js';
 
 					<h2>6. Speicherung auf Ihrem Endgerät</h2>
 					<p>
-						Diese Website setzt keine Cookies. Gespeichert wird allein Ihre gewählte
-						Darstellung (hell oder dunkel) im <code>localStorage</code> Ihres Browsers. Diese
+						Das Portal setzt keine Cookies. Gespeichert wird allein Ihre gewählte
+						Darstellung (hell oder dunkel) im <code>localStorage</code> Ihres Browsers, in der
+						Galerie zusätzlich die gewählte Sortierung. Diese
 						Angabe verlässt Ihr Gerät nicht und wird nicht ausgewertet; sie ist für die von Ihnen
 						ausdrücklich gewünschte Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).
-						Sie können sie jederzeit über die Website-Daten Ihres Browsers löschen.
+						Sie können sie jederzeit über die Website-Daten Ihres Browsers löschen. Zu den Cookies
+						der Galerie-Anmeldung siehe Abschnitt 11.
 					</p>
 
 					<h2>7. Suche</h2>
@@ -103,7 +107,7 @@ import { siteConfig } from '../config/site.js';
 					<p>
 						Schriftarten, Bilder, Stylesheets und Skripte werden von diesem Server ausgeliefert.
 						Es kommt kein Content Delivery Network Dritter und keine externe Schriftquelle zum
-						Einsatz. Trackingdienste Dritter werden nicht eingesetzt; zur Reichweitenmessung
+						Einsatz; einzige Ausnahme sind die Discord-Profilbilder in der Galerie (Abschnitt 11). Trackingdienste Dritter werden nicht eingesetzt; zur Reichweitenmessung
 						siehe den folgenden Abschnitt.
 					</p>
 
@@ -138,15 +142,84 @@ import { siteConfig } from '../config/site.js';
 						Anfragen Art. 6 Abs. 1 lit. b DSGVO.
 					</p>
 
-					<h2>11. Verlinkte Angebote</h2>
+					<h2>11. Galerie: Anmeldung mit Discord, Likes und Kommentare</h2>
 					<p>
-						Von dieser Website führen Links zu externen Angeboten, unter anderem Discord, Modrinth
-						und der Community-Galerie. Sobald Sie einem solchen Link folgen, gilt die
+						Bilder, Likes und Kommentare der Galerie kann jeder ohne Anmeldung ansehen. Wer Bilder
+						liken oder kommentieren möchte, meldet sich mit seinem Discord-Konto an; das ist nur für
+						Mitglieder des Void-Tales-Discord-Servers möglich.
+					</p>
+					<p>
+						<strong>Anmeldung.</strong> Mit dem Klick auf „Log in“ werden Sie zu Discord
+						weitergeleitet (für Nutzer im EWR verantwortlich: Discord Netherlands BV, Schiphol
+						Boulevard 195, 1118 BG Schiphol, Niederlande); dort gilt die
+						<a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer"
+							>Datenschutzerklärung von Discord</a
+						>. Nach Ihrer Freigabe übermittelt Discord Ihre Discord-ID, Ihren Benutzer-, Anzeige- und
+						Servernamen, Ihr Profilbild sowie Ihre Mitgliedschaft und Rollen auf dem
+						Void-Tales-Server. Daraus ergibt sich, ob Sie schreiben dürfen und ob Sie zum Team
+						gehören. Der von Discord ausgestellte Zugriffsschlüssel wird nur für diese eine Abfrage
+						verwendet und nicht gespeichert.
+					</p>
+					<p>
+						<strong>Was gespeichert wird.</strong> Ihre Discord-ID, Ihr Name, die Adresse Ihres
+						Profilbilds und die Angabe, ob Sie zum Team gehören (für die Dauer der Sitzung), dazu die
+						Bilder, die Sie geliked haben, und Ihre Kommentare jeweils mit Zeitpunkt. Kommentare
+						werden mit Name und Profilbild öffentlich angezeigt, bei Likes nur deren Anzahl.
+						Gespeichert wird auf einem Server des Betreibers in Deutschland.
+					</p>
+					<p>
+						<strong>Cookies.</strong> Für die Anmeldung setzt die Galerie zwei technisch
+						notwendige Cookies: <code>__Host-vt_oauth</code> sichert den Anmeldevorgang gegen
+						Fälschung ab und läuft nach 10 Minuten ab, <code>__Host-vt_sess</code> hält Sie
+						angemeldet und läuft nach 7 Tagen oder beim Abmelden ab. Auf dem Server liegt nur eine
+						Prüfsumme des Sitzungs-Cookies. Ohne Anmeldung werden keine Cookies gesetzt
+						(§ 25 Abs. 2 Nr. 2 TDDDG).
+					</p>
+					<p>
+						<strong>Abgleich mit Discord.</strong> Die Bilder der Galerie stammen aus Beiträgen im
+						Void-Tales-Discord. Reaktionen mit 👍 oder ❤️ auf einen solchen Beitrag zählen als
+						Like für dessen Bilder, Antworten im Thread des Beitrags erscheinen als Kommentar
+						(Discord-ID, Name, Profilbild, Text, Zeitpunkt). Wird eine Reaktion oder Antwort in
+						Discord entfernt, verschwindet sie spätestens am folgenden Tag auch in der Galerie.
+						Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse daran, die
+						Rückmeldungen der Community an einer Stelle zu zeigen).
+					</p>
+					<p>
+						<strong>Profilbilder.</strong> Profilbilder werden direkt von Discord
+						(<code>cdn.discordapp.com</code>) geladen, sobald Sie Kommentare ansehen oder
+						angemeldet sind. Dabei wird Ihre IP-Adresse an Discord übertragen.
+					</p>
+					<p>
+						<strong>Moderation.</strong> Jeder neue Kommentar aus der Galerie wird mit Name, Text
+						und Link zum Bild in einen internen Kanal des Teams im Void-Tales-Discord gemeldet,
+						damit unpassende Beiträge schnell entfernt werden können. Das Team kann jeden
+						Kommentar löschen.
+					</p>
+					<p>
+						<strong>Speicherdauer.</strong> Sitzungen enden beim Abmelden, spätestens nach 7
+						Tagen. Likes und Kommentare bleiben gespeichert, bis Sie sie zurücknehmen bzw. löschen
+						oder die Löschung verlangen. Gelöschte Kommentare werden sofort ausgeblendet und 30
+						Tage später endgültig entfernt; bis dahin bleibt nachvollziehbar, wer sie gelöscht hat.
+						Tägliche Sicherungskopien werden turnusmäßig überschrieben.
+					</p>
+					<p>
+						Rechtsgrundlage für Anmeldung, Likes und Kommentare ist Art. 6 Abs. 1 lit. b DSGVO
+						(Bereitstellung der von Ihnen genutzten Funktion), für die Meldung an das Team
+						Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer moderierten Galerie). Die
+						Meldung und die Anmeldung über Discord können mit einer Übermittlung in die USA
+						verbunden sein; Discord und seine US-Gesellschaften nehmen nach eigener Angabe am
+						EU-US Data Privacy Framework teil.
+					</p>
+
+					<h2>12. Verlinkte Angebote</h2>
+					<p>
+						Von dieser Website führen Links zu externen Angeboten, unter anderem Discord und
+						Modrinth. Sobald Sie einem solchen Link folgen, gilt die
 						Datenschutzerklärung des jeweiligen Anbieters. Auf deren Datenverarbeitung habe ich
 						keinen Einfluss.
 					</p>
 
-					<h2>12. Ihre Rechte</h2>
+					<h2>13. Ihre Rechte</h2>
 					<p>Sie haben jederzeit das Recht auf</p>
 					<ul>
 						<li>Auskunft über die zu Ihrer Person verarbeiteten Daten (Art. 15 DSGVO)</li>
@@ -165,7 +238,7 @@ import { siteConfig } from '../config/site.js';
 						zu (Art. 77 DSGVO).
 					</p>
 
-					<h2>13. Änderungen dieser Erklärung</h2>
+					<h2>14. Änderungen dieser Erklärung</h2>
 					<p>
 						Diese Erklärung wird angepasst, wenn sich die beschriebenen Verarbeitungen oder die
 						rechtlichen Anforderungen ändern. Es gilt jeweils die hier veröffentlichte Fassung.
