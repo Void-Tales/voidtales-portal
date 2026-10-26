@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { siteConfig } from '../../config/site.js';
+import { newsSummary } from '../../utils/excerpt';
 
 const entries = (await getCollection('news')).sort(
 	(a, b) => b.data.pubDatetime.valueOf() - a.data.pubDatetime.valueOf()
@@ -29,7 +30,7 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 // a page that happens to contain links.
 const schema = {
 	'@type': 'CollectionPage',
-	'@id': `${siteConfig.url}/news#collection`,
+	'@id': `${siteConfig.url}/news/#collection`,
 	name: 'News',
 	isPartOf: { '@id': `${siteConfig.url}/#website` },
 	mainEntity: {
@@ -79,7 +80,7 @@ const schema = {
 										<h3>
 											<a href={`/news/${entry.data.slug}/`}>{entry.data.title}</a>
 										</h3>
-										{entry.data.description && <p>{entry.data.description}</p>}
+										<p>{newsSummary(entry.data.description, entry.body ?? '')}</p>
 									</article>
 								</li>
 							))}
