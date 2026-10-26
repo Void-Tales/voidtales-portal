@@ -24,6 +24,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
+import { berlinMonth } from '../src/utils/berlin.js';
 
 const OUT_DIR = 'dist/images/og';
 
@@ -269,7 +270,7 @@ for (const file of globSync('src/content/news/**/*.md')) {
 const months = new Set();
 for (const file of globSync('src/content/devlog/**/*.md')) {
 	const data = frontmatter(file);
-	if (data?.date) months.add(new Date(data.date).toISOString().slice(0, 7));
+	if (data?.date) months.add(berlinMonth(new Date(data.date)));
 }
 for (const month of months) {
 	const label = new Intl.DateTimeFormat('en-GB', {

@@ -4,6 +4,7 @@ import { satteri } from '@astrojs/markdown-satteri';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { siteConfig } from './src/config/site.js';
+import { berlinMonth } from './src/utils/berlin.js';
 
 // Written by scripts/media.mjs (runs in `prebuild`). Missing on a bare checkout,
 // which is fine: images then render without intrinsic sizes instead of the
@@ -41,7 +42,7 @@ const contentDates = (() => {
 	// entry, and /devlog itself mirrors the newest month.
 	const devlog = read('./src/content/devlog', 'date');
 	for (const { date } of devlog) {
-		const key = `/devlog/${date.toISOString().slice(0, 7)}`;
+		const key = `/devlog/${berlinMonth(date)}`;
 		if (!dates[key] || date.toISOString() > dates[key]) dates[key] = date.toISOString();
 	}
 	const newest = devlog.map((e) => e.date).sort((a, b) => b - a)[0];
