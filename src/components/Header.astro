@@ -1,53 +1,37 @@
 ---
+import BrandMark from './BrandMark.astro';
 import { siteConfig } from '../config/site.js';
-import { navigationLinks, isExternal } from '../config/navigation.js';
+import { navigationLinks, isExternal, isCurrent } from '../config/navigation.js';
 
-// ponytail: no CTA in the header. Six nav links (Search lives as an icon
-// button next to the theme toggle instead, not a seventh nav-link) plus the
-// mark plus the toggle already fill the desktop row; a seventh nav-link
-// risks a two-line nav. If conversion ever needs one, move "World Map" into
-// the mobile menu first.
+const path = Astro.url.pathname;
+
+// ponytail: no CTA in the header. Eight nav links (Search is an icon button,
+// not a ninth link) only fit centred from `lg` on; below that the burger menu
+// takes over. If conversion ever needs a CTA, move "World Map" into the mobile
+// menu first.
+//
+// Three-column grid, not flex: the nav sits on the true centre of the page
+// even though brand and buttons differ in width. The gallery header is the
+// same markup and must stay that way.
 ---
 
 <header class="site-header">
 	<div class="shell site-header-inner">
 		<a href="/" class="brand" aria-label={`${siteConfig.name} home`}>
-			{/* The V mark, identical to the gallery: that is the network's recognition value. */}
-			<svg class="h-7 w-7" viewBox="0 0 64 64" aria-hidden="true">
-				<defs>
-					<linearGradient id="vt-mark-bg" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" stop-color="#140f22"></stop>
-						<stop offset="100%" stop-color="#0a0714"></stop>
-					</linearGradient>
-					<filter id="vt-mark-glow" x="-50%" y="-50%" width="200%" height="200%">
-						<feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur>
-						<feMerge>
-							<feMergeNode in="blur"></feMergeNode>
-							<feMergeNode in="SourceGraphic"></feMergeNode>
-						</feMerge>
-					</filter>
-				</defs>
-				<rect width="64" height="64" rx="14" fill="url(#vt-mark-bg)"></rect>
-				<path
-					d="M16 15 L32 46 L48 15"
-					fill="none"
-					stroke="#a78bfa"
-					stroke-width="7"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					filter="url(#vt-mark-glow)"></path>
-			</svg>
+			{/* The V mark, identical to the gallery and the favicon: the network's recognition value. */}
+			<BrandMark />
 			{siteConfig.name}
 		</a>
 
 		{/* One link list, rendered twice (desktop bar + mobile dropdown). Never duplicate it. */}
-		<nav class="mx-auto hidden items-center gap-6 md:flex" aria-label="Main navigation">
+		<nav class="header-nav" aria-label="Main navigation">
 			{
 				navigationLinks.map((link) => (
 					<a
 						href={link.href}
 						target={isExternal(link.href) ? '_blank' : undefined}
 						rel={isExternal(link.href) ? 'noopener' : undefined}
+						aria-current={isCurrent(link.href, path) ? 'page' : undefined}
 						class="nav-link"
 					>
 						{link.label}
@@ -56,11 +40,11 @@ import { navigationLinks, isExternal } from '../config/navigation.js';
 			}
 		</nav>
 
-		<div class="ml-auto flex items-center gap-2">
+		<div class="header-actions">
 			<button
 				type="button"
 				id="menu-toggle"
-				class="icon-btn md:hidden"
+				class="icon-btn lg:hidden"
 				aria-label="Toggle menu"
 				aria-expanded="false"
 				aria-controls="mobile-menu"
@@ -132,14 +116,15 @@ import { navigationLinks, isExternal } from '../config/navigation.js';
 		</div>
 	</div>
 
-	<div id="mobile-menu" hidden class="mobile-menu md:hidden">
-		<nav class="shell flex flex-col gap-3 py-4" aria-label="Mobile navigation">
+	<div id="mobile-menu" hidden class="mobile-menu lg:hidden">
+		<nav class="shell flex flex-col items-start gap-3 py-4" aria-label="Mobile navigation">
 			{
 				navigationLinks.map((link) => (
 					<a
 						href={link.href}
 						target={isExternal(link.href) ? '_blank' : undefined}
 						rel={isExternal(link.href) ? 'noopener' : undefined}
+						aria-current={isCurrent(link.href, path) ? 'page' : undefined}
 						class="nav-link"
 					>
 						{link.label}
@@ -154,12 +139,20 @@ import { navigationLinks, isExternal } from '../config/navigation.js';
 	const menuToggle = document.getElementById('menu-toggle');
 	const menu = document.getElementById('mobile-menu');
 
-	menuToggle?.addEventListener('click', () => {
-		const open = menu?.hasAttribute('hidden');
-		if (open) menu?.removeAttribute('hidden');
-		else menu?.setAttribute('hidden', '');
-		menuToggle.setAttribute('aria-expanded', String(open));
+	const setMenu = (open: boolean) => {
+		menu?.toggleAttribute('hidden', !open);
+		menuToggle?.setAttribute('aria-expanded', String(open));
+	};
+
+	menuToggle?.addEventListener('click', () => setMenu(menu?.hasAttribute('hidden') ?? false));
+	// Closed again by Escape, a click outside the header, or the desktop nav
+	// taking over (tablet turned to landscape) - otherwise it reopens later
+	// by itself and aria-expanded lies.
+	document.addEventListener('keydown', (e) => e.key === 'Escape' && setMenu(false));
+	document.addEventListener('click', (e) => {
+		if (!(e.target as Element).closest('.site-header')) setMenu(false);
 	});
+	matchMedia('(width >= 64rem)').addEventListener('change', () => setMenu(false));
 
 	document.getElementById('theme-toggle')?.addEventListener('click', () => {
 		const isDark = document.documentElement.classList.toggle('dark');

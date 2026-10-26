@@ -1,5 +1,9 @@
+import { siteConfig } from './site.js';
+
 // Single source for the header navigation. Rendered twice (desktop bar +
 // mobile dropdown) from this one list — never duplicate the links again.
+// The gallery mirrors header and footer with absolute URLs
+// (voidtales-gallery src/config/navigation.js): a change here goes there too.
 export const navigationLinks = [
 	{ label: 'Home', href: '/' },
 	{ label: 'Wiki', href: '/wiki' },
@@ -22,6 +26,36 @@ export const socialLinks = navigationLinks.filter(
 	(l) => !['World Map', 'Home', 'Items'].includes(l.label)
 );
 
-// News and Devlog live on this site now, so the link list is no longer purely
-// external — only off-site links get a new tab.
-export const isExternal = (href) => !href.startsWith('/');
+// In nav order, whatever order the labels come in.
+const pick = (...labels) => navigationLinks.filter((n) => labels.includes(n.label));
+
+// Footer: the header links plus Modrinth and the legal pages, grouped.
+export const footerColumns = [
+	{ title: 'Explore', links: pick('Home', 'Wiki', 'Items', 'Gallery', 'World Map') },
+	{
+		title: 'Community',
+		links: [
+			...pick('News', 'Devlog', 'Discord'),
+			{ label: 'Modrinth', href: siteConfig.modrinthUrl },
+		],
+	},
+	{
+		title: 'Legal',
+		links: [
+			{ label: 'Impressum', href: '/impressum' },
+			{ label: 'Datenschutz', href: '/datenschutz' },
+		],
+	},
+];
+
+// Portal and gallery are one site to the visitor and share a tab. Discord, the
+// map and Modrinth open a new one.
+export const isExternal = (href) =>
+	!href.startsWith('/') && !/^https:\/\/(portal|gallery)\.voidtales\.win/.test(href);
+
+// Header highlight: Home only on the start page, every other entry for its
+// whole subtree (/news/<slug> lights up News, /newsletter would not).
+export const isCurrent = (href, path) =>
+	href === '/'
+		? path === '/'
+		: href.startsWith('/') && (path === href || path.startsWith(`${href}/`));
