@@ -78,16 +78,21 @@ html.dark {
 
 /* Smooth dark/light switch: only colour props, so it doesn't fight layout or
    the entrance/scroll motion. No transition on first paint because the theme
-   class is already set before that (BaseLayout inline script). */
-@media (prefers-reduced-motion: no-preference) {
-	*,
-	*::before,
-	*::after {
-		transition:
-			background-color 700ms var(--ease-brand),
-			color 700ms var(--ease-brand),
-			border-color 700ms var(--ease-brand),
-			box-shadow 700ms var(--ease-brand);
+   class is already set before that (BaseLayout inline script).
+   In `base`, not unlayered: unlayered it beat every `transition` in
+   `components`, so the nav underline, button lifts and card hovers snapped
+   instead of moving. Anything with its own transition now keeps it. */
+@layer base {
+	@media (prefers-reduced-motion: no-preference) {
+		*,
+		*::before,
+		*::after {
+			transition:
+				background-color 700ms var(--ease-brand),
+				color 700ms var(--ease-brand),
+				border-color 700ms var(--ease-brand),
+				box-shadow 700ms var(--ease-brand);
+		}
 	}
 }
 
@@ -416,8 +421,8 @@ body::before {
 		box-shadow: var(--vt-shadow-2);
 	}
 
-	/* Animation, not transition: the unlayered universal `transition` rule at
-	   the top of this file beats anything declared in a layer. */
+	/* Animation, not transition: `hidden` is display:none, and nothing
+	   transitions out of that. */
 	.mobile-menu:not([hidden]) {
 		animation: vt-menu-in 0.2s var(--ease-brand);
 	}
