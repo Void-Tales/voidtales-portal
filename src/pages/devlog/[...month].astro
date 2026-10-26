@@ -126,39 +126,35 @@ const schema = {
 			<p class="eyebrow">From the workbench</p>
 			<h1 class="page-title">Devlog</h1>
 			<p class="section-lead">
-				Day-by-day progress on Void Tales. Bigger announcements land in the <a href="/news/">news</a
-				>.
+				Day-by-day progress on Void Tales. Bigger announcements land in the{' '}
+				<a href="/news/">news</a>.
 			</p>
 
 			<nav class="month-nav" aria-label="Devlog archive">
-				{
-					months.map((m) => (
-						<a href={href(m)} aria-current={m === month ? 'page' : undefined}>
-							{label(m)}
-						</a>
-					))
-				}
+				{months.map((m) => (
+					<a href={href(m)} aria-current={m === month ? 'page' : undefined}>
+						{label(m)}
+					</a>
+				))}
 			</nav>
 
 			<h2 class="month-heading">{current}</h2>
 
-			{
-				rendered.map((group) => (
-					<article class="devlog-day" id={group.id}>
-						<h3>
-							<a href={`${href(month)}#${group.id}`}>
-								<time datetime={group.day}>{dayFormat.format(group.date)}</time>
-							</a>
-						</h3>
-						{group.author && <p class="devlog-author">{group.author}</p>}
-						{group.parts.map(({ Content }) => (
-							<div class="prose">
-								<Content />
-							</div>
-						))}
-					</article>
-				))
-			}
+			{rendered.map((group) => (
+				<article class="devlog-day" id={group.id}>
+					<h3>
+						<a href={`${href(month)}#${group.id}`}>
+							<time datetime={group.day}>{dayFormat.format(group.date)}</time>
+						</a>
+					</h3>
+					{group.author && <p class="devlog-author">{group.author}</p>}
+					{group.parts.map(({ Content }) => (
+						<div class="prose">
+							<Content />
+						</div>
+					))}
+				</article>
+			))}
 		</div>
 	</section>
 </BaseLayout>

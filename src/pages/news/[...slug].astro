@@ -48,7 +48,9 @@ const schema = {
 >
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/news/">← All news</a>
+			<a class="back-link" href="/news/">
+				← All news
+			</a>
 			<article>
 				<time datetime={entry.data.pubDatetime.toISOString()}>
 					{dateFormat.format(entry.data.pubDatetime)}

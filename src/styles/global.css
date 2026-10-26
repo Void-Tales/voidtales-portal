@@ -1792,24 +1792,118 @@ body::before {
    So the accent turns to lantern orange (white on #c2410c 5.2:1 by day),
    pixel bats cross the hero, a jack o'lantern block glows in its corner, fog
    lies at its foot. Motion only without reduced motion. */
-html.halloween { --vt-accent: #c2410c; --vt-accent-soft: rgb(194 65 12 / 10%); }
-html.halloween.dark { --vt-accent: #ff9a4d; --vt-accent-soft: rgb(255 154 77 / 14%); --vt-glow: rgb(255 140 50 / 50%); --vt-bg: #08050f; }
-.spuk { display: none; }
-html.halloween .spuk { display: block; position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-html.halloween .spuk::after { content: ''; position: absolute; left: -10%; right: -10%; bottom: 0; height: 30%;
-	background: radial-gradient(45% 60% at 25% 100%, rgb(190 170 230 / 22%), transparent 70%), radial-gradient(40% 55% at 75% 100%, rgb(170 150 220 / 18%), transparent 70%);
-	background-size: 150% 100%; filter: blur(10px); animation: vt-nebel 40s ease-in-out infinite alternate; }
-@keyframes vt-nebel { from { background-position: 0 0; } to { background-position: 100% 0; } }
-.spuk .fm { position: absolute; aspect-ratio: 17 / 8; background: url('/images/halloween/fledermaus-pixel.svg') center / contain no-repeat; image-rendering: pixelated;
+html.halloween {
+	--vt-accent: #c2410c;
+	--vt-accent-soft: rgb(194 65 12 / 10%);
+}
+html.halloween.dark {
+	--vt-accent: #ff9a4d;
+	--vt-accent-soft: rgb(255 154 77 / 14%);
+	--vt-glow: rgb(255 140 50 / 50%);
+	--vt-bg: #08050f;
+}
+.spuk {
+	display: none;
+}
+html.halloween .spuk {
+	display: block;
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	overflow: hidden;
+}
+html.halloween .spuk::after {
+	content: '';
+	position: absolute;
+	left: -10%;
+	right: -10%;
+	bottom: 0;
+	height: 30%;
+	background:
+		radial-gradient(45% 60% at 25% 100%, rgb(190 170 230 / 22%), transparent 70%),
+		radial-gradient(40% 55% at 75% 100%, rgb(170 150 220 / 18%), transparent 70%);
+	background-size: 150% 100%;
+	filter: blur(10px);
+	animation: vt-nebel 40s ease-in-out infinite alternate;
+}
+@keyframes vt-nebel {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 100% 0;
+	}
+}
+.spuk .fm {
+	position: absolute;
+	aspect-ratio: 17 / 8;
+	background: url('/images/halloween/fledermaus-pixel.svg') center / contain no-repeat;
+	image-rendering: pixelated;
 	filter: drop-shadow(0 0 1.5px rgb(196 160 255 / 95%)) drop-shadow(0 0 10px rgb(167 139 250 / 45%));
-	animation: vt-flug var(--d) linear var(--s) infinite, vt-flattern 0.3s steps(1) infinite; }
-.spuk .fm:nth-child(1) { width: 68px; left: 70%; top: 14%; --d: 22s; --s: -3s; }
-.spuk .fm:nth-child(2) { width: 51px; left: 40%; top: 24%; --d: 30s; --s: -14s; }
-.spuk .fm:nth-child(3) { width: 42px; left: 85%; top: 34%; --d: 36s; --s: -25s; }
-@keyframes vt-flug { 0% { translate: 70vw 0; } 35% { translate: 20vw -2.5rem; } 65% { translate: -25vw 1.5rem; } 100% { translate: -110vw -1rem; } }
-@keyframes vt-flattern { 50% { scale: 1 0.5; } }
-.spuk .kb { position: absolute; right: 7%; top: 18%; width: clamp(56px, 8vw, 96px); aspect-ratio: 1;
-	background: url('/images/halloween/kuerbis-block.svg') center / contain no-repeat; image-rendering: pixelated;
-	filter: drop-shadow(0 0 18px rgb(255 160 50 / 55%)); animation: vt-glimmen 3.5s ease-in-out infinite alternate; }
-@keyframes vt-glimmen { to { filter: drop-shadow(0 0 28px rgb(255 160 50 / 75%)); } }
-@media (prefers-reduced-motion: reduce) { .spuk .fm, .spuk .kb, html.halloween .spuk::after { animation: none; } }
+	animation:
+		vt-flug var(--d) linear var(--s) infinite,
+		vt-flattern 0.3s steps(1) infinite;
+}
+.spuk .fm:nth-child(1) {
+	width: 68px;
+	left: 70%;
+	top: 14%;
+	--d: 22s;
+	--s: -3s;
+}
+.spuk .fm:nth-child(2) {
+	width: 51px;
+	left: 40%;
+	top: 24%;
+	--d: 30s;
+	--s: -14s;
+}
+.spuk .fm:nth-child(3) {
+	width: 42px;
+	left: 85%;
+	top: 34%;
+	--d: 36s;
+	--s: -25s;
+}
+@keyframes vt-flug {
+	0% {
+		translate: 70vw 0;
+	}
+	35% {
+		translate: 20vw -2.5rem;
+	}
+	65% {
+		translate: -25vw 1.5rem;
+	}
+	100% {
+		translate: -110vw -1rem;
+	}
+}
+@keyframes vt-flattern {
+	50% {
+		scale: 1 0.5;
+	}
+}
+.spuk .kb {
+	position: absolute;
+	right: 7%;
+	top: 18%;
+	width: clamp(56px, 8vw, 96px);
+	aspect-ratio: 1;
+	background: url('/images/halloween/kuerbis-block.svg') center / contain no-repeat;
+	image-rendering: pixelated;
+	filter: drop-shadow(0 0 18px rgb(255 160 50 / 55%));
+	animation: vt-glimmen 3.5s ease-in-out infinite alternate;
+}
+@keyframes vt-glimmen {
+	to {
+		filter: drop-shadow(0 0 28px rgb(255 160 50 / 75%));
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.spuk .fm,
+	.spuk .kb,
+	html.halloween .spuk::after {
+		animation: none;
+	}
+}

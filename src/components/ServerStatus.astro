@@ -16,10 +16,8 @@ const { mcServerHost, mcServerPort } = siteConfig;
 const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcServerPort}`;
 ---
 
-{
-	/* Static shell, JS fills in the live values. Without JS the address and the
-	   copy button still work, the status just stays "Checking…". */
-}
+{/* Static shell, JS fills in the live values. Without JS the address and the
+	   copy button still work, the status just stays "Checking…". */}
 <div
 	class:list={[variant === 'full' ? 'status-card' : 'flex flex-wrap items-center gap-3']}
 	data-server-status
@@ -33,13 +31,11 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 			<span data-label>Checking…</span>
 		</span>
 
-		{
-			variant === 'full' && (
-				<button type="button" data-refresh class="btn px-3 py-1 text-[0.8rem]">
-					Refresh
-				</button>
-			)
-		}
+		{variant === 'full' && (
+			<button type="button" data-refresh class="btn px-3 py-1 text-[0.8rem]">
+				Refresh
+			</button>
+		)}
 	</div>
 
 	<button
@@ -79,24 +75,22 @@ const address = mcServerPort === 25565 ? mcServerHost : `${mcServerHost}:${mcSer
 	</button>
 
 	<div class="status-meta">
-		<div>Players: <strong data-players>-</strong></div>
-		{
-			variant === 'full' && (
-				<div data-version-wrap hidden>
-					Version: <strong data-version />
-				</div>
-			)
-		}
+		<div>
+			Players: <strong data-players>-</strong>
+		</div>
+		{variant === 'full' && (
+			<div data-version-wrap hidden>
+				Version: <strong data-version />
+			</div>
+		)}
 	</div>
 
-	{
-		variant === 'full' && (
-			<div data-motd-wrap hidden>
-				{/* Always dark: the Minecraft palette is built for a dark server list. */}
-				<code data-motd class="status-motd block" />
-			</div>
-		)
-	}
+	{variant === 'full' && (
+		<div data-motd-wrap hidden>
+			{/* Always dark: the Minecraft palette is built for a dark server list. */}
+			<code data-motd class="status-motd block" />
+		</div>
+	)}
 </div>
 
 <script>
