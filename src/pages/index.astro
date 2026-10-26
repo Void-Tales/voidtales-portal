@@ -356,7 +356,9 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 				const first = track.firstElementChild?.getBoundingClientRect().left ?? 0;
 				const last = track.lastElementChild?.getBoundingClientRect().right ?? 0;
 				const inset = parseFloat(getComputedStyle(track).paddingInlineStart);
-				travel = Math.max(0, last - first + 2 * inset - window.innerWidth);
+				// clientWidth, not innerWidth: the track ends at the page edge, and
+				// innerWidth counts the scrollbar gutter on top.
+				travel = Math.max(0, last - first + 2 * inset - document.documentElement.clientWidth);
 
 				if (travel === 0) {
 					pan.classList.remove('is-panning');
@@ -374,6 +376,30 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 				if (travel === 0) return;
 				const p = clamp((headerH - pan.getBoundingClientRect().top) / travel);
 				track.style.transform = `translateX(${-p * travel}px)`;
+			});
+
+			// Keyboard in pan mode: the strip doesn't scroll itself any more, so the
+			// arrows scroll the page by one tile, which moves the track by as much.
+			const viewport = pan.querySelector<HTMLElement>('.pan-viewport');
+			viewport?.addEventListener('keydown', (e) => {
+				if (travel === 0 || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
+				e.preventDefault();
+				const tile = track.firstElementChild?.getBoundingClientRect().width ?? 0;
+				const step = tile + parseFloat(getComputedStyle(track).columnGap);
+				window.scrollBy(0, e.key === 'ArrowRight' ? step : -step);
+			});
+
+			// Tabbing to the "more" tile while it sits off screen: scroll the page to
+			// the point where the track shows it, instead of leaving focus invisible.
+			pan.addEventListener('focusin', (e) => {
+				const tile = (e.target as Element).closest<HTMLElement>('.pan-tile');
+				if (travel === 0 || !tile) return;
+				const inset = parseFloat(getComputedStyle(track).paddingInlineStart);
+				const box = tile.getBoundingClientRect();
+				const width = document.documentElement.clientWidth;
+				if (box.left >= 0 && box.right <= width) return;
+				// The track moves by exactly as many pixels as the page scrolls.
+				window.scrollBy(0, box.left < 0 ? box.left - inset : box.right + inset - width);
 			});
 
 			// Resize changes the tile width and therefore the travel. Width only:

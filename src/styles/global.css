@@ -654,20 +654,31 @@ body::before {
 	}
 
 	/* On the story panels it sits bottom right, flush with the shell's content
-	   edge. Same formula as `.shell`, so it lines up at every width. */
+	   edge. Same formula as `.shell`, so it lines up at every width. `100%` is
+	   the full-width panel it is positioned in, not `100vw`: browsers that count
+	   the scrollbar gutter into `100vw` put the cue half a gutter off the edge. */
 	.scroll-cue--panel {
 		position: absolute;
-		right: max(1rem, calc((100vw - var(--vt-container)) / 2 + 1rem));
+		right: max(1rem, calc((100% - var(--vt-container)) / 2 + 1rem));
 		bottom: clamp(1.5rem, 4vh, 3rem);
 	}
 
 	@media (width >= 768px) {
 		.scroll-cue--panel {
-			right: max(2rem, calc((100vw - var(--vt-container)) / 2 + 2rem));
+			right: max(2rem, calc((100% - var(--vt-container)) / 2 + 2rem));
 		}
 	}
 
 	/* ---- story panels ---- */
+
+	/* The realm images bleed out with `100vw` (see `--bleed`). Where a browser
+	   counts the scrollbar gutter into `100vw`, they reach half a gutter past the
+	   page and it scrolls sideways (current Chrome subtracts the stable gutter,
+	   others did not). `clip`, not `hidden`: hidden would make the stack a scroll
+	   container, and the sticky panels inside would stop sticking. */
+	.story-stack {
+		overflow-x: clip;
+	}
 
 	.story-panel {
 		/* Positioned so the scroll cue can anchor to the panel. Below the sticky
@@ -702,10 +713,9 @@ body::before {
 	   the copy. It stays in flow, so the distance between image and text is the
 	   grid gap - a background image plus scrim left a hole that grew with the
 	   panel height, because the scrim's opaque part sits at a fixed percentage
-	   while the copy is bottom-aligned. `overflow: hidden` catches the bleed. */
+	   while the copy is bottom-aligned. `.story-stack` clips the bleed. */
 	@media (width < 1024px) {
 		.story-panel {
-			overflow: hidden;
 			padding-block: clamp(2rem, 7vw, 5rem);
 		}
 
@@ -752,7 +762,10 @@ body::before {
 
 	.story-grid {
 		/* Distance from the shell's content edge out to the viewport edge. The
-		   realm image uses it to bleed past the container. */
+		   realm image uses it to bleed past the container. Where `100vw` counts the
+		   scrollbar gutter (`scrollbar-gutter: stable` on html), this overshoots by
+		   half a gutter; `.story-stack` clips that. A percentage can't replace it
+		   here, it would resolve against the grid column. */
 		--bleed: calc((min(100vw, var(--vt-container)) - 100vw) / 2 - 2rem);
 
 		display: grid;
@@ -822,19 +835,26 @@ body::before {
 	.pan {
 		--tile-w: min(72vw, 26rem);
 		--tile-gap: 1rem;
-		--strip-inset: max(1rem, calc((100vw - var(--vt-container)) / 2 + 1rem));
+		/* `100%` resolves where it is used: against the full-width viewport strip
+		   (scroll padding) and its track (padding), i.e. never with the scrollbar
+		   gutter that some browsers count into `100vw`. Same edge as `.shell`. */
+		--strip-inset: max(1rem, calc((100% - var(--vt-container)) / 2 + 1rem));
 	}
 
 	@media (width >= 768px) {
 		.pan {
 			--tile-gap: 1.5rem;
-			--strip-inset: max(2rem, calc((100vw - var(--vt-container)) / 2 + 2rem));
+			--strip-inset: max(2rem, calc((100% - var(--vt-container)) / 2 + 2rem));
 		}
 	}
 
 	.pan-sticky {
 		position: relative;
-		/* Soft edges instead of hard cuts at the viewport border. */
+	}
+
+	/* Soft edges instead of hard cuts at the viewport border. On the strip only:
+	   on .pan-sticky it also faded heading, lead and cue on narrow screens. */
+	.pan-viewport {
 		-webkit-mask-image: linear-gradient(
 			to right,
 			transparent,
@@ -849,9 +869,6 @@ body::before {
 			#000 calc(100% - 3rem),
 			transparent
 		);
-	}
-
-	.pan-viewport {
 		overflow-x: auto;
 		scroll-snap-type: x mandatory;
 		scroll-padding-inline: var(--strip-inset);
@@ -934,7 +951,10 @@ body::before {
 		flex-direction: column;
 		justify-content: center;
 		gap: clamp(2rem, 5vh, 4rem);
-		overflow: hidden;
+		/* clip, not hidden: a hidden box is still scrollable by the browser, and
+		   tabbing to the off-screen "more" tile scrolled it sideways, shifting
+		   heading and track out of place. The script brings that tile in view. */
+		overflow: clip;
 	}
 
 	.pan.is-panning .pan-viewport {
