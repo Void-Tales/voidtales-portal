@@ -70,7 +70,7 @@ export const siteConfig = {
 	},
 
 	footer:
-		'Void Tales ~ Created by Hyphonical & Inventory 💙 Not affiliated with Mojang or Microsoft. All rights reserved.',
+		'Void Tales · Created by Hyphonical & Inventory 💙 · Not affiliated with Mojang or Microsoft.',
 };
 
 // The two realm panels. Rendered as a sticky stack, mirrored between the two.
