@@ -139,7 +139,10 @@ export default defineConfig({
 			//  /search  - eine Eingabemaske, kein Inhalt (traegt zusaetzlich noindex)
 			//  /devlog/ - Alias auf den neuesten Monat, canonical zeigt auf die
 			//             Monats-URL. Beide anzumelden waere Duplicate Content.
-			filter: (page) => !page.includes('/search/') && !page.endsWith('/devlog/'),
+			//  /impressum/, /datenschutz/ - tragen noindex, gehoeren in keinen Index.
+			filter: (page) =>
+				!['/search/', '/impressum/', '/datenschutz/'].some((p) => page.includes(p)) &&
+				!page.endsWith('/devlog/'),
 			// Ohne lastmod sieht fuer einen Crawler jede der ~56 URLs gleich alt aus.
 			serialize(item) {
 				const path = new URL(item.url).pathname.replace(/\/$/, '') || '/';

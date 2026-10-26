@@ -80,7 +80,9 @@ const dayFormat = new Intl.DateTimeFormat('en-GB', {
 });
 
 const label = (m: string) => monthFormat.format(new Date(`${m}-01T00:00:00Z`));
-const href = (m: string) => (m === months[0] ? '/devlog' : `/devlog/${m}`);
+// Trailing slash: that is where nginx serves the directory; without it every
+// link and the canonical went through a 301.
+const href = (m: string) => (m === months[0] ? '/devlog/' : `/devlog/${m}/`);
 const current = label(month);
 
 // /devlog und /devlog/<neuester-monat> liefern denselben Inhalt. Fuer Google
@@ -113,7 +115,7 @@ const schema = {
 	description={`What was built on Void Tales in ${current}, day by day.`}
 	ogImage={`/images/og/devlog-${month}.webp`}
 	schema={schema}
-	canonical={`/devlog/${month}`}
+	canonical={`/devlog/${month}/`}
 >
 	<section
 		class="section"
@@ -124,7 +126,7 @@ const schema = {
 			<p class="eyebrow">From the workbench</p>
 			<h1 class="page-title">Devlog</h1>
 			<p class="section-lead">
-				Day-by-day progress on Void Tales. Bigger announcements land in the <a href="/news">news</a
+				Day-by-day progress on Void Tales. Bigger announcements land in the <a href="/news/">news</a
 				>.
 			</p>
 

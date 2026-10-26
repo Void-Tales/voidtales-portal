@@ -27,7 +27,7 @@ const description =
 		: excerpt(entry.body ?? '');
 
 const ogImage = `/images/og/news-${entry.data.slug}.webp`;
-const url = new URL(`/news/${entry.data.slug}`, siteConfig.url).toString();
+const url = new URL(`/news/${entry.data.slug}/`, siteConfig.url).toString();
 
 const schema = {
 	'@type': 'NewsArticle',
@@ -51,7 +51,7 @@ const schema = {
 >
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/news">← All news</a>
+			<a class="back-link" href="/news/">← All news</a>
 			<article>
 				<time datetime={entry.data.pubDatetime.toISOString()}>
 					{dateFormat.format(entry.data.pubDatetime)}

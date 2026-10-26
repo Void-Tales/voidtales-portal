@@ -45,7 +45,7 @@ const schema = {
 		itemListElement: items.map((item, i) => ({
 			'@type': 'ListItem',
 			position: i + 1,
-			url: new URL(`/items/${item.id}`, siteConfig.url).toString(),
+			url: new URL(`/items/${item.id}/`, siteConfig.url).toString(),
 			name: plainText(item.name),
 		})),
 	},
@@ -106,7 +106,7 @@ const schema = {
 									data-region={regionLabel(item)}
 									data-status={statusKey(item.status)}
 								>
-									<a class="item-card" href={`/items/${item.id}`}>
+									<a class="item-card" href={`/items/${item.id}/`}>
 										<img
 											class="item-icon"
 											src={item.icon}

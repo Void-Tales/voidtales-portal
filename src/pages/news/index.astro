@@ -37,7 +37,7 @@ const schema = {
 		itemListElement: entries.map((entry, i) => ({
 			'@type': 'ListItem',
 			position: i + 1,
-			url: new URL(`/news/${entry.data.slug}`, siteConfig.url).toString(),
+			url: new URL(`/news/${entry.data.slug}/`, siteConfig.url).toString(),
 			name: entry.data.title,
 		})),
 	},
@@ -55,7 +55,7 @@ const schema = {
 			<h1 class="page-title">News</h1>
 			<p class="section-lead">
 				Everything announced for Void Tales, newest first. The day-to-day progress lives in the <a
-					href="/devlog">devlog</a
+					href="/devlog/">devlog</a
 				>.
 			</p>
 
@@ -77,7 +77,7 @@ const schema = {
 											{dateFormat.format(entry.data.pubDatetime)}
 										</time>
 										<h3>
-											<a href={`/news/${entry.data.slug}`}>{entry.data.title}</a>
+											<a href={`/news/${entry.data.slug}/`}>{entry.data.title}</a>
 										</h3>
 										{entry.data.description && <p>{entry.data.description}</p>}
 									</article>
