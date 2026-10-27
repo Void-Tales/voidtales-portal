@@ -173,13 +173,18 @@ import { siteConfig } from '../config/site.js';
 						Servernamen, Ihr Profilbild sowie Ihre Mitgliedschaft und Rollen auf dem
 						Void-Tales-Server. Daraus ergibt sich, ob Sie schreiben dürfen und ob Sie zum Team
 						gehören. Der von Discord ausgestellte Zugriffsschlüssel wird nur für diese eine Abfrage
-						verwendet und nicht gespeichert.
+						verwendet und nicht gespeichert. Solange Sie angemeldet sind, prüft die Galerie etwa
+						alle 10 Minuten über den Discord-Bot der Galerie erneut, ob Sie noch Mitglied des
+						Servers sind, ob ein Timeout besteht und welche Rollen Sie haben. Endet die
+						Mitgliedschaft oder besteht ein Timeout, endet die Sitzung; Team-Rechte folgen den
+						Rollen.
 					</p>
 					<p>
 						<strong>Was gespeichert wird.</strong> Ihre Discord-ID, Ihr Name, die Adresse Ihres
 						Profilbilds und die Angabe, ob Sie zum Team gehören (für die Dauer der Sitzung), dazu
 						die Bilder, die Sie geliked haben, und Ihre Kommentare jeweils mit Zeitpunkt. Kommentare
-						werden mit Name und Profilbild öffentlich angezeigt, bei Likes nur deren Anzahl.
+						werden mit Name und Profilbild öffentlich angezeigt, bei Likes nur deren Anzahl. Die
+						Adresse des öffentlich gezeigten Profilbilds enthält Ihre Discord-ID.
 						Gespeichert wird auf einem Server des Betreibers in Deutschland.
 					</p>
 					<p>
@@ -214,7 +219,8 @@ import { siteConfig } from '../config/site.js';
 						löschen.
 					</p>
 					<p>
-						<strong>Speicherdauer.</strong> Sitzungen enden beim Abmelden, spätestens nach 7 Tagen.
+						<strong>Speicherdauer.</strong> Sitzungen enden beim Abmelden, mit dem Ende der
+						Mitgliedschaft oder einem Timeout auf dem Discord-Server, spätestens nach 7 Tagen.
 						Likes und Kommentare bleiben gespeichert, bis Sie sie zurücknehmen bzw. löschen oder die
 						Löschung verlangen. Gelöschte Kommentare werden sofort ausgeblendet und 30 Tage später
 						endgültig entfernt; bis dahin bleibt nachvollziehbar, wer sie gelöscht hat. Tägliche
