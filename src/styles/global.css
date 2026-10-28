@@ -1615,6 +1615,13 @@ body::before {
 		margin-top: 2rem;
 	}
 
+	/* Shown by CSS, not by the deferred module script: unhiding it after the first
+	   paint pushed the whole grid down (CLS 0.17 on phones). The class comes from
+	   the theme script in <head>, before first paint. */
+	html:not(.js) .item-filters {
+		display: none;
+	}
+
 	.item-filter-row {
 		display: flex;
 		flex-wrap: wrap;
