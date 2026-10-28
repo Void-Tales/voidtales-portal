@@ -70,7 +70,7 @@ const schema = {
 				{items.length} items
 			</p>
 
-			<div class="item-filters" data-item-filters hidden>
+			<div class="item-filters" data-item-filters>
 				{filters.map((f) => (
 					<div class="item-filter-row" role="group" aria-label={f.label}>
 						<span class="item-filter-label">{f.label}</span>
@@ -134,10 +134,9 @@ const schema = {
 
 <script>
 	// Filter chips: within one row the chips are OR, across rows AND. Without JS
-	// the row stays hidden and every item is simply listed.
+	// the row stays hidden (global.css, html:not(.js)) and every item is simply listed.
 	const bar = document.querySelector<HTMLElement>('[data-item-filters]');
 	if (bar) {
-		bar.hidden = false;
 		const chips = [...bar.querySelectorAll<HTMLButtonElement>('.chip')];
 		const cards = [...document.querySelectorAll<HTMLElement>('[data-item]')];
 		const count = bar.querySelector<HTMLElement>('[data-item-count]')!;

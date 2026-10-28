@@ -150,6 +150,8 @@ const jsonLd = {
 				}
 				var isDark = saved !== 'light';
 				document.documentElement.classList.toggle('dark', isDark);
+				// For CSS that shows JS-only controls from the first paint (items filter bar).
+				document.documentElement.classList.add('js');
 				// Halloween: 24.10. to 1.11. by the visitor's clock, gone by itself after (rules: global.css, html.halloween)
 				var d = new Date(),
 					m = d.getMonth(),
@@ -157,11 +159,16 @@ const jsonLd = {
 				if ((m === 9 && t >= 24) || (m === 10 && t <= 1))
 					document.documentElement.classList.add('halloween');
 
-				var link = document.createElement('link');
-				link.rel = 'preload';
-				link.as = 'image';
-				link.href = isDark ? '/images/index-dark.webp' : '/images/index-light.webp';
-				document.head.appendChild(link);
+				// Only the start page has .hero-bg; elsewhere this was 148 KB for nothing.
+				// High priority: it is the LCP element, and the font preloads outrank it otherwise.
+				if (location.pathname === '/') {
+					var link = document.createElement('link');
+					link.rel = 'preload';
+					link.as = 'image';
+					link.fetchPriority = 'high';
+					link.href = isDark ? '/images/index-dark.webp' : '/images/index-light.webp';
+					document.head.appendChild(link);
+				}
 			})();
 		</script>
 

@@ -995,6 +995,36 @@ body::before {
 		border: 0;
 	}
 
+	/* Facade until clicked (index.astro): our own thumbnail, YouTube-style button. */
+	.trailer-play {
+		position: relative;
+		display: block;
+		height: 100%;
+	}
+
+	.trailer-play img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.trailer-play svg {
+		position: absolute;
+		inset: 50% auto auto 50%;
+		width: 4.25rem;
+		translate: -50% -50%;
+	}
+
+	.trailer-play-bg {
+		fill: rgb(20 18 26 / 80%);
+		transition: fill 0.2s;
+	}
+
+	.trailer-play:hover .trailer-play-bg,
+	.trailer-play:focus-visible .trailer-play-bg {
+		fill: var(--vt-accent);
+	}
+
 	/* ---- join steps ---- */
 
 	.steps {
@@ -1615,6 +1645,13 @@ body::before {
 		margin-top: 2rem;
 	}
 
+	/* Shown by CSS, not by the deferred module script: unhiding it after the first
+	   paint pushed the whole grid down (CLS 0.17 on phones). The class comes from
+	   the theme script in <head>, before first paint. */
+	html:not(.js) .item-filters {
+		display: none;
+	}
+
 	.item-filter-row {
 		display: flex;
 		flex-wrap: wrap;
@@ -1812,26 +1849,25 @@ html.halloween .spuk {
 	pointer-events: none;
 	overflow: hidden;
 }
+/* Fog drifts by translate, not background-position: the blur is rasterised once
+   and the compositor moves the layer, instead of a repaint + blur every frame.
+   Same travel as before: 180% wide, shifted by a third of itself. */
 html.halloween .spuk::after {
 	content: '';
 	position: absolute;
 	left: -10%;
-	right: -10%;
 	bottom: 0;
+	width: 180%;
 	height: 30%;
 	background:
 		radial-gradient(45% 60% at 25% 100%, rgb(190 170 230 / 22%), transparent 70%),
 		radial-gradient(40% 55% at 75% 100%, rgb(170 150 220 / 18%), transparent 70%);
-	background-size: 150% 100%;
 	filter: blur(10px);
 	animation: vt-nebel 40s ease-in-out infinite alternate;
 }
 @keyframes vt-nebel {
-	from {
-		background-position: 0 0;
-	}
 	to {
-		background-position: 100% 0;
+		translate: -33.333% 0;
 	}
 }
 .spuk .fm {
@@ -1884,25 +1920,37 @@ html.halloween .spuk::after {
 		scale: 1 0.5;
 	}
 }
+/* The glow pulses by fading a second, brighter copy in and out: opacity runs on
+   the compositor, an animated drop-shadow is a repaint every frame. */
 .spuk .kb {
 	position: absolute;
 	right: 7%;
 	top: 18%;
 	width: clamp(56px, 8vw, 96px);
 	aspect-ratio: 1;
+}
+.spuk .kb::before,
+.spuk .kb::after {
+	content: '';
+	position: absolute;
+	inset: 0;
 	background: url('/images/halloween/kuerbis-block.svg') center / contain no-repeat;
 	image-rendering: pixelated;
 	filter: drop-shadow(0 0 18px rgb(255 160 50 / 55%));
+}
+.spuk .kb::after {
+	filter: drop-shadow(0 0 28px rgb(255 160 50 / 75%));
+	opacity: 0;
 	animation: vt-glimmen 3.5s ease-in-out infinite alternate;
 }
 @keyframes vt-glimmen {
 	to {
-		filter: drop-shadow(0 0 28px rgb(255 160 50 / 75%));
+		opacity: 1;
 	}
 }
 @media (prefers-reduced-motion: reduce) {
 	.spuk .fm,
-	.spuk .kb,
+	.spuk .kb::after,
 	html.halloween .spuk::after {
 		animation: none;
 	}

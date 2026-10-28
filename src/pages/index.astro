@@ -14,6 +14,15 @@ const heroLead = hero.title.slice(0, accentAt).trim();
 // real anchor, so the label names the section it actually jumps to.
 const anchorOf = (i: number) => (i < storySections.length ? `realm-${i + 1}` : 'gallery');
 const titleOf = (i: number) => (i < storySections.length ? storySections[i].title : gallery.title);
+
+// Each 1200w image has a smaller sibling `<name>-<w>.webp` next to it in public/images.
+const srcsetOf = (src: string, w: number) =>
+	`${src.replace(/\.webp$/, `-${w}.webp`)} ${w}w, ${src} 1200w`;
+
+// Facade: thumbnail plus play button, the YouTube frame only after a click. Embedded
+// right away it cost ~1 MB of player code on every visit (phones too: `loading=lazy`
+// didn't hold back the frame). Without JS the link simply opens the video on YouTube.
+const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 ---
 
 <BaseLayout>
@@ -86,6 +95,8 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 					>
 						<img
 							src={section.image}
+							srcset={srcsetOf(section.image, 800)}
+							sizes="(width >= 1024px) 50vw, 100vw"
 							alt={section.imageAlt}
 							width="1200"
 							height="675"
@@ -136,6 +147,8 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 						<div class="pan-tile">
 							<img
 								src={image.src}
+								srcset={srcsetOf(image.src, 600)}
+								sizes="min(72vw, 26rem)"
 								alt={image.alt}
 								width="1200"
 								height="675"
@@ -178,13 +191,30 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 			<p class="section-lead mb-10">{trailer.subtitle}</p>
 
 			<div class="trailer-frame">
-				<iframe
-					src={trailer.embedUrl}
-					title="Void Tales Trailer"
-					loading="lazy"
-					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-					allowfullscreen
-				></iframe>
+				<a
+					class="trailer-play"
+					href={`https://www.youtube.com/watch?v=${trailerId}`}
+					data-embed={trailer.embedUrl}
+					aria-label="Play the Void Tales trailer (loads YouTube)"
+				>
+					<img
+						src="/images/trailer.webp"
+						srcset="/images/trailer-640.webp 640w, /images/trailer.webp 1280w"
+						sizes="(width >= 60rem) 60rem, 100vw"
+						alt=""
+						width="1280"
+						height="720"
+						loading="lazy"
+						decoding="async"
+					/>
+					<svg viewBox="0 0 68 48" aria-hidden="true">
+						<path
+							class="trailer-play-bg"
+							d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6c5.3 1.4 26.5 1.4 26.5 1.4s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z"
+						/>
+						<path d="M27 34V14l18 10z" fill="#fff" />
+					</svg>
+				</a>
 			</div>
 
 			<div class="mt-12 flex justify-end">
@@ -251,14 +281,33 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 </BaseLayout>
 
 <script>
+	// Trailer facade: swap the thumbnail link for the real player on click.
+	for (const link of document.querySelectorAll<HTMLAnchorElement>('.trailer-play')) {
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			const frame = document.createElement('iframe');
+			const url = new URL(link.dataset.embed!);
+			url.searchParams.set('autoplay', '1');
+			frame.src = url.toString();
+			frame.title = 'Void Tales Trailer';
+			frame.allow =
+				'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+			frame.allowFullscreen = true;
+			link.replaceWith(frame);
+		});
+	}
+</script>
+
+<script>
 	// Scroll-linked motion. Driven by IntersectionObserver plus a
 	// requestAnimationFrame loop that only runs while the subject is on screen.
 	//
 	// Deliberately not CSS `animation-timeline` / the ViewTimeline API: both are
 	// Chromium-only, and the gallery pan is the section's whole point, so
-	// Safari and Firefox should not be left with a static strip. This is not a
-	// scroll listener either - nothing is computed while the section is out of
-	// view, and the loop only writes a transform.
+	// Safari and Firefox should not be left with a static strip. A passive
+	// scroll listener, attached only while the section is on screen, coalesced
+	// to one rAF per frame: nothing runs while the page stands still (an
+	// always-on rAF loop did, at 60-120 Hz on phones) or the section is away.
 	//
 	// If you ever move this back to CSS: `animation-timeline` must not share a
 	// declaration block with the `animation` shorthand. The CSS minifier folds
@@ -269,18 +318,23 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 	// gallery is a manual scroll-snap strip. That is the designed fallback.
 	const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
-	/** Runs `tick` once per frame, but only while `el` intersects the viewport. */
+	/** Runs `tick` at most once per frame on scroll, but only while `el` intersects the viewport. */
 	function whileVisible(el: Element, tick: () => void) {
-		let running = false;
-		const frame = () => {
-			if (!running) return;
-			tick();
-			requestAnimationFrame(frame);
+		let visible = false;
+		let pending = 0;
+		const onScroll = () => {
+			pending ||= requestAnimationFrame(() => {
+				pending = 0;
+				tick();
+			});
 		};
 		new IntersectionObserver(([entry]) => {
-			if (entry.isIntersecting === running) return;
-			running = entry.isIntersecting;
-			if (running) requestAnimationFrame(frame);
+			if (entry.isIntersecting === visible) return;
+			visible = entry.isIntersecting;
+			if (visible) {
+				addEventListener('scroll', onScroll, { passive: true });
+				onScroll();
+			} else removeEventListener('scroll', onScroll);
 		}).observe(el);
 	}
 

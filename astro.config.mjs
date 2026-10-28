@@ -80,6 +80,11 @@ const satteriImageSizes = {
 				ctx.setProperty(node, 'width', size.w);
 				ctx.setProperty(node, 'height', size.h);
 			}
+			// Phones get the 800w copy (scripts/media.mjs). 44rem = .shell-narrow minus padding.
+			if (size?.small) {
+				ctx.setProperty(node, 'srcset', `${size.small} 800w, ${node.properties.src} ${size.w}w`);
+				ctx.setProperty(node, 'sizes', '(width >= 48rem) 44rem, calc(100vw - 2rem)');
+			}
 			if (!node.properties?.loading) ctx.setProperty(node, 'loading', 'lazy');
 			if (!node.properties?.decoding) ctx.setProperty(node, 'decoding', 'async');
 		},
