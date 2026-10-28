@@ -24,6 +24,15 @@ const KINDS = ['news', 'devlog'];
 const VIDEO = /\.(mp4|mov|webm|mkv)$/i;
 const IMAGE = /\.(png|jpe?g|webp|gif|bmp)$/i;
 const MAX_WIDTH = 1600;
+// Second, smaller copy for phones (srcset, stamped by the plugin in astro.config.mjs).
+const SMALL_WIDTH = 800;
+// Animated WebP doesn't compress like a still: the Discord GIFs are mostly 800px
+// already and still came out at up to 5.4 MB. 640px at quality 60 cuts that by
+// ~60% and looks the same in a 44rem column. One width only, no small copy.
+const ANIMATED_MAX_WIDTH = 640;
+const ANIMATED_QUALITY = 60;
+// Bump when the encoding rules change: entries of an older version are re-encoded.
+const VERSION = 3;
 
 async function listing(url) {
 	const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
@@ -74,18 +83,28 @@ for (const kind of KINDS) {
 			console.log(`fetched ${kind}/${file}`);
 		}
 
-		const webp = path.join(outDir, `${path.parse(file).name}.webp`);
+		const name = path.parse(file).name;
+		const webp = path.join(outDir, `${name}.webp`);
 		const key = `/images/${kind}/${path.basename(webp)}`;
-		if (fs.existsSync(webp) && sizes[key]) continue;
+		if (fs.existsSync(webp) && sizes[key]?.v === VERSION) continue;
 		try {
 			// animated: true keeps GIFs moving, without it sharp writes frame one.
-			const info = await sharp(cached, { animated: /\.gif$/i.test(file) })
-				.resize({ width: MAX_WIDTH, withoutEnlargement: true })
-				.webp({ quality: 80 })
+			const animated = /\.gif$/i.test(file);
+			const info = await sharp(cached, { animated })
+				.resize({ width: animated ? ANIMATED_MAX_WIDTH : MAX_WIDTH, withoutEnlargement: true })
+				.webp({ quality: animated ? ANIMATED_QUALITY : 80 })
 				.toFile(webp);
 			// An animated WebP stacks its frames vertically, so info.height is
 			// the whole strip — divide it back down to one frame.
-			sizes[key] = { w: info.width, h: Math.round(info.height / (info.pages || 1)) };
+			sizes[key] = { w: info.width, h: Math.round(info.height / (info.pages || 1)), v: VERSION };
+			if (!animated && info.width > SMALL_WIDTH) {
+				const small = `${name}-${SMALL_WIDTH}.webp`;
+				await sharp(cached)
+					.resize({ width: SMALL_WIDTH })
+					.webp({ quality: 80 })
+					.toFile(path.join(outDir, small));
+				sizes[key].small = `/images/${kind}/${small}`;
+			}
 			console.log(`encoded ${kind}/${path.basename(webp)}`);
 		} catch (err) {
 			console.error(`encode failed: ${kind}/${file} (${err.message})`);
