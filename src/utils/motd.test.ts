@@ -8,9 +8,9 @@ assert.deepEqual(
 	live.map((s) => [s.text, s.color]),
 	[
 		['Chap', '#ff55ff'],
-		['ter 1.1\n', '#5555ff'],
+		['ter 1.1\n', '#6d6dff'],
 		['Enter Th', '#ff55ff'],
-		['e Void Update', '#5555ff'],
+		['e Void Update', '#6d6dff'],
 	]
 );
 

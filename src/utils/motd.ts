@@ -34,6 +34,20 @@ export const COLORS: Record<string, string> = {
 	f: '#ffffff',
 };
 
+// The MOTD field is #14121a in both themes. Minecraft's dark codes fail WCAG AA
+// (4.5:1) there: §9 blue sits at 3.65, black and dark blue are near invisible.
+// Lifted towards white just far enough to pass, hue kept. MOTD only: item
+// tooltips (minimessage.ts) keep the game's exact palette.
+const MOTD_COLORS: Record<string, string> = {
+	...COLORS,
+	'0': '#808080',
+	'1': '#7575d1',
+	'4': '#c95e5e',
+	'5': '#c44dc4',
+	'8': '#808080',
+	'9': '#6d6dff',
+};
+
 const RESET: Omit<MotdSegment, 'text'> = {
 	color: null,
 	bold: false,
@@ -57,9 +71,9 @@ export function parseMotd(raw: string): MotdSegment[] {
 		const code = chunk[0]?.toLowerCase();
 		let text = chunk.slice(1);
 
-		if (code && code in COLORS) {
+		if (code && code in MOTD_COLORS) {
 			// A colour code also clears formatting, like the vanilla client does.
-			style = { ...RESET, color: COLORS[code] };
+			style = { ...RESET, color: MOTD_COLORS[code] };
 		} else if (code === 'l') style.bold = true;
 		else if (code === 'o') style.italic = true;
 		else if (code === 'n') style.underline = true;
