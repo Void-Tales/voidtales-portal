@@ -1,5 +1,5 @@
 # Stage 1: Build the static site
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
