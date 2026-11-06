@@ -13,6 +13,7 @@ export function excerpt(body: string, max = 150): string {
 	const plain = body
 		.replace(/!\[[^\]]*\]\([^)]*\)/g, '') // Bilder raus
 		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // Links auf ihren Text reduzieren
+		.replace(/^\s*[-*+]\s+/gm, '') // Listenpunkte
 		.replace(/[#*_>`~]/g, '')
 		.replace(/\s+/g, ' ')
 		.trim();

@@ -13,6 +13,11 @@ const mediaSizes = fs.existsSync('./src/generated/media-sizes.json')
 	? JSON.parse(fs.readFileSync('./src/generated/media-sizes.json', 'utf8'))
 	: {};
 
+// Written by scripts/youtube.mjs (prebuild): the videos with a local thumbnail.
+const youtube = fs.existsSync('./src/generated/youtube.json')
+	? JSON.parse(fs.readFileSync('./src/generated/youtube.json', 'utf8'))
+	: {};
+
 /**
  * Path -> ISO date, for the sitemap's `lastmod`.
  *
@@ -91,6 +96,61 @@ const satteriImageSizes = {
 	},
 };
 
+/**
+ * A YouTube address alone in a post (Discord embeds those, the web showed a raw URL)
+ * becomes the same click-to-load preview as on the start page, with a thumbnail from
+ * our own server. A link with words stays a link: the author chose that.
+ */
+const satteriYoutube = {
+	name: 'youtube-facade',
+	element: {
+		filter: ['a'],
+		visit(node, ctx) {
+			const href = node.properties?.href ?? '';
+			const id = href.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/)?.[1];
+			const text = node.children?.[0]?.value ?? '';
+			if (!id || !youtube[id] || !/^https?:\/\//.test(text)) return;
+			const el = (tagName, properties = {}, children = []) => ({
+				type: 'element',
+				tagName,
+				properties,
+				children,
+			});
+			ctx.replaceNode(
+				node,
+				el(
+					'a',
+					{
+						className: ['trailer-play', 'trailer-inline'],
+						href,
+						'data-embed': `https://www.youtube-nocookie.com/embed/${id}`,
+						'aria-label': `Play ${youtube[id].title} (loads YouTube)`,
+					},
+					[
+						el('img', {
+							src: `/images/yt/${id}.webp`,
+							srcset: `/images/yt/${id}-640.webp 640w, /images/yt/${id}.webp 1280w`,
+							sizes: '(width >= 48rem) 44rem, calc(100vw - 2rem)',
+							alt: '',
+							width: 1280,
+							height: 720,
+							loading: 'lazy',
+							decoding: 'async',
+						}),
+						el('svg', { viewBox: '0 0 68 48', 'aria-hidden': 'true' }, [
+							el('path', {
+								className: ['trailer-play-bg'],
+								d: 'M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6c5.3 1.4 26.5 1.4 26.5 1.4s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z',
+							}),
+							el('path', { d: 'M27 34V14l18 10z', fill: '#fff' }),
+						]),
+					]
+				)
+			);
+		},
+	},
+};
+
 export default defineConfig({
 	site: siteConfig.url,
 
@@ -115,7 +175,7 @@ export default defineConfig({
 				// Astro das CSP-<meta> ans ENDE des <head> setzt: alles davor
 				// (unser <script>) ist noch ungeregelt, jeder spaetere Request nicht.
 				"connect-src 'self' https://api.mcstatus.io https://stats.hzwd.xyz", // ServerStatus.astro, Umami
-				'frame-src https://www.youtube-nocookie.com', // trailer embed
+				'frame-src https://www.youtube-nocookie.com https://dynmap.voidtales.win', // video facade, world map
 				"base-uri 'self'",
 				"form-action 'none'",
 				"object-src 'none'",
@@ -158,7 +218,7 @@ export default defineConfig({
 	],
 
 	markdown: {
-		processor: satteri({ hastPlugins: [satteriImageSizes] }),
+		processor: satteri({ hastPlugins: [satteriImageSizes, satteriYoutube] }),
 	},
 
 	// Self-hosted, build-time fetched Google Fonts (no runtime request to

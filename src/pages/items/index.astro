@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import MiniText from '../../components/MiniText.astro';
+import ItemCard from '../../components/ItemCard.astro';
+import PageHead from '../../components/PageHead.astro';
 import { siteConfig } from '../../config/site.js';
-import { CATEGORIES, STATUS_LABEL, generated, items, regionLabel } from '../../utils/items.ts';
+import { CATEGORIES, generated, items, regionLabel, regionShown } from '../../utils/items.ts';
 import { plainText } from '../../utils/minimessage.ts';
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
@@ -16,7 +17,9 @@ const sections = CATEGORIES.map((c) => ({
 	...c,
 	items: items.filter((i) => i.category === c.key),
 })).filter((s) => s.items.length);
-const regions = [...new Set(items.map(regionLabel))].sort();
+// Items without a place of their own (General, the Gemstones folder) are reached
+// through the type row; as regions they would only say the same thing twice.
+const regions = [...new Set(items.map(regionShown).filter((r): r is string => Boolean(r)))].sort();
 
 const filters = [
 	{ key: 'category', label: 'Type', values: sections.map((s) => [s.key, s.label]) },
@@ -57,20 +60,29 @@ const schema = {
 	description="Every weapon, armour piece, gem and consumable in Void Tales, straight from the game files — including what is being tested right now."
 	schema={schema}
 >
-	<section class="section">
+	<PageHead image="items" title="Items">
+		<p class="section-lead">
+			Weapons, armour, gems and consumables, straight from the game files. Items marked
+			<span class="item-badge">Experimental</span> are on the test server and can still change.
+		</p>
+	</PageHead>
+
+	<section class="section section--follow">
 		<div class="shell">
-			<p class="eyebrow">Catalogue</p>
-			<h1 class="page-title">Items</h1>
-			<p class="section-lead">
-				Weapons, armour, gems and consumables, straight from the game files. Items marked
-				<span class="item-badge">Experimental</span> are on the test server and can still change.
-			</p>
 			<p class="item-stand">
-				Updated <time datetime={generated.toISOString()}>{dateFormat.format(generated)}</time> ·
+				Updated <time datetime={generated.toISOString()}>{dateFormat.format(generated)}</time>
+				{' · '}
 				{items.length} items
 			</p>
 
 			<div class="item-filters" data-item-filters>
+				<input
+					type="search"
+					class="item-search"
+					placeholder="Search items"
+					aria-label="Search items by name"
+					data-item-search
+				/>
 				{filters.map((f) => (
 					<div class="item-filter-row" role="group" aria-label={f.label}>
 						<span class="item-filter-label">{f.label}</span>
@@ -102,27 +114,11 @@ const schema = {
 								data-category={item.category}
 								data-region={regionLabel(item)}
 								data-status={statusKey(item.status)}
+								data-name={[plainText(item.name), ...item.type, regionLabel(item), section.label]
+									.join(' ')
+									.toLowerCase()}
 							>
-								<a class="item-card" href={`/items/${item.id}/`}>
-									<img
-										class="item-icon"
-										src={item.icon}
-										alt=""
-										width="64"
-										height="64"
-										loading="lazy"
-										decoding="async"
-									/>
-									<span class="item-card-name">
-										<MiniText text={item.name} />
-									</span>
-									<span class="item-card-meta">
-										{[item.type[0], regionLabel(item)].filter(Boolean).join(' · ')}
-									</span>
-									{STATUS_LABEL[item.status] && (
-										<span class="item-badge">{STATUS_LABEL[item.status]}</span>
-									)}
-								</a>
+								<ItemCard item={item} />
 							</li>
 						))}
 					</ul>
@@ -133,13 +129,16 @@ const schema = {
 </BaseLayout>
 
 <script>
-	// Filter chips: within one row the chips are OR, across rows AND. Without JS
-	// the row stays hidden (global.css, html:not(.js)) and every item is simply listed.
+	// Search plus filter chips: within one row the chips are OR, across rows AND, and the
+	// search narrows on top. The state lives in the address (?q=&category=&region=&status=),
+	// so a filtered view can be linked. Without JS the bar stays hidden (global.css,
+	// html:not(.js)) and every item is simply listed.
 	const bar = document.querySelector<HTMLElement>('[data-item-filters]');
 	if (bar) {
 		const chips = [...bar.querySelectorAll<HTMLButtonElement>('.chip')];
 		const cards = [...document.querySelectorAll<HTMLElement>('[data-item]')];
 		const count = bar.querySelector<HTMLElement>('[data-item-count]')!;
+		const search = bar.querySelector<HTMLInputElement>('[data-item-search]')!;
 
 		const apply = () => {
 			const active: Record<string, Set<string>> = {};
@@ -147,9 +146,12 @@ const schema = {
 				if (c.getAttribute('aria-pressed') !== 'true') continue;
 				(active[c.dataset.key!] ??= new Set()).add(c.dataset.value!);
 			}
+			const words = search.value.toLowerCase().split(/\s+/).filter(Boolean);
 			let shown = 0;
 			for (const card of cards) {
-				const ok = Object.entries(active).every(([k, set]) => set.has(card.dataset[k]!));
+				const ok =
+					Object.entries(active).every(([k, set]) => set.has(card.dataset[k]!)) &&
+					words.every((w) => card.dataset.name!.includes(w));
 				card.hidden = !ok;
 				if (ok) shown++;
 			}
@@ -157,13 +159,26 @@ const schema = {
 				s.hidden = !s.querySelector('[data-item]:not([hidden])');
 			}
 			count.textContent = shown === cards.length ? '' : `Showing ${shown} of ${cards.length} items`;
+
+			const params = new URLSearchParams();
+			if (search.value.trim()) params.set('q', search.value.trim());
+			for (const [k, set] of Object.entries(active)) params.set(k, [...set].join(','));
+			const query = params.toString();
+			history.replaceState(null, '', query ? `?${query}` : location.pathname);
 		};
 
+		const params = new URLSearchParams(location.search);
+		search.value = params.get('q') ?? '';
 		for (const c of chips) {
+			if (params.get(c.dataset.key!)?.split(',').includes(c.dataset.value!)) {
+				c.setAttribute('aria-pressed', 'true');
+			}
 			c.addEventListener('click', () => {
 				c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
 				apply();
 			});
 		}
+		search.addEventListener('input', apply);
+		if (location.search) apply();
 	}
 </script>

@@ -4,7 +4,11 @@
 export const siteConfig = {
 	name: 'Void Tales',
 	titleTemplate: '%s · Void Tales',
-	description: 'Drawn To Light ✨',
+	// Search snippet and link preview of the start page. Says what this is.
+	description:
+		'A handcrafted Minecraft modpack and server. Mend a broken world, and uncover the truth within yourself.',
+	// Short line for the footer.
+	tagline: 'Mend a broken world, and uncover the truth within yourself.',
 	url: 'https://portal.voidtales.win',
 	themeColor: '#0a0714',
 
@@ -25,25 +29,46 @@ export const siteConfig = {
 	galleryUrl: 'https://gallery.voidtales.win',
 
 	hero: {
-		eyebrow: 'Minecraft modpack and server',
 		title: 'Void Tales',
 		// Rendered in the accent colour. Must be a substring of `title`.
 		titleAccent: 'Tales',
-		subtitle: 'Mend a broken world, and uncover the truth within yourself.',
+		subtitle:
+			'A handcrafted Minecraft modpack and server. Mend a broken world, and uncover the truth within yourself.',
 		ctaLabel: 'Get the Modpack',
 	},
 
 	gallery: {
 		title: 'Community Screenshots',
-		body: 'Take a look at the world of Void Tales, its regions, bosses, and handcrafted environments.',
+		body: 'Shot by the people who play here. The newest and best-liked, straight from the gallery.',
 		moreLabel: 'See all screenshots',
 		moreHint: 'gallery.voidtales.win',
 	},
 
-	trailer: {
-		title: 'Watch the Trailer',
-		subtitle: 'Step into the world of Void Tales.',
-		embedUrl: 'https://www.youtube-nocookie.com/embed/sIdqXmTkGsE?si=WFjpRQjjKl9FE9li',
+	// First video runs large, the next one beside it. scripts/youtube.mjs fetches
+	// thumbnails for every id here, the facade loads YouTube only on a click.
+	film: {
+		title: 'See It Move',
+		lead: 'An early look at the Reboot, still a work in progress, and the trailer for the world you can play today.',
+		videos: [
+			{ id: 'r5UMNpbhLC4', label: 'Reboot: early gameplay preview' },
+			{ id: 'sIdqXmTkGsE', label: 'Reawakening: official trailer', thumb: '/images/trailer.webp' },
+		],
+	},
+
+	map: {
+		title: 'See the World From Above',
+		body: 'The live map follows the server as it stands right now. Find the regions you have walked, and the ones you have not.',
+		url: 'https://dynmap.voidtales.win',
+		image: '/images/world-map.webp',
+		imageAlt: 'The islands of Void Tales floating in the dark, seen from above on the live map.',
+		cta: 'Open the live map',
+	},
+
+	latest: {
+		title: 'Latest From the World',
+		devlogTitle: 'From the devlog',
+		allNews: 'All news',
+		allDevlog: 'Full devlog',
 	},
 
 	join: {
@@ -99,8 +124,9 @@ export const storySections = [
 	},
 ];
 
-// The horizontal snap strip. grid-3.webp is deliberately absent: it is
-// byte-identical to portal-2.webp, which already carries the second realm panel.
+// Fallback for the strip when the gallery could not be reached at build time
+// (scripts/community.mjs). grid-3.webp is deliberately absent: it is byte-identical
+// to portal-2.webp, which already carries the second realm panel.
 export const galleryImages = [
 	{
 		src: '/images/grid-1.webp',

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
 import { siteConfig } from '../../config/site.js';
 
 const entries = (await getCollection('wiki')).sort(
@@ -29,14 +30,14 @@ const schema = {
 	description="Rules, lore, guides and reference pages for the Void Tales server."
 	schema={schema}
 >
-	<section class="section">
-		<div class="shell shell-narrow">
-			<p class="eyebrow">Reference</p>
-			<h1 class="page-title">Wiki</h1>
-			<p class="section-lead">
-				Everything you need to get started, explore the world, and join the community.
-			</p>
+	<PageHead image="wiki" title="Wiki" narrow>
+		<p class="section-lead">
+			Everything you need to get started, explore the world, and join the community.
+		</p>
+	</PageHead>
 
+	<section class="section section--follow">
+		<div class="shell shell-narrow">
 			<ul class="entry-list">
 				{entries.map((entry) => (
 					<li>

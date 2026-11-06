@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ItemCard from '../../components/ItemCard.astro';
 import MiniText from '../../components/MiniText.astro';
 import { siteConfig } from '../../config/site.js';
 import {
@@ -7,7 +8,10 @@ import {
 	STATUS_LABEL,
 	flavour,
 	items,
+	loreLines,
 	regionLabel,
+	regionShown,
+	relatedItems,
 	type Item,
 } from '../../utils/items.ts';
 import { plainText } from '../../utils/minimessage.ts';
@@ -23,6 +27,8 @@ const typeLine = item.type.join(' · ');
 const description =
 	flavour(item) ||
 	`${typeLine || category} from ${regionLabel(item) === 'General' ? 'Void Tales' : regionLabel(item)}.`;
+
+const related = relatedItems(item);
 
 const ogImage = `/images/og/item-${item.id}.webp`;
 const url = new URL(`/items/${item.id}/`, siteConfig.url).toString();
@@ -55,7 +61,7 @@ const note = {
 <BaseLayout title={name} description={description} ogImage={ogImage} schema={schema}>
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/items/">
+			<a class="back-link" data-pagefind-ignore href="/items/">
 				← All items
 			</a>
 			<article class="item-detail">
@@ -69,12 +75,14 @@ const note = {
 					/>
 				</div>
 				<div>
-					{STATUS_LABEL[item.status] && <span class="item-badge">{STATUS_LABEL[item.status]}</span>}
 					<h1 class="page-title item-title">
 						<MiniText text={item.name} />
 					</h1>
-					<p class="item-card-meta">
-						{[typeLine, regionLabel(item), category].filter(Boolean).join(' · ')}
+					<p class="item-card-meta item-title-meta">
+						{[typeLine, regionShown(item)].filter(Boolean).join(' · ')}
+						{STATUS_LABEL[item.status] && (
+							<span class="item-badge">{STATUS_LABEL[item.status]}</span>
+						)}
 					</p>
 				</div>
 			</article>
@@ -83,7 +91,7 @@ const note = {
 				<p class="mc-tooltip-name">
 					<MiniText text={item.name} />
 				</p>
-				{item.lore.map((line) =>
+				{loreLines(item).map((line) =>
 					line === '' ? (
 						<p class="mc-tooltip-gap" aria-hidden="true" />
 					) : (
@@ -95,6 +103,19 @@ const note = {
 			</div>
 
 			{note && <p class="item-note">{note}</p>}
+
+			{related.length > 0 && (
+				<div data-pagefind-ignore>
+					<h2 class="month-heading">Related items</h2>
+					<ul class="item-grid">
+						{related.map((other) => (
+							<li>
+								<ItemCard item={other} />
+							</li>
+						))}
+					</ul>
+				</div>
+			)}
 		</div>
 	</section>
 </BaseLayout>

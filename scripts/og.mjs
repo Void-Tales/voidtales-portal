@@ -157,10 +157,10 @@ const { hero } = siteConfig;
 const heroLead = hero.title.replace(hero.titleAccent, '').trim();
 const heroCard = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   ${defs}${backdrop}
-  <text x="84" y="176" font-family="monospace" font-size="19" letter-spacing="5" fill="${muted}">${escape(hero.eyebrow.toUpperCase())}</text>
+  <text x="84" y="176" font-family="monospace" font-size="19" letter-spacing="5" fill="${muted}">MINECRAFT MODPACK AND SERVER</text>
   <text x="84" y="266" font-family="Unbounded" font-weight="800" font-size="62" fill="${text}">${escape(heroLead)}</text>
   <text x="84" y="352" font-family="Unbounded" font-weight="800" font-size="62" fill="${accent}" filter="url(#titleGlow)">${escape(hero.titleAccent)}</text>
-  ${wrap(hero.subtitle, 24, 0.5, 1010, 2)
+  ${wrap(siteConfig.tagline, 24, 0.5, 1010, 2)
 		.map(
 			(l, i) =>
 				`<text x="84" y="${414 + i * 34}" font-family="Instrument Sans" font-size="24" fill="${muted}">${escape(l)}</text>`

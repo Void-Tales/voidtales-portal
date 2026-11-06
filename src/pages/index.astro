@@ -1,17 +1,25 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ScrollCue from '../components/ScrollCue.astro';
 import ServerStatus from '../components/ServerStatus.astro';
 import { siteConfig, storySections, galleryImages } from '../config/site.js';
 import { socialLinks, isExternal } from '../config/navigation.js';
+import community from '../generated/community.json';
+import youtube from '../generated/youtube.json';
+import { berlinDay, berlinMonth } from '../utils/berlin.js';
+import { devlogAnchor } from '../utils/devlog';
+import { excerpt, newsSummary } from '../utils/excerpt';
+import { firstImage } from '../utils/media';
 
-const { hero, gallery, trailer, join, social, modrinthUrl, galleryUrl } = siteConfig;
+const { hero, gallery, film, map, latest, join, social, modrinthUrl, galleryUrl } = siteConfig;
 
 // `titleAccent` is the trailing word of `hero.title` that carries the accent colour.
 const accentAt = hero.title.lastIndexOf(hero.titleAccent);
 const heroLead = hero.title.slice(0, accentAt).trim();
 
-// Scroll cues form a chain: hero -> realm 1 -> realm 2 -> gallery. Each one is a
-// real anchor, so the label names the section it actually jumps to.
+// Scroll cues form a chain: hero -> realm 1 -> realm 2 -> gallery -> film -> map ->
+// latest -> join. Each one is a real anchor, so the label names where it jumps to.
 const anchorOf = (i: number) => (i < storySections.length ? `realm-${i + 1}` : 'gallery');
 const titleOf = (i: number) => (i < storySections.length ? storySections[i].title : gallery.title);
 
@@ -19,10 +27,60 @@ const titleOf = (i: number) => (i < storySections.length ? storySections[i].titl
 const srcsetOf = (src: string, w: number) =>
 	`${src.replace(/\.webp$/, `-${w}.webp`)} ${w}w, ${src} 1200w`;
 
-// Facade: thumbnail plus play button, the YouTube frame only after a click. Embedded
-// right away it cost ~1 MB of player code on every visit (phones too: `loading=lazy`
-// didn't hold back the frame). Without JS the link simply opens the video on YouTube.
-const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
+// The strip: real shots from the gallery, chosen at build time (scripts/community.mjs).
+// A failed lookup leaves an empty list and the fixed images take over.
+type Tile = { src: string; srcset: string; alt: string; author?: string; url?: string };
+const tiles: Tile[] = community.length
+	? community.map((c) => ({
+			src: c.src,
+			srcset: `${c.small} 800w, ${c.src} 1600w`,
+			alt: c.alt,
+			author: c.author,
+			url: c.url,
+		}))
+	: galleryImages.map((g) => ({ src: g.src, srcset: srcsetOf(g.src, 600), alt: g.alt }));
+
+// Films: click to load, see src/scripts/embeds.ts. The first one runs large.
+const titles = youtube as Record<string, { title: string }>;
+const videos = film.videos.map((v) => {
+	const thumb = 'thumb' in v && v.thumb ? v.thumb : `/images/yt/${v.id}.webp`;
+	return {
+		...v,
+		thumb,
+		small: thumb.replace(/\.webp$/, '-640.webp'),
+		title: titles[v.id]?.title ?? v.label,
+	};
+});
+
+// What happened lately, from the same collections as /news and /devlog.
+const news = (await getCollection('news')).sort(
+	(a, b) => b.data.pubDatetime.valueOf() - a.data.pubDatetime.valueOf()
+);
+const newest = news[0];
+const newestImage = firstImage(newest?.body);
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+	day: 'numeric',
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'Europe/Berlin',
+});
+
+// One line per day and author, as the devlog groups them. Posts that are only a
+// picture have nothing to quote and are passed over.
+const devlogDays = new Map<string, { date: Date; href: string; text: string }>();
+for (const entry of (await getCollection('devlog')).sort(
+	(a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)) {
+	const anchor = devlogAnchor(berlinDay(entry.data.date), entry.data.author);
+	const text = excerpt(entry.body ?? '', 110);
+	if (devlogDays.has(anchor) || !text) continue;
+	devlogDays.set(anchor, {
+		date: entry.data.date,
+		href: `/devlog/${berlinMonth(entry.data.date)}/#${anchor}`,
+		text,
+	});
+	if (devlogDays.size === 3) break;
+}
 ---
 
 <BaseLayout>
@@ -39,36 +97,27 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 		</div>
 
 		<div class="shell hero-body">
-			<span class="eyebrow" style="--i: 0">
-				{hero.eyebrow}
-			</span>
-			<h1 class="hero-title" style="--i: 1">
+			<h1 class="hero-title" style="--i: 0">
 				{heroLead} <span class="accent">{hero.titleAccent}</span>
 			</h1>
-			<p class="hero-subtitle" style="--i: 2">
+			<p class="hero-subtitle" style="--i: 1">
 				{hero.subtitle}
 			</p>
 
-			<div class="hero-actions" style="--i: 3">
+			<div class="hero-actions" style="--i: 2">
 				<a href={modrinthUrl} target="_blank" rel="noopener" class="btn btn-primary">
 					{hero.ctaLabel}
 				</a>
 				<ServerStatus variant="inline" />
 
-				<a href={`#${anchorOf(0)}`} class="scroll-cue" aria-label={`Scroll to ${titleOf(0)}`}>
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M12 4v15M5 12.5l7 7 7-7"></path>
-					</svg>
-				</a>
+				<ScrollCue to={anchorOf(0)} label={titleOf(0)} />
 			</div>
+
+			{newest && (
+				<a class="hero-latest" style="--i: 3" href={`/news/${newest.data.slug}/`}>
+					Latest news: {newest.data.title}
+				</a>
+			)}
 		</div>
 	</section>
 
@@ -106,23 +155,7 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 					</figure>
 				</div>
 
-				<a
-					href={`#${anchorOf(i + 1)}`}
-					class="scroll-cue scroll-cue--panel"
-					aria-label={`Scroll to ${titleOf(i + 1)}`}
-				>
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M12 4v15M5 12.5l7 7 7-7" />
-					</svg>
-				</a>
+				<ScrollCue to={anchorOf(i + 1)} label={titleOf(i + 1)} panel />
 			</section>
 		))}
 	</div>
@@ -143,99 +176,184 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 				aria-label="Screenshots from the Void Tales realms"
 			>
 				<div class="pan-track">
-					{galleryImages.map((image) => (
-						<div class="pan-tile">
-							<img
-								src={image.src}
-								srcset={srcsetOf(image.src, 600)}
-								sizes="min(72vw, 26rem)"
-								alt={image.alt}
-								width="1200"
-								height="675"
-								loading="lazy"
-								decoding="async"
-							/>
-						</div>
-					))}
-					<a href={galleryUrl} target="_blank" rel="noopener" class="pan-tile pan-more">
+					{tiles.map((tile) =>
+						tile.url ? (
+							<a class="pan-tile" href={tile.url} aria-label={`${tile.alt}, open in the gallery`}>
+								<img
+									src={tile.src}
+									srcset={tile.srcset}
+									sizes="(width >= 48rem) 42rem, 76vw"
+									alt=""
+									width="1600"
+									height="900"
+									loading="lazy"
+									decoding="async"
+								/>
+								<span class="pan-credit">{tile.author}</span>
+							</a>
+						) : (
+							<div class="pan-tile">
+								<img
+									src={tile.src}
+									srcset={tile.srcset}
+									sizes="(width >= 48rem) 42rem, 76vw"
+									alt={tile.alt}
+									width="1200"
+									height="675"
+									loading="lazy"
+									decoding="async"
+								/>
+							</div>
+						)
+					)}
+					<a href={galleryUrl} class="pan-tile pan-more">
 						<strong>{gallery.moreLabel}</strong>
 						<span>{gallery.moreHint}</span>
 					</a>
 				</div>
 			</div>
 
-			<a
-				href="#trailer"
-				class="scroll-cue scroll-cue--panel"
-				aria-label={`Scroll to ${trailer.title}`}
-			>
-				<svg
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					aria-hidden="true"
-				>
-					<path d="M12 4v15M5 12.5l7 7 7-7"></path>
-				</svg>
-			</a>
+			<ScrollCue to="trailer" label={film.title} panel />
 		</div>
 	</section>
 
-	{/* 4 - Trailer */}
+	{/* 4 - Film: the Reboot large, the current trailer beside it */}
 	<section class="section border-t border-line" id="trailer">
 		<div class="shell rise">
-			<h2>{trailer.title}</h2>
-			<p class="section-lead mb-10">{trailer.subtitle}</p>
+			<h2>{film.title}</h2>
+			<p class="section-lead mb-10">{film.lead}</p>
 
-			<div class="trailer-frame">
-				<a
-					class="trailer-play"
-					href={`https://www.youtube.com/watch?v=${trailerId}`}
-					data-embed={trailer.embedUrl}
-					aria-label="Play the Void Tales trailer (loads YouTube)"
-				>
-					<img
-						src="/images/trailer.webp"
-						srcset="/images/trailer-640.webp 640w, /images/trailer.webp 1280w"
-						sizes="(width >= 60rem) 60rem, 100vw"
-						alt=""
-						width="1280"
-						height="720"
-						loading="lazy"
-						decoding="async"
-					/>
-					<svg viewBox="0 0 68 48" aria-hidden="true">
-						<path
-							class="trailer-play-bg"
-							d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6c5.3 1.4 26.5 1.4 26.5 1.4s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z"
-						/>
-						<path d="M27 34V14l18 10z" fill="#fff" />
-					</svg>
-				</a>
+			<div class="film-grid">
+				{videos.map((video) => (
+					<figure class="film">
+						<div class="trailer-frame">
+							<a
+								class="trailer-play"
+								href={`https://www.youtube.com/watch?v=${video.id}`}
+								data-embed={`https://www.youtube-nocookie.com/embed/${video.id}`}
+								aria-label={`Play ${video.title} (loads YouTube)`}
+							>
+								<img
+									src={video.thumb}
+									srcset={`${video.small} 640w, ${video.thumb} 1280w`}
+									sizes="(width >= 64rem) 45rem, 100vw"
+									alt=""
+									width="1280"
+									height="720"
+									loading="lazy"
+									decoding="async"
+								/>
+								<svg viewBox="0 0 68 48" aria-hidden="true">
+									<path
+										class="trailer-play-bg"
+										d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6c5.3 1.4 26.5 1.4 26.5 1.4s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z"
+									/>
+									<path d="M27 34V14l18 10z" fill="#fff" />
+								</svg>
+							</a>
+						</div>
+						<figcaption>{video.label}</figcaption>
+					</figure>
+				))}
 			</div>
 
 			<div class="mt-12 flex justify-end">
-				<a href="#join" class="scroll-cue" aria-label={`Scroll to ${join.title}`}>
-					<svg
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						aria-hidden="true"
-					>
-						<path d="M12 4v15M5 12.5l7 7 7-7"></path>
-					</svg>
-				</a>
+				<ScrollCue to="map" label={map.title} />
 			</div>
 		</div>
 	</section>
 
-	{/* 5 - Join: the three steps, the live server card, and the social links */}
+	{/* 5 - World map: the islands float on the page, the real map loads on a click */}
+	<section class="section border-t border-line" id="map">
+		<div class="shell map-grid">
+			<div class="map-copy">
+				<h2>{map.title}</h2>
+				<p class="section-lead">{map.body}</p>
+				<a class="btn btn-primary mt-8" href={map.url} target="_blank" rel="noopener">
+					{map.cta}
+				</a>
+			</div>
+			<a
+				class="map-figure"
+				href={map.url}
+				target="_blank"
+				rel="noopener"
+				data-map-embed
+				aria-label={`${map.cta}: ${map.imageAlt}`}
+			>
+				<img
+					src={map.image}
+					srcset={`${map.image.replace(/\.webp$/, '-900.webp')} 900w, ${map.image} 1800w`}
+					sizes="(width >= 64rem) 60vw, 100vw"
+					alt=""
+					width="1800"
+					height="1203"
+					loading="lazy"
+					decoding="async"
+				/>
+			</a>
+		</div>
+		<div class="shell mt-8 flex justify-end">
+			<ScrollCue to="latest" label={latest.title} />
+		</div>
+	</section>
+
+	{/* 6 - Latest: the newest post and the last days of the devlog */}
+	{newest && (
+		<section class="section border-t border-line" id="latest">
+			<div class="shell">
+				<h2 class="rise">{latest.title}</h2>
+				<div class="latest-grid mt-10 rise">
+					<article class="latest-news">
+						{newestImage && (
+							<img
+								src={newestImage.src}
+								srcset={newestImage.srcset}
+								sizes="(width >= 64rem) 42rem, 100vw"
+								alt=""
+								width={newestImage.width}
+								height={newestImage.height}
+								loading="lazy"
+								decoding="async"
+							/>
+						)}
+						<div class="latest-news-text">
+							<time datetime={newest.data.pubDatetime.toISOString()}>
+								{dateFormat.format(newest.data.pubDatetime)}
+							</time>
+							<h3>
+								<a href={`/news/${newest.data.slug}/`}>{newest.data.title}</a>
+							</h3>
+							<p>{newsSummary(newest.data.description, newest.body ?? '')}</p>
+						</div>
+					</article>
+
+					<div class="latest-side">
+						<h3>{latest.devlogTitle}</h3>
+						<ul>
+							{[...devlogDays.values()].map((day) => (
+								<li>
+									<a href={day.href}>
+										<time datetime={day.date.toISOString()}>{dateFormat.format(day.date)}</time>
+										<span>{day.text}</span>
+									</a>
+								</li>
+							))}
+						</ul>
+						<p class="latest-links">
+							<a href="/news/">{latest.allNews}</a>
+							<a href="/devlog/">{latest.allDevlog}</a>
+						</p>
+					</div>
+				</div>
+				<div class="mt-12 flex justify-end">
+					<ScrollCue to="join" label={join.title} />
+				</div>
+			</div>
+		</section>
+	)}
+
+	{/* 7 - Join: the three steps, the live server card, and the social links */}
 	<section class="section border-t border-line" id="join">
 		<div class="shell">
 			<h2 class="rise">{join.title}</h2>
@@ -281,21 +399,19 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 </BaseLayout>
 
 <script>
-	// Trailer facade: swap the thumbnail link for the real player on click.
-	for (const link of document.querySelectorAll<HTMLAnchorElement>('.trailer-play')) {
-		link.addEventListener('click', (e) => {
-			e.preventDefault();
-			const frame = document.createElement('iframe');
-			const url = new URL(link.dataset.embed!);
-			url.searchParams.set('autoplay', '1');
-			frame.src = url.toString();
-			frame.title = 'Void Tales Trailer';
-			frame.allow =
-				'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-			frame.allowFullscreen = true;
-			link.replaceWith(frame);
-		});
-	}
+	// A sticky panel taller than the screen pins its top and the next panel slides over
+	// its last lines before anybody could read them (112 px of text on a 360x640 phone,
+	// more with the URL bar out). `--panel-h` lets the CSS pin such a panel by its bottom
+	// edge instead, so all of it passes by first. Not motion, so it runs for everybody.
+	const panels = new ResizeObserver((entries) => {
+		for (const entry of entries) {
+			(entry.target as HTMLElement).style.setProperty(
+				'--panel-h',
+				`${(entry.target as HTMLElement).offsetHeight}px`
+			);
+		}
+	});
+	for (const panel of document.querySelectorAll('.story-panel')) panels.observe(panel);
 </script>
 
 <script>
@@ -388,6 +504,10 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 			// grows, while the header itself gets taller with the mobile menu open.
 			const headerH = document.querySelector('.site-header-inner')?.clientHeight ?? 0;
 			let travel = 0;
+			// The strip moves faster than the page scrolls. At 1:1 the larger tiles held the
+			// same heading on screen for five screens.
+			const SPEED = 1.8;
+			const scrollLength = () => travel / SPEED;
 
 			const measure = () => {
 				pan.classList.remove('is-panning');
@@ -414,14 +534,14 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 				// The pinned child's real height, not `window.innerHeight`: the CSS
 				// sizes it in `svh`, and on mobile `innerHeight` follows the URL bar.
 				// Two sources would disagree by exactly the URL bar's height.
-				pan.style.height = `${sticky.offsetHeight + travel}px`;
+				pan.style.height = `${sticky.offsetHeight + scrollLength()}px`;
 			};
 
 			measure();
 
 			whileVisible(pan, () => {
 				if (travel === 0) return;
-				const p = clamp((headerH - pan.getBoundingClientRect().top) / travel);
+				const p = clamp((headerH - pan.getBoundingClientRect().top) / scrollLength());
 				track.style.transform = `translateX(${-p * travel}px)`;
 			});
 
@@ -433,7 +553,7 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 				e.preventDefault();
 				const tile = track.firstElementChild?.getBoundingClientRect().width ?? 0;
 				const step = tile + parseFloat(getComputedStyle(track).columnGap);
-				window.scrollBy(0, e.key === 'ArrowRight' ? step : -step);
+				window.scrollBy(0, (e.key === 'ArrowRight' ? step : -step) / SPEED);
 			});
 
 			// Tabbing to the "more" tile while it sits off screen: scroll the page to
@@ -445,8 +565,8 @@ const trailerId = new URL(trailer.embedUrl).pathname.split('/').pop();
 				const box = tile.getBoundingClientRect();
 				const width = document.documentElement.clientWidth;
 				if (box.left >= 0 && box.right <= width) return;
-				// The track moves by exactly as many pixels as the page scrolls.
-				window.scrollBy(0, box.left < 0 ? box.left - inset : box.right + inset - width);
+				// The track moves SPEED pixels per pixel the page scrolls.
+				window.scrollBy(0, (box.left < 0 ? box.left - inset : box.right + inset - width) / SPEED);
 			});
 
 			// Resize changes the tile width and therefore the travel. Width only:

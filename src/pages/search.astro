@@ -16,7 +16,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 >
 	<section class="section" data-pagefind-ignore>
 		<div class="shell shell-narrow">
-			<p class="eyebrow">Archive</p>
 			<h1 class="page-title">Search</h1>
 			<p class="section-lead">
 				Everything from <a href="/news/">news</a>, the <a href="/devlog/">devlog</a>, the
@@ -75,14 +74,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 	/* Pagefind bringt eigene Custom Properties mit; hier nur an das Theme
 	   angeglichen statt das Stylesheet zu ueberschreiben. */
 	#search {
-		--pagefind-ui-scale: 0.85;
+		--pagefind-ui-scale: 1;
 		--pagefind-ui-primary: var(--color-accent, #a78bfa);
 		--pagefind-ui-text: currentColor;
 		--pagefind-ui-background: transparent;
 		--pagefind-ui-border: color-mix(in oklab, currentColor 20%, transparent);
 		--pagefind-ui-border-width: 1px;
 		--pagefind-ui-border-radius: 0.75rem;
-		--pagefind-ui-font: inherit;
+		--pagefind-ui-font: var(--font-body);
 		margin-top: 2rem;
+	}
+
+	/* The default marker is signal yellow, it shouted over everything on the page. */
+	#search :global(mark) {
+		border-radius: 3px;
+		background: var(--vt-accent-soft);
+		color: var(--vt-text);
+		font-weight: 600;
+	}
+
+	#search :global(.pagefind-ui__result-title) {
+		font-family: var(--font-display);
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+
+	#search :global(.pagefind-ui__result-link) {
+		color: inherit;
+		text-decoration: none;
 	}
 </style>

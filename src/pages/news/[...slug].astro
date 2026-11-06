@@ -5,11 +5,16 @@ import { siteConfig } from '../../config/site.js';
 import { newsSummary } from '../../utils/excerpt';
 
 export async function getStaticPaths() {
-	const entries = await getCollection('news');
-	return entries.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+	const entries = (await getCollection('news')).sort(
+		(a, b) => b.data.pubDatetime.valueOf() - a.data.pubDatetime.valueOf()
+	);
+	return entries.map((entry, i) => ({
+		params: { slug: entry.data.slug },
+		props: { entry, newer: entries[i - 1], older: entries[i + 1] },
+	}));
 }
 
-const { entry } = Astro.props;
+const { entry, newer, older } = Astro.props;
 const { Content } = await render(entry);
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
@@ -48,18 +53,32 @@ const schema = {
 >
 	<section class="section">
 		<div class="shell shell-narrow">
-			<a class="back-link" href="/news/">
+			<a class="back-link" data-pagefind-ignore href="/news/">
 				← All news
 			</a>
 			<article>
-				<time datetime={entry.data.pubDatetime.toISOString()}>
+				<h1 class="page-title">{entry.data.title}</h1>
+				<time class="post-date" datetime={entry.data.pubDatetime.toISOString()}>
 					{dateFormat.format(entry.data.pubDatetime)}
 				</time>
-				<h1 class="page-title">{entry.data.title}</h1>
 				<div class="prose">
 					<Content />
 				</div>
 			</article>
+			<nav class="post-nav" data-pagefind-ignore aria-label="More news">
+				{older && (
+					<a href={`/news/${older.data.slug}/`}>
+						<span>Older</span>
+						{older.data.title}
+					</a>
+				)}
+				{newer && (
+					<a class="post-nav-newer" href={`/news/${newer.data.slug}/`}>
+						<span>Newer</span>
+						{newer.data.title}
+					</a>
+				)}
+			</nav>
 		</div>
 	</section>
 </BaseLayout>
