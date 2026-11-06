@@ -42,9 +42,9 @@ const schema = {
 				{entries.map((entry) => (
 					<li>
 						<article class="entry-card">
-							<h3>
+							<h2>
 								<a href={`/wiki/${entry.id}/`}>{entry.data.title}</a>
-							</h3>
+							</h2>
 							{entry.data.description && <p>{entry.data.description}</p>}
 						</article>
 					</li>
