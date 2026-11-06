@@ -22,8 +22,7 @@ below is short on purpose.
 
 ## Features
 
-- **Live world map:** [dynmap.voidtales.win](https://dynmap.voidtales.win) - 3D since the 26.2
-  update. The link did not change
+- **Live world map:** [dynmap.voidtales.win](https://dynmap.voidtales.win)
 - **Custom HUD** showing your stats and progress
 - **Quests and Journal** tracked through `/guide`
 - **Pets** you can raise, mount, and equip

@@ -24,7 +24,7 @@ A: Lite Visuals loads faster and keeps the Void Tales look including custom gear
 Visuals adds the redrawn blocks, armour, and weapons. Switch any time from the title screen.
 
 **Q: Where is the world map?**  
-A: [dynmap.voidtales.win](https://dynmap.voidtales.win) - it is a 3D map now, same link as before.
+A: [dynmap.voidtales.win](https://dynmap.voidtales.win)
 
 **Q: How do I join the Discord?**  
 A: [Click here to join](https://discord.gg/QEMQsFect6).

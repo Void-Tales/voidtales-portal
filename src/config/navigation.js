@@ -12,8 +12,6 @@ export const navigationLinks = [
 	{ label: 'News', href: '/news/' },
 	{ label: 'Devlog', href: '/devlog/' },
 	{ label: 'Discord', href: siteConfig.discordUrl },
-	// BlueMap since the 26.2 update, but the hostname stayed: it is in links and
-	// bookmarks. bluemap.voidtales.win is a 301 to this one, not a second origin.
 	{ label: 'World Map', href: 'https://dynmap.voidtales.win' },
 ];
 
