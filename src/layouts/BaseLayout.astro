@@ -152,6 +152,15 @@ const jsonLd = {
 				document.documentElement.classList.toggle('dark', isDark);
 				// For CSS that shows JS-only controls from the first paint (items filter bar).
 				document.documentElement.classList.add('js');
+				// Pictures below the first screen wait for this (global.css). Two frames:
+				// `load` can fire before the frame that paints the head picture.
+				addEventListener('load', function () {
+					requestAnimationFrame(function () {
+						requestAnimationFrame(function () {
+							document.documentElement.classList.add('loaded');
+						});
+					});
+				});
 				// Halloween: 24.10. to 1.11. by the visitor's clock, gone by itself after (rules: global.css, html.halloween)
 				var d = new Date(),
 					m = d.getMonth(),
