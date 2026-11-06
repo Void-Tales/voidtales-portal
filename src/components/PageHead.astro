@@ -2,6 +2,10 @@
 // Head of the section pages: a wide screenshot resolving into the page, title on top.
 // Same idea as the start page hero, a third of its height. The picture is the LCP
 // element of these pages, so it loads eagerly with high priority.
+//
+// AVIF and WebP come from the gallery originals (sharp, `-900` for phones). Each AVIF has
+// the lowest quality (45-60) whose SSIM against the original matches the WebP's: as sharp,
+// a quarter to a half fewer bytes. `blur` is the picture at 32 px, shown until it arrives.
 interface Props {
 	/** File stem in public/images/heads, with a -900 sibling for phones. */
 	image: 'news' | 'devlog' | 'wiki' | 'items';
@@ -13,26 +17,56 @@ const { image, title, narrow = false } = Astro.props;
 
 // Taken from the gallery: name and link stay with the picture.
 const CREDITS = {
-	news: { author: 'shinsnowly', id: '61876049', w: 2000, h: 1125 },
-	devlog: { author: 'shinsnowly', id: '15131685', w: 2000, h: 1126 },
-	wiki: { author: 'shinsnowly', id: '41383764', w: 2000, h: 1126 },
-	items: { author: 'shinsnowly', id: '30220922', w: 1811, h: 792 },
+	news: {
+		author: 'shinsnowly',
+		id: '61876049',
+		w: 2000,
+		h: 1125,
+		blur: 'data:image/webp;base64,UklGRooAAABXRUJQVlA4IH4AAAAQBQCdASogABIAPu1sq08ppqQiMBgIATAdiUAXYAaNcZ8BL87IrKZ8giNDYHi/34oAAP7pQeqOJKrWb4qMUkS2dfKeZBepU1rsehnl0vevl5gUywd7pjkjqbiZ5HKoWm1Dxt/T05yf1osfgypVJcwWdcOsf7U48HjWXWIAAAA=',
+	},
+	devlog: {
+		author: 'shinsnowly',
+		id: '15131685',
+		w: 2000,
+		h: 1126,
+		blur: 'data:image/webp;base64,UklGRvwAAABXRUJQVlA4IPAAAADwBQCdASogABIAPu1mqk2ppaQiMAgBMB2JQBOmbOVFsgBywD6r+6wrw+L4klmIMlZhAtLtO2+xwAD+kXS1hWXWq2uJyXpEIQQ6/3q0c0fObJDjFOs2wWtDGhnTSSMkbdVkZu4aJolIiAFARCae0mn/uxQNGrgnBrRbG85RzRTKQpVl8pTrjMKPl/cQZDO7QsezvnveX/CvCb2cd/aWSuntLnzzKpkfxav+aqd67rte1RH7W0DPpSdRUIk18Ge3QCIg4CA+GCsfJ9LboLlzOkHrv7WyaV36WB4xwMiaKu7TNQTTBUEtdfW1eHy/+Nyi4AA=',
+	},
+	wiki: {
+		author: 'shinsnowly',
+		id: '41383764',
+		w: 2000,
+		h: 1126,
+		blur: 'data:image/webp;base64,UklGRuIAAABXRUJQVlA4INYAAADwBQCdASogABIAPu1kq0+ppSOiMBgIATAdiUATpl2Ql1oI8AEs/kqQJ45vFGj/IGZ84MleRj8zgAD+1OjxsBsNzfYyifKC4Y7QS2HG43Gjd5vkdu5lDkVkcojNkN+jrSXeC1HOSKaQISQHbHp6hCRg1fXt+2jo3A3oxirdNiKy/lTzf+WVFUk6FmKe4vP+OUg15639HZJJQPMxODrNpoWFudVR/meMbdQ0sNQ5mfe7kJ7hE4CfToPAFgwXR9aIkg3yVamBDQHx7nzMxNnsvNJizIbaAAAA',
+	},
+	items: {
+		author: 'shinsnowly',
+		id: '30220922',
+		w: 1811,
+		h: 792,
+		blur: 'data:image/webp;base64,UklGRqwAAABXRUJQVlA4IKAAAABQBACdASogAA4APu1iqU2ppaQiMAgBMB2JYgC06ywFY8gBqIZao1wqM8AAAP78dBeUKUgPPT0BBk96esHCyB9Te8KvgbdMFXm/ujzh+AfZlnc+3uisshm7Zk25EnZ+V5Kr03Up8FoOXJyVS3uaO59GKjdmrHf7BWfxWsZYe130KbAeAlSnsoxnH/iqh5EDS+lx6Q8w4YwpeWKS2pu1zYAA',
+	},
 };
 const credit = CREDITS[image];
+const stem = `/images/heads/${image}`;
+const srcset = (type: string) => `${stem}-900.${type} 900w, ${stem}.${type} ${credit.w}w`;
 ---
 
 <header class="page-head">
-	<img
-		class="page-head-img"
-		src={`/images/heads/${image}.webp`}
-		srcset={`/images/heads/${image}-900.webp 900w, /images/heads/${image}.webp ${credit.w}w`}
-		sizes="100vw"
-		alt=""
-		width={credit.w}
-		height={credit.h}
-		fetchpriority="high"
-		decoding="async"
-	/>
+	<picture>
+		<source type="image/avif" srcset={srcset('avif')} sizes="100vw" />
+		<img
+			class="page-head-img"
+			src={`${stem}.webp`}
+			srcset={srcset('webp')}
+			sizes="100vw"
+			alt=""
+			width={credit.w}
+			height={credit.h}
+			fetchpriority="high"
+			decoding="sync"
+			style={`background: url(${credit.blur}) center / cover`}
+		/>
+	</picture>
 	<div class="page-head-scrim"></div>
 	<a
 		class="page-head-credit"

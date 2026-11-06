@@ -598,6 +598,10 @@ body:has(.prose, .entry-list, .item-grid)::before {
 
 	html.dark .hero-bg {
 		background-image: url('/images/index-dark.webp');
+		background-image: image-set(
+			url('/images/index-dark.avif') type('image/avif'),
+			url('/images/index-dark.webp') type('image/webp')
+		);
 	}
 
 	/* Scrim only under the type, so the image stays untouched at the top and

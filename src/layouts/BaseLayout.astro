@@ -166,7 +166,8 @@ const jsonLd = {
 					link.rel = 'preload';
 					link.as = 'image';
 					link.fetchPriority = 'high';
-					link.href = isDark ? '/images/index-dark.webp' : '/images/index-light.webp';
+					link.href = isDark ? '/images/index-dark.avif' : '/images/index-light.webp';
+					if (isDark) link.type = 'image/avif';
 					document.head.appendChild(link);
 				}
 			})();
