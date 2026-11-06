@@ -43,11 +43,13 @@ const tiles: Tile[] = community.length
 // Films: click to load, see src/scripts/embeds.ts. The first one runs large.
 const titles = youtube as Record<string, { title: string }>;
 const videos = film.videos.map((v) => {
-	const thumb = 'thumb' in v && v.thumb ? v.thumb : `/images/yt/${v.id}.webp`;
+	// youtube.mjs lists a video only once its thumbnail is on disk. A hiccup at build time
+	// leaves the play button on the dark frame, not a broken picture.
+	const thumb = 'thumb' in v && v.thumb ? v.thumb : titles[v.id] && `/images/yt/${v.id}.webp`;
 	return {
 		...v,
 		thumb,
-		small: thumb.replace(/\.webp$/, '-640.webp'),
+		small: thumb && thumb.replace(/\.webp$/, '-640.webp'),
 		title: titles[v.id]?.title ?? v.label,
 	};
 });
@@ -233,16 +235,18 @@ for (const entry of (await getCollection('devlog')).sort(
 								data-embed={`https://www.youtube-nocookie.com/embed/${video.id}`}
 								aria-label={`Play ${video.title} (loads YouTube)`}
 							>
-								<img
-									src={video.thumb}
-									srcset={`${video.small} 640w, ${video.thumb} 1280w`}
-									sizes="(width >= 64rem) 45rem, 100vw"
-									alt=""
-									width="1280"
-									height="720"
-									loading="lazy"
-									decoding="async"
-								/>
+								{video.thumb && (
+									<img
+										src={video.thumb}
+										srcset={`${video.small} 640w, ${video.thumb} 1280w`}
+										sizes="(width >= 64rem) 45rem, 100vw"
+										alt=""
+										width="1280"
+										height="720"
+										loading="lazy"
+										decoding="async"
+									/>
+								)}
 								<svg viewBox="0 0 68 48" aria-hidden="true">
 									<path
 										class="trailer-play-bg"
