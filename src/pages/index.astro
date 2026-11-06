@@ -415,15 +415,11 @@ for (const entry of (await getCollection('devlog')).sort(
 </script>
 
 <script>
-	// Scroll-linked motion. Driven by IntersectionObserver plus a
-	// requestAnimationFrame loop that only runs while the subject is on screen.
-	//
-	// Deliberately not CSS `animation-timeline` / the ViewTimeline API: both are
-	// Chromium-only, and the gallery pan is the section's whole point, so
-	// Safari and Firefox should not be left with a static strip. A passive
-	// scroll listener, attached only while the section is on screen, coalesced
-	// to one rAF per frame: nothing runs while the page stands still (an
-	// always-on rAF loop did, at 60-120 Hz on phones) or the section is away.
+	// Scroll-linked motion. The gallery pan runs on the compositor where the browser has
+	// view timelines (Chromium, Safari 26): a Pixel draws at 120 Hz while its main thread
+	// ticks at 60 and misses frames on a flick, so a track moved from script stepped along
+	// at half the rate, up to 254 px at once. Firefox gets the same motion from a passive
+	// scroll listener, attached only while the section is on screen, one rAF per frame.
 	//
 	// If you ever move this back to CSS: `animation-timeline` must not share a
 	// declaration block with the `animation` shorthand. The CSS minifier folds
@@ -508,8 +504,12 @@ for (const entry of (await getCollection('devlog')).sort(
 			// same heading on screen for five screens.
 			const SPEED = 1.8;
 			const scrollLength = () => travel / SPEED;
+			// Not in TypeScript's DOM types yet.
+			const ViewTimelineApi = (window as any).ViewTimeline;
+			let onCompositor: Animation | undefined;
 
 			const measure = () => {
+				onCompositor?.cancel();
 				pan.classList.remove('is-panning');
 				pan.style.removeProperty('height');
 				track.style.removeProperty('transform');
@@ -535,15 +535,42 @@ for (const entry of (await getCollection('devlog')).sort(
 				// sizes it in `svh`, and on mobile `innerHeight` follows the URL bar.
 				// Two sources would disagree by exactly the URL bar's height.
 				pan.style.height = `${sticky.offsetHeight + scrollLength()}px`;
+
+				// `exit-crossing` counts from the section's top edge, so the range stays put
+				// when the URL bar changes the screen height (`contain` and `cover` would not).
+				if (ViewTimelineApi) {
+					onCompositor = track.animate({ transform: ['none', `translateX(${-travel}px)`] }, {
+						timeline: new ViewTimelineApi({ subject: pan, axis: 'block' }),
+						rangeStart: { rangeName: 'exit-crossing', offset: CSS.px(-headerH) },
+						rangeEnd: { rangeName: 'exit-crossing', offset: CSS.px(scrollLength() - headerH) },
+						easing: 'linear',
+						fill: 'both',
+					} as KeyframeAnimationOptions);
+				}
 			};
 
 			measure();
 
-			whileVisible(pan, () => {
-				if (travel === 0) return;
-				const p = clamp((headerH - pan.getBoundingClientRect().top) / scrollLength());
-				track.style.transform = `translateX(${-p * travel}px)`;
-			});
+			// Lazy loading can't see past the clip on `.pan-sticky`: tiles off to the side only
+			// loaded as they slid into view, empty on a flick. So the whole strip comes in
+			// together once the section is close.
+			const near = new IntersectionObserver(
+				([entry]) => {
+					if (!entry.isIntersecting) return;
+					near.disconnect();
+					for (const img of track.querySelectorAll('img')) img.loading = 'eager';
+				},
+				{ rootMargin: '150% 0px' }
+			);
+			near.observe(pan);
+
+			if (!ViewTimelineApi) {
+				whileVisible(pan, () => {
+					if (travel === 0) return;
+					const p = clamp((headerH - pan.getBoundingClientRect().top) / scrollLength());
+					track.style.transform = `translateX(${-p * travel}px)`;
+				});
+			}
 
 			// Keyboard in pan mode: the strip doesn't scroll itself any more, so the
 			// arrows scroll the page by one tile, which moves the track by as much.

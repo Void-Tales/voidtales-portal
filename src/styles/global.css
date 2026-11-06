@@ -1048,6 +1048,12 @@ body:has(.prose, .entry-list, .item-grid)::before {
 		padding-block: 0;
 	}
 
+	/* Its own layer: moved, not painted again. Without it the laptop spent half of every
+	   second re-rastering the strip, 1.5 s of raster in a 3 s scroll. */
+	.pan.is-panning .pan-track {
+		will-change: transform;
+	}
+
 	.pan.is-panning .pan-sticky {
 		position: sticky;
 		top: var(--header-h);
