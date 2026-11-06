@@ -99,6 +99,17 @@ jobs:
           echo "key=$key" >> "$GITHUB_OUTPUT"
           echo "items digest: $key"
 
+      - name: 🔑 Hash the gallery list
+        # The start page's screenshot strip comes from the gallery, and a new shot
+        # there has to reach it without a commit here. A gallery outage is no reason to
+        # stop a deploy: the strip then falls back to its fixed images.
+        id: gallery
+        run: |
+          key=$(curl -fsS --max-time 30 "https://gallery.voidtales.win/images.json?cb=$(date +%s)" \
+                | sha256sum | cut -c1-16) || key=unknown
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+          echo "gallery digest: $key"
+
       - name: 🔨 Build and push Docker image
         # Builds the Docker image from your Dockerfile and pushes it to Docker Hub.
         uses: docker/build-push-action@v7
@@ -112,6 +123,7 @@ jobs:
           build-args: |
             MEDIA_DIGEST=${{ steps.media.outputs.key }}
             ITEMS_DIGEST=${{ steps.items.outputs.key }}
+            GALLERY_DIGEST=${{ steps.gallery.outputs.key }}
             GIT_SHA=${{ github.sha }}
             IMPRESSUM_ADDRESS=${{ secrets.IMPRESSUM_ADDRESS }}
             IMPRESSUM_PHONE=${{ secrets.IMPRESSUM_PHONE }}
