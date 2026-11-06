@@ -176,7 +176,7 @@ h3 {
 	margin-top: 1.75rem;
 }
 
-.entry-card h3 {
+.entry-card :is(h2, h3) {
 	font-size: clamp(1.15rem, 2.2vw, 1.5rem);
 }
 
@@ -1690,6 +1690,20 @@ body:has(.prose, .entry-list, .item-grid)::before {
 	}
 }
 
+/* vt-rise for the scroll-linked cards. The same pixels, but `filter` instead of `opacity`:
+   text caught mid-fade at the bottom of the screen counted as a contrast failure in
+   Lighthouse (3.2:1 on a card that rests at 6:1), on whichever page had a card there. */
+@keyframes vt-rise-scroll {
+	from {
+		filter: opacity(0);
+		transform: translateY(1.5rem);
+	}
+	to {
+		filter: opacity(1);
+		transform: none;
+	}
+}
+
 @keyframes vt-settle {
 	from {
 		opacity: 0.6;
@@ -1766,7 +1780,7 @@ body:has(.prose, .entry-list, .item-grid)::before {
 		.trailer-inline,
 		.mc-tooltip,
 		.devlog-day h3 {
-			animation-name: vt-rise;
+			animation-name: vt-rise-scroll;
 			animation-duration: 1ms;
 			animation-timing-function: linear;
 			animation-fill-mode: backwards;
@@ -1934,17 +1948,17 @@ body:has(.prose, .entry-list, .item-grid)::before {
 		}
 	}
 
-	.entry-card h3 {
+	.entry-card :is(h2, h3) {
 		margin-top: 0.35rem;
 	}
 
-	.entry-card h3 a {
+	.entry-card :is(h2, h3) a {
 		color: inherit;
 		text-decoration: none;
 	}
 
 	/* The whole card is the hit area, the heading link just carries the href. */
-	.entry-card h3 a::after {
+	.entry-card :is(h2, h3) a::after {
 		content: '';
 		position: absolute;
 		inset: 0;
