@@ -186,10 +186,16 @@ const jsonLd = {
 	{/* <main> is unconstrained so sections can go full-bleed; the width limit
 	    lives on `.shell` inside each section. */}
 	<body class="flex min-h-[100svh] flex-col">
+		<a class="skip-link" href="#main">
+			Skip to content
+		</a>
 		<Header />
-		<main class="flex-1">
+		<main class="flex-1" id="main" tabindex="-1" data-pagefind-body>
 			<slot />
 		</main>
 		<Footer />
+		<script>
+			import '../scripts/embeds.ts';
+		</script>
 	</body>
 </html>

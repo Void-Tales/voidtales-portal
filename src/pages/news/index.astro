@@ -1,8 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
 import { siteConfig } from '../../config/site.js';
 import { newsSummary } from '../../utils/excerpt';
+import { firstImage } from '../../utils/media';
 
 const entries = (await getCollection('news')).sort(
 	(a, b) => b.data.pubDatetime.valueOf() - a.data.pubDatetime.valueOf()
@@ -50,15 +52,15 @@ const schema = {
 	description="Announcements from the world of Void Tales — updates, events and patch notes."
 	schema={schema}
 >
-	<section class="section">
-		<div class="shell shell-narrow">
-			<p class="eyebrow">Announcements</p>
-			<h1 class="page-title">News</h1>
-			<p class="section-lead">
-				Everything announced for Void Tales, newest first. The day-to-day progress lives in the{' '}
-				<a href="/devlog/">devlog</a>.
-			</p>
+	<PageHead image="news" title="News" narrow>
+		<p class="section-lead">
+			Everything announced for Void Tales, newest first. The day-to-day progress lives in the{' '}
+			<a href="/devlog/">devlog</a>.
+		</p>
+	</PageHead>
 
+	<section class="section section--follow">
+		<div class="shell shell-narrow">
 			<nav class="month-nav" aria-label="News archive">
 				{years.map(({ year }) => (
 					<a href={`#${year}`}>{year}</a>
@@ -71,19 +73,36 @@ const schema = {
 						{year}
 					</h2>
 					<ul class="entry-list">
-						{yearEntries.map((entry) => (
-							<li>
-								<article class="entry-card">
-									<time datetime={entry.data.pubDatetime.toISOString()}>
-										{dateFormat.format(entry.data.pubDatetime)}
-									</time>
-									<h3>
-										<a href={`/news/${entry.data.slug}/`}>{entry.data.title}</a>
-									</h3>
-									<p>{newsSummary(entry.data.description, entry.body ?? '')}</p>
-								</article>
-							</li>
-						))}
+						{yearEntries.map((entry) => {
+							const image = firstImage(entry.body);
+							return (
+								<li>
+									<article class:list={['entry-card', image && 'entry-card--media']}>
+										{image && (
+											<img
+												src={image.src}
+												srcset={image.srcset}
+												sizes="(width >= 48rem) 14rem, calc(100vw - 2rem)"
+												alt=""
+												width={image.width}
+												height={image.height}
+												loading="lazy"
+												decoding="async"
+											/>
+										)}
+										<div class="entry-card-text">
+											<time datetime={entry.data.pubDatetime.toISOString()}>
+												{dateFormat.format(entry.data.pubDatetime)}
+											</time>
+											<h3>
+												<a href={`/news/${entry.data.slug}/`}>{entry.data.title}</a>
+											</h3>
+											<p>{newsSummary(entry.data.description, entry.body ?? '')}</p>
+										</div>
+									</article>
+								</li>
+							);
+						})}
 					</ul>
 				</>
 			))}

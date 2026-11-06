@@ -1,8 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHead from '../../components/PageHead.astro';
 import { siteConfig } from '../../config/site.js';
 import { berlinDay, berlinMonth } from '../../utils/berlin.js';
+import { devlogAnchor } from '../../utils/devlog';
 
 // One page per month rather than per N entries: a month URL still points at the
 // same entries a year from now, while /devlog/2 shifts by one every time
@@ -37,19 +39,13 @@ const { month, months, entries } = Astro.props;
 type Group = { id: string; day: string; author?: string; date: Date; entries: typeof entries };
 const groups: Group[] = [];
 const seen = new Map<string, number>();
-const slug = (s = '') =>
-	s
-		.toLowerCase()
-		.normalize('NFKD')
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-|-$/g, '');
 for (const entry of entries) {
 	const day = berlinDay(entry.data.date);
 	const last = groups.at(-1);
 	if (last && last.day === day && last.author === entry.data.author) {
 		last.entries.push(entry);
 	} else {
-		const base = [day, slug(entry.data.author)].filter(Boolean).join('-');
+		const base = devlogAnchor(day, entry.data.author);
 		const n = (seen.get(base) ?? 0) + 1;
 		seen.set(base, n);
 		const id = n === 1 ? base : `${base}-${n}`;
@@ -85,6 +81,17 @@ const label = (m: string) => monthFormat.format(new Date(`${m}-01T00:00:00Z`));
 const href = (m: string) => (m === months[0] ? '/devlog/' : `/devlog/${m}/`);
 const current = label(month);
 
+// Month jump list, one row per year: 14 full month names took six rows on a phone
+// before the first entry.
+const shortMonth = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'UTC' });
+const years = [...new Set(months.map((m) => m.slice(0, 4)))].map((year) => ({
+	year,
+	months: months.filter((m) => m.startsWith(year)),
+}));
+const at = months.indexOf(month);
+const newer = months[at - 1];
+const older = months[at + 1];
+
 // /devlog und /devlog/<neuester-monat> liefern denselben Inhalt. Fuer Google
 // ist das Duplicate Content, und in der Pagefind-Suche standen beide Seiten
 // mit identischem Textausschnitt untereinander. Die Monats-URL ist die
@@ -117,24 +124,32 @@ const schema = {
 	schema={schema}
 	canonical={`/devlog/${month}/`}
 >
+	<PageHead image="devlog" title="Devlog" narrow>
+		<p class="section-lead">
+			Day-by-day progress on Void Tales. Bigger announcements land in the <a href="/news/">news</a>.
+		</p>
+	</PageHead>
+
 	<section
-		class="section"
+		class="section section--follow"
 		data-pagefind-ignore={isAlias ? 'all' : undefined}
 		data-pagefind-meta={isAlias ? undefined : `title:Devlog — ${current}`}
 	>
 		<div class="shell shell-narrow">
-			<p class="eyebrow">From the workbench</p>
-			<h1 class="page-title">Devlog</h1>
-			<p class="section-lead">
-				Day-by-day progress on Void Tales. Bigger announcements land in the{' '}
-				<a href="/news/">news</a>.
-			</p>
-
-			<nav class="month-nav" aria-label="Devlog archive">
-				{months.map((m) => (
-					<a href={href(m)} aria-current={m === month ? 'page' : undefined}>
-						{label(m)}
-					</a>
+			<nav class="year-nav" data-pagefind-ignore aria-label="Devlog archive">
+				{years.map(({ year, months: inYear }) => (
+					<div class="year-nav-row">
+						<span class="year-nav-year">{year}</span>
+						{inYear.map((m) => (
+							<a
+								href={href(m)}
+								aria-current={m === month ? 'page' : undefined}
+								aria-label={label(m)}
+							>
+								{shortMonth.format(new Date(`${m}-01T00:00:00Z`))}
+							</a>
+						))}
+					</div>
 				))}
 			</nav>
 
@@ -155,6 +170,21 @@ const schema = {
 					))}
 				</article>
 			))}
+
+			<nav class="post-nav" data-pagefind-ignore aria-label="More of the devlog">
+				{older && (
+					<a href={href(older)}>
+						<span>Older</span>
+						{label(older)}
+					</a>
+				)}
+				{newer && (
+					<a class="post-nav-newer" href={href(newer)}>
+						<span>Newer</span>
+						{label(newer)}
+					</a>
+				)}
+			</nav>
 		</div>
 	</section>
 </BaseLayout>

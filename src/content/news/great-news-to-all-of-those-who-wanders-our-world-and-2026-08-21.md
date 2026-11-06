@@ -39,8 +39,8 @@ Behind the scenes, there’s a lot of rewriting that you’re not actually meant
 
 P.S.
 
- worked crazy hard to achieve this. The amount of changes he had to do is insane!
-I will edit the  section, because it is much easier now. And we can put on a check on the.
+Inventory worked crazy hard to achieve this. The amount of changes he had to do is insane!
+I will edit the #how-to-play section, because it is much easier now.
 
 Even when we added a lot to keep the attention curve in the calmer regions in the beginning lately, we analyzed a lot of data and made some serious thoughts. Void Tales is getting better and better **every single day**.
 

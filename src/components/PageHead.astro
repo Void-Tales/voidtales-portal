@@ -1,0 +1,48 @@
+---
+// Head of the section pages: a wide screenshot resolving into the page, title on top.
+// Same idea as the start page hero, a third of its height. The picture is the LCP
+// element of these pages, so it loads eagerly with high priority.
+interface Props {
+	/** File stem in public/images/heads, with a -900 sibling for phones. */
+	image: 'news' | 'devlog' | 'wiki' | 'items';
+	title: string;
+	/** Reading pages line the title up with their narrow column. */
+	narrow?: boolean;
+}
+const { image, title, narrow = false } = Astro.props;
+
+// Taken from the gallery: name and link stay with the picture.
+const CREDITS = {
+	news: { author: 'shinsnowly', id: '61876049', w: 2000, h: 1125 },
+	devlog: { author: 'shinsnowly', id: '15131685', w: 2000, h: 1126 },
+	wiki: { author: 'shinsnowly', id: '41383764', w: 2000, h: 1126 },
+	items: { author: 'shinsnowly', id: '30220922', w: 1811, h: 792 },
+};
+const credit = CREDITS[image];
+---
+
+<header class="page-head">
+	<img
+		class="page-head-img"
+		src={`/images/heads/${image}.webp`}
+		srcset={`/images/heads/${image}-900.webp 900w, /images/heads/${image}.webp ${credit.w}w`}
+		sizes="100vw"
+		alt=""
+		width={credit.w}
+		height={credit.h}
+		fetchpriority="high"
+		decoding="async"
+	/>
+	<div class="page-head-scrim"></div>
+	<a
+		class="page-head-credit"
+		data-pagefind-ignore
+		href={`https://gallery.voidtales.win/#img-${credit.id}`}
+	>
+		Screenshot by {credit.author}
+	</a>
+	<div class:list={['shell', narrow && 'shell-narrow', 'page-head-body']}>
+		<h1 class="page-title">{title}</h1>
+		<slot />
+	</div>
+</header>

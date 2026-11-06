@@ -30,7 +30,7 @@ More mechanics. More places. More things to learn. Bigger worlds.
 
 I'm starting to believe the opposite.
 
-  and I have been cooking something together for a while now, and the direction we've taken feels better than anything I've done with Void Tales in a long time.
+Inventory and I have been cooking something together for a while now, and the direction we've taken feels better than anything I've done with Void Tales in a long time.
 
 Weapons that genuinely play differently. Smaller places with more happening inside them.
 
@@ -58,7 +58,7 @@ __**REBOOT**__
 
 You can explore it, fight its bosses, finish things you haven't finished yet and enjoy the world that's there today.
 
-All that while   and I build the Void Tales those years taught us how to make.
+All that while Inventory and I build the Void Tales those years taught us how to make.
 
 It's not another area rework.
 It's not another combat update.

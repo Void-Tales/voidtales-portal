@@ -1,0 +1,27 @@
+---
+// A real anchor to the next section, not decoration. See `.scroll-cue` in global.css.
+interface Props {
+	to: string;
+	label: string;
+	panel?: boolean;
+}
+const { to, label, panel = false } = Astro.props;
+---
+
+<a
+	href={`#${to}`}
+	class:list={['scroll-cue', panel && 'scroll-cue--panel']}
+	aria-label={`Scroll to ${label}`}
+>
+	<svg
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		aria-hidden="true"
+	>
+		<path d="M12 4v15M5 12.5l7 7 7-7"></path>
+	</svg>
+</a>

@@ -154,6 +154,18 @@ h3 {
 	font-size: clamp(2rem, 5vw, 3.25rem);
 }
 
+/* Half a page wide: at the h2 size the longer title ran to three lines. */
+.story-copy h2 {
+	font-size: clamp(1.55rem, 2.45vw, 2.2rem);
+}
+
+/* German compounds are wider than a phone. Without this "Datenschutzerklärung" and
+   "Verbraucherstreitbeilegung" stuck out and the whole page slid sideways. */
+:lang(de) :is(h1, h2, h3, p, li) {
+	hyphens: auto;
+	overflow-wrap: break-word;
+}
+
 .prose h2 {
 	font-size: clamp(1.35rem, 2.6vw, 1.75rem);
 	margin-top: 2.25rem;
@@ -223,7 +235,22 @@ h3 {
 	--vt-ambient-size: 200px 200px, auto;
 }
 
+/* What lies over a picture at the head of a page, the same as on the gallery's backdrop:
+   a violet shimmer by day, stars and a glow from the top at night. Only over pictures.
+   On the flat page surface these radials would band and leave a step at every panel edge
+   (see the note above); on a photograph the image hides both. */
+:root {
+	--vt-wash:
+		radial-gradient(ellipse 80% 50% at 50% -10%, rgb(109 40 217 / 14%), transparent 70%),
+		radial-gradient(55rem 40rem at 95% 25%, rgb(109 40 217 / 14%), transparent 70%),
+		radial-gradient(60rem 45rem at 20% 95%, rgb(109 40 217 / 10%), transparent 70%);
+
+	--vt-wash-size: 100% 100%, 100% 100%, 100% 100%;
+}
+
 html.dark {
+	--vt-wash: radial-gradient(ellipse 70% 45% at 50% -5%, rgb(167 139 250 / 16%), transparent 70%);
+	--vt-wash-size: 100% 100%;
 	--vt-ambient:
 		radial-gradient(circle 1.2px at 20% 30%, rgb(236 232 246 / 50%) 0 100%, transparent),
 		radial-gradient(circle 1px at 68% 62%, rgb(236 232 246 / 38%) 0 100%, transparent),
@@ -244,6 +271,11 @@ body::before {
 	background: var(--vt-ambient);
 	background-size: var(--vt-ambient-size);
 	pointer-events: none;
+}
+
+/* On pages made of text the stars sat behind the words and read like stray full stops. */
+body:has(.prose, .entry-list, .item-grid)::before {
+	opacity: 0.35;
 }
 
 /* --------------------------------------------------------- components --- */
@@ -581,24 +613,42 @@ body::before {
 		);
 	}
 
+	.hero-scrim::before,
+	.page-head-scrim::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image: var(--vt-wash), var(--vt-ambient);
+		background-size: var(--vt-wash-size), var(--vt-ambient-size);
+		pointer-events: none;
+	}
+
+	/* By day the shimmer has to end before the flat page starts, or its edge shows. */
+	html:not(.dark) .hero-scrim::before,
+	html:not(.dark) .page-head-scrim::before {
+		-webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 92%);
+		mask-image: linear-gradient(to bottom, #000 50%, transparent 92%);
+	}
+
+	/* Upright screens: the picture stops above the copy. Across the full height the
+	   lit window sat right behind the title and the type had to fight it. */
+	@media (width < 48rem) and (orientation: portrait) {
+		.hero-bg {
+			inset: 0 0 36% 0;
+		}
+
+		.hero-scrim {
+			background: linear-gradient(to top, var(--vt-bg) 0%, var(--vt-bg) 46%, transparent 74%);
+		}
+	}
+
 	.hero-body {
 		position: relative;
 		padding-bottom: clamp(3rem, 8vh, 6rem);
 		padding-top: 6rem;
 	}
 
-	/* The only eyebrow on the page. */
-	.eyebrow {
-		display: block;
-		color: var(--vt-muted);
-		font-family: ui-monospace, sfmono-regular, menlo, monospace;
-		font-size: 0.75rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-	}
-
 	.hero-title {
-		margin-top: 1rem;
 		max-width: 14ch;
 	}
 
@@ -611,7 +661,24 @@ body::before {
 		max-width: 55ch;
 		margin-top: 1.25rem;
 		color: var(--vt-muted);
-		font-size: clamp(1rem, 1.4vw, 1.15rem);
+		font-size: clamp(1.125rem, 1.4vw, 1.2rem);
+	}
+
+	.hero-latest {
+		display: inline-block;
+		margin-top: 1.5rem;
+		color: var(--vt-muted);
+		font-size: 0.95rem;
+		text-decoration: underline;
+		text-decoration-color: var(--vt-line);
+		text-underline-offset: 4px;
+	}
+
+	@media (hover: hover) {
+		.hero-latest:hover {
+			color: var(--vt-text);
+			text-decoration-color: var(--vt-accent);
+		}
 	}
 
 	.hero-actions {
@@ -718,8 +785,15 @@ body::before {
 	@media (height >= 34rem) {
 		.story-panel {
 			position: sticky;
-			top: var(--header-h);
+			/* `--panel-h` comes from the script in index.astro. Short panels pin below the
+			   header, a panel taller than the screen pins by its bottom edge. */
+			top: min(var(--header-h), calc(100svh - var(--panel-h, 0px)));
 			min-height: calc(100svh - var(--header-h));
+		}
+
+		/* Without the script nothing knows the height, so nothing may pin. */
+		html:not(.js) .story-panel {
+			position: relative;
 		}
 	}
 
@@ -847,7 +921,10 @@ body::before {
 	   viewport, `.pan-sticky` pins, and the track travels sideways over exactly
 	   that extra height. */
 	.pan {
-		--tile-w: min(72vw, 26rem);
+		/* As large as the pinned screen has room for, heading included: at a fixed 26rem
+		   half of a desktop screen stayed empty. Upright on a phone for the same reason. */
+		--tile-ratio: 4 / 5;
+		--tile-w: min(76vw, 24rem, calc((100svh - 22rem) * 4 / 5));
 		--tile-gap: 1rem;
 		/* `100%` resolves where it is used: against the full-width viewport strip
 		   (scroll padding) and its track (padding), i.e. never with the scrollbar
@@ -857,6 +934,8 @@ body::before {
 
 	@media (width >= 768px) {
 		.pan {
+			--tile-ratio: 16 / 9;
+			--tile-w: min(72vw, 42rem, calc((100svh - var(--header-h) - 18rem) * 16 / 9));
 			--tile-gap: 1.5rem;
 			--strip-inset: max(2rem, calc((100% - var(--vt-container)) / 2 + 2rem));
 		}
@@ -910,8 +989,20 @@ body::before {
 		border-radius: var(--radius-lg);
 		background: var(--vt-raised);
 		box-shadow: var(--vt-shadow-1);
-		aspect-ratio: 16 / 9;
+		aspect-ratio: var(--tile-ratio);
 		transition: border-color 0.2s var(--ease-brand);
+	}
+
+	/* Whose shot it is. Stays on the picture in both themes, so its colours are fixed. */
+	.pan-credit {
+		position: absolute;
+		bottom: 0.75rem;
+		left: 0.75rem;
+		padding: 0.15rem 0.5rem;
+		border-radius: var(--radius-sm);
+		background: rgb(10 7 20 / 72%);
+		color: #ece8f6;
+		font-size: 0.8125rem;
 	}
 
 	.pan-tile:focus-visible {
@@ -989,10 +1080,195 @@ body::before {
 		aspect-ratio: 16 / 9;
 	}
 
-	.trailer-frame iframe {
+	.video-frame {
+		display: block;
 		width: 100%;
 		height: 100%;
 		border: 0;
+	}
+
+	/* A preview inside a post. Sits in a paragraph, so it has to be a block of its own. */
+	.trailer-inline {
+		margin-block: 1rem;
+		overflow: hidden;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+		aspect-ratio: 16 / 9;
+	}
+
+	.prose .video-frame {
+		height: auto;
+		margin-block: 1rem;
+		border-radius: var(--radius-md);
+		aspect-ratio: 16 / 9;
+	}
+
+	.film-grid {
+		display: grid;
+		gap: 2rem;
+		align-items: start;
+	}
+
+	@media (width >= 64rem) {
+		.film-grid {
+			grid-template-columns: 2fr 1fr;
+		}
+	}
+
+	.film figcaption {
+		margin-top: 0.75rem;
+		color: var(--vt-muted);
+		font-size: 0.95rem;
+	}
+
+	/* ---- world map ---- */
+
+	.map-grid {
+		display: grid;
+		gap: 2rem;
+		align-items: center;
+	}
+
+	/* The islands run past the shell to the screen edge, like the realm pictures. */
+	@media (width >= 64rem) {
+		.map-grid {
+			--bleed: calc((min(100vw, var(--vt-container)) - 100vw) / 2 - 2rem);
+
+			grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+		}
+
+		.map-figure {
+			margin-right: var(--bleed);
+		}
+	}
+
+	.map-figure {
+		display: block;
+		border-radius: var(--radius-lg);
+	}
+
+	.map-figure img {
+		width: 100%;
+		height: auto;
+		transition: transform 0.5s var(--ease-brand);
+	}
+
+	/* The capture sits on black. At night the islands float directly on the page's
+	   stars; by day black has nothing to blend into, so it keeps its dark field. */
+	html.dark .map-figure img {
+		mix-blend-mode: lighten;
+	}
+
+	html:not(.dark) .map-figure {
+		overflow: hidden;
+		background: #000;
+	}
+
+	@media (hover: hover) {
+		.map-figure:hover img {
+			transform: scale(1.03);
+		}
+	}
+
+	/* The live map after the click takes the whole row, half a page is too small to steer. */
+	.map-grid.is-live {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	#map {
+		overflow-x: clip;
+	}
+
+	.map-frame {
+		width: 100%;
+		height: min(80svh, 48rem);
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-lg);
+		background: #000;
+	}
+
+	/* ---- latest ---- */
+
+	.latest-grid {
+		display: grid;
+		gap: 2.5rem;
+		align-items: start;
+	}
+
+	@media (width >= 64rem) {
+		.latest-grid {
+			grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+			gap: 3.5rem;
+		}
+	}
+
+	.latest-news {
+		position: relative;
+	}
+
+	.latest-news img {
+		width: 100%;
+		height: auto;
+		border-radius: var(--radius-lg);
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+	}
+
+	.latest-news-text {
+		margin-top: 1.25rem;
+	}
+
+	.latest-news time,
+	.latest-side time {
+		color: var(--vt-muted);
+		font-size: 0.875rem;
+	}
+
+	.latest-news h3 {
+		margin-top: 0.35rem;
+		font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+	}
+
+	/* The whole block is the hit area, the heading link carries the href. */
+	.latest-news h3 a::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+	}
+
+	.latest-news p {
+		margin-top: 0.75rem;
+		color: var(--vt-muted);
+	}
+
+	.latest-side ul {
+		display: grid;
+		gap: 1.5rem;
+		margin-top: 1.25rem;
+	}
+
+	.latest-side li a {
+		display: grid;
+		gap: 0.2rem;
+	}
+
+	@media (hover: hover) {
+		.latest-side li a:hover span,
+		.latest-news:hover h3 {
+			color: var(--vt-accent);
+		}
+	}
+
+	.latest-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.5rem;
+		margin-top: 1.75rem;
+	}
+
+	.latest-links a {
+		color: var(--vt-accent);
+		text-underline-offset: 3px;
 	}
 
 	/* Facade until clicked (index.astro): our own thumbnail, YouTube-style button. */
@@ -1093,7 +1369,7 @@ body::before {
 		padding: 0.25rem 0.6rem;
 		border-radius: var(--radius-sm);
 		background: var(--vt-accent-soft);
-		font-size: 0.8rem;
+		font-size: 0.8125rem;
 		font-weight: 500;
 	}
 
@@ -1113,9 +1389,13 @@ body::before {
 		border: 1px solid var(--vt-line);
 		border-radius: var(--radius-md);
 		background: var(--vt-raised);
-		font-family: ui-monospace, sfmono-regular, menlo, monospace;
 		font-size: 0.9rem;
 		transition: border-color 0.2s var(--ease-brand);
+	}
+
+	.status-address code,
+	.footer-address code {
+		font-family: ui-monospace, sfmono-regular, menlo, monospace;
 	}
 
 	.status-meta {
@@ -1192,18 +1472,14 @@ body::before {
 		border-radius: var(--radius-md);
 		background: var(--vt-raised);
 		color: var(--vt-text);
-		font-family: ui-monospace, sfmono-regular, menlo, monospace;
-		font-size: 0.8rem;
+		font-size: 0.8125rem;
 		transition: border-color 0.2s var(--ease-brand);
 	}
 
-	/* Own class, not `.eyebrow`: that one belongs to the hero. Same look. */
 	.footer-col-title {
-		color: var(--vt-muted);
-		font-family: ui-monospace, sfmono-regular, menlo, monospace;
-		font-size: 0.75rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
+		color: var(--vt-text);
+		font-size: 0.9rem;
+		font-weight: 600;
 	}
 
 	.footer-col ul {
@@ -1231,7 +1507,7 @@ body::before {
 		padding-block: 1.25rem 2rem;
 		border-top: 1px solid var(--vt-line);
 		color: var(--vt-muted);
-		font-size: 0.8rem;
+		font-size: 0.8125rem;
 	}
 
 	/* ---- hover ---- */
@@ -1373,6 +1649,17 @@ body::before {
 	}
 }
 
+@keyframes vt-settle {
+	from {
+		opacity: 0.6;
+		transform: scale(1.06);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
 @keyframes vt-nudge {
 	0%,
 	60%,
@@ -1394,10 +1681,57 @@ body::before {
 		animation-delay: calc(var(--i, 0) * 90ms);
 	}
 
+	/* Section pages: the title settles in once, the picture behind it eases back. */
+	.page-head-body > * {
+		animation: vt-rise 0.7s var(--ease-brand) both;
+	}
+
+	.page-head-body > :nth-child(2) {
+		animation-delay: 90ms;
+	}
+
+	.page-head-img {
+		animation: vt-settle 1.4s var(--ease-brand) both;
+	}
+
+	/* Pages without a picture on top open the same way, on the title alone. */
+	main .shell-narrow article > .page-title,
+	.wiki-main .page-title,
+	.item-detail {
+		animation: vt-rise 0.7s var(--ease-brand) both;
+	}
+
 	/* The nudge lives on the inner icon: the button itself is already busy with
 	   the entrance animation above, and with its own hover transform. */
 	.scroll-cue svg {
 		animation: vt-nudge 1.9s var(--ease-brand) infinite;
+	}
+}
+
+/* Cards and pictures on the long pages rise as they scroll in. Pure CSS on the
+   compositor; a browser without view timelines shows them still, which is fine for
+   decoration (the start page's gallery pan is not decoration, so it stays in JS).
+   Longhands only: the minifier folds an `animation` shorthand and a timeline into one
+   invalid declaration and drops both (see index.astro). `backwards`, not `both`: a held
+   end state would swallow the cards' hover lift. The range is a length so a tall
+   block is not left half transparent until most of it is on screen. */
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: view()) {
+		.entry-card,
+		.item-card,
+		.post-nav a,
+		.prose img,
+		.prose h2,
+		.trailer-inline,
+		.mc-tooltip,
+		.devlog-day h3 {
+			animation-name: vt-rise;
+			animation-duration: 1ms;
+			animation-timing-function: linear;
+			animation-fill-mode: backwards;
+			animation-timeline: view();
+			animation-range: entry 0 entry 7rem;
+		}
 	}
 }
 
@@ -1413,6 +1747,11 @@ body::before {
 
 	/* Explicit end states, so nothing is left invisible or offset. */
 	.hero-body > *,
+	.page-head-body > *,
+	.page-head-img,
+	main .shell-narrow article > .page-title,
+	.wiki-main .page-title,
+	.item-detail,
 	.scroll-cue svg,
 	.rise {
 		animation: none !important;
@@ -1433,6 +1772,98 @@ body::before {
 
 	.page-title {
 		margin-top: 1rem;
+	}
+
+	/* Section pages open on a screenshot that resolves into the page, like the start
+	   page hero but a third of its height. */
+	.page-head {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		min-height: clamp(22rem, 54svh, 36rem);
+		overflow: hidden;
+	}
+
+	.page-head-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.page-head-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			to top,
+			var(--vt-bg) 0%,
+			color-mix(in srgb, var(--vt-bg) 84%, transparent) 36%,
+			transparent 78%
+		);
+	}
+
+	.page-head-body {
+		position: relative;
+		padding-block: 7rem 0.5rem;
+	}
+
+	.page-head-body .page-title {
+		margin-top: 0;
+	}
+
+	.page-head-body .section-lead {
+		font-size: 1.125rem;
+	}
+
+	.post-date {
+		display: block;
+		margin-top: 0.75rem;
+		color: var(--vt-muted);
+	}
+
+	.item-title-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+		margin-top: 0.5rem;
+		font-size: 0.9rem;
+	}
+
+	/* Fixed colours: it always sits on the picture, not on the page. */
+	.page-head-credit {
+		position: absolute;
+		z-index: 1;
+		top: 0.75rem;
+		right: 0.75rem;
+		padding: 0.15rem 0.5rem;
+		border-radius: var(--radius-sm);
+		background: rgb(10 7 20 / 72%);
+		color: #ece8f6;
+		font-size: 0.8125rem;
+		text-decoration: none;
+	}
+
+	.section--follow {
+		padding-top: 2rem;
+	}
+
+	.skip-link {
+		position: fixed;
+		z-index: 100;
+		top: 0.5rem;
+		left: 0.5rem;
+		padding: 0.5rem 1rem;
+		border-radius: var(--radius-md);
+		background: var(--vt-accent);
+		color: var(--vt-accent-ink);
+		font-weight: 600;
+		transform: translateY(-200%);
+	}
+
+	.skip-link:focus-visible {
+		transform: none;
 	}
 
 	.entry-list {
@@ -1490,10 +1921,38 @@ body::before {
 	.entry-card time,
 	.devlog-author {
 		color: var(--vt-muted);
-		font-family: ui-monospace, sfmono-regular, menlo, monospace;
-		font-size: 0.75rem;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
+		font-size: 0.875rem;
+	}
+
+	/* A post with a picture. Beside the text where there is room, above it on a phone,
+	   flush with the card edge either way. */
+	.entry-card--media {
+		display: grid;
+		overflow: hidden;
+		padding: 0;
+	}
+
+	.entry-card--media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		aspect-ratio: 16 / 9;
+	}
+
+	.entry-card--media .entry-card-text {
+		min-width: 0;
+		padding: 1.25rem 1.5rem 1.5rem;
+	}
+
+	@media (width >= 48rem) {
+		.entry-card--media {
+			grid-template-columns: 14rem minmax(0, 1fr);
+		}
+
+		.entry-card--media img {
+			aspect-ratio: auto;
+			min-height: 100%;
+		}
 	}
 
 	/* Archive jump list: months on the devlog, years on the news index. Wraps
@@ -1530,6 +1989,124 @@ body::before {
 
 	.month-heading {
 		margin-top: 3rem;
+		scroll-margin-top: calc(var(--header-h) + 1rem);
+	}
+
+	/* Devlog: one row per year instead of six rows of month names on a phone. */
+	.year-nav {
+		display: grid;
+		gap: 0.5rem;
+	}
+
+	.year-nav-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.year-nav-year {
+		min-width: 3rem;
+		color: var(--vt-muted);
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	.year-nav a {
+		padding: 0.25rem 0.55rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-sm);
+		color: var(--vt-muted);
+		font-size: 0.875rem;
+		text-decoration: none;
+	}
+
+	@media (hover: hover) {
+		.year-nav a:hover {
+			border-color: var(--vt-accent);
+			color: var(--vt-text);
+		}
+	}
+
+	.year-nav a[aria-current='page'] {
+		border-color: var(--vt-accent);
+		background: var(--vt-accent-soft);
+		color: var(--vt-text);
+	}
+
+	/* The end of a post or month says where to go next. */
+	.post-nav {
+		display: grid;
+		gap: 0.75rem;
+		margin-top: 4rem;
+	}
+
+	@media (width >= 48rem) {
+		.post-nav {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	.post-nav a {
+		display: grid;
+		gap: 0.25rem;
+		padding: 1rem 1.25rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+		background: var(--vt-raised);
+		font-weight: 500;
+		line-height: 1.35;
+		text-decoration: none;
+		transition: border-color 0.2s ease;
+	}
+
+	.post-nav span {
+		color: var(--vt-muted);
+		font-size: 0.875rem;
+		font-weight: 400;
+	}
+
+	.post-nav-newer {
+		grid-column: -2;
+		text-align: right;
+	}
+
+	@media (hover: hover) {
+		.post-nav a:hover {
+			border-color: var(--vt-accent);
+		}
+	}
+
+	/* Wiki pages: the same reading column, with a contents box on the long ones. */
+	.wiki-main {
+		max-width: 44rem;
+		margin-inline: auto;
+	}
+
+	.wiki-toc {
+		margin-top: 1.5rem;
+		padding: 1rem 1.25rem;
+		border-radius: var(--radius-md);
+		background: var(--vt-raised);
+	}
+
+	.wiki-toc p {
+		color: var(--vt-muted);
+		font-size: 0.875rem;
+	}
+
+	.wiki-toc ul {
+		display: grid;
+		gap: 0.3rem;
+		margin-top: 0.5rem;
+	}
+
+	.wiki-toc a {
+		color: var(--vt-accent);
+		text-underline-offset: 3px;
+	}
+
+	.prose :is(h2, h3) {
 		scroll-margin-top: calc(var(--header-h) + 1rem);
 	}
 
@@ -1662,9 +2239,27 @@ body::before {
 	.item-filter-label {
 		min-width: 4.5rem;
 		color: var(--vt-muted);
-		font-size: 0.8rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
+		font-size: 0.875rem;
+	}
+
+	.item-search {
+		width: 100%;
+		max-width: 28rem;
+		margin-bottom: 0.4rem;
+		padding: 0.55rem 0.85rem;
+		border: 1px solid var(--vt-line);
+		border-radius: var(--radius-md);
+		background: var(--vt-raised);
+		color: var(--vt-text);
+	}
+
+	.item-search:focus-visible {
+		border-color: var(--vt-accent);
+		outline-offset: 0;
+	}
+
+	.item-search::placeholder {
+		color: var(--vt-muted);
 	}
 
 	/* Same look as the month navigation: one idiom for "pick one of these". */
@@ -1750,7 +2345,7 @@ body::before {
 
 	.item-card-meta {
 		color: var(--vt-muted);
-		font-size: 0.8rem;
+		font-size: 0.8125rem;
 	}
 
 	.item-badge {
@@ -1760,7 +2355,7 @@ body::before {
 		border-radius: var(--radius-sm);
 		background: var(--vt-accent-soft);
 		color: var(--vt-text);
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		white-space: nowrap;
 	}
 

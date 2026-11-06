@@ -134,7 +134,7 @@ for (const item of bundle.items) {
 fs.mkdirSync(path.resolve('public/items'), { recursive: true });
 fs.writeFileSync(
 	path.resolve('public/items/build.txt'),
-	`commit ${process.env.GIT_SHA || 'local'}\nitems ${bundle.digest || 'none'}\n`
+	`commit ${process.env.GIT_SHA || 'local'}\nitems ${bundle.digest || 'none'}\ngallery ${process.env.GALLERY_DIGEST || 'none'}\n`
 );
 
 fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
