@@ -638,7 +638,7 @@ body:has(.prose, .entry-list, .item-grid)::before {
 		}
 
 		.hero-scrim {
-			background: linear-gradient(to top, var(--vt-bg) 0%, var(--vt-bg) 42%, transparent 70%);
+			background: linear-gradient(to top, var(--vt-bg) 0%, var(--vt-bg) 46%, transparent 74%);
 		}
 	}
 
