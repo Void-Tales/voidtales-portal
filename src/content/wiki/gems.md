@@ -17,6 +17,9 @@ critical strikes, others reduce cooldowns or enhance abilities directly.
 - **Moltanica** - instead of being consumed, a Moltanica upgrades the item it's socketed into
   directly and permanently
 
+Every gem in the game, with its stats, is in the
+[item catalogue](/items/?category=statgem,effectgem,heirloom).
+
 ## Current rules
 
 Every weapon and armor piece has **one** gemstone slot, and that slot accepts any gemstone
