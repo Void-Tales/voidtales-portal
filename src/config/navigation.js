@@ -40,8 +40,8 @@ export const footerColumns = [
 	{
 		title: 'Legal',
 		links: [
-			{ label: 'Impressum', href: '/impressum/' },
-			{ label: 'Datenschutz', href: '/datenschutz/' },
+			{ label: 'Imprint', href: '/imprint/' }, // German binding version /impressum/, linked from there
+			{ label: 'Privacy', href: '/privacy/' }, // German binding version /datenschutz/
 		],
 	},
 ];

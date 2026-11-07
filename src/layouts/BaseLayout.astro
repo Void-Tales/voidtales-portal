@@ -182,15 +182,7 @@ const jsonLd = {
 			})();
 		</script>
 
-		{/* Analytics: self-hosted Umami on our own box, cookieless, nothing written to
-		    the visitor's device, no third party sees the numbers. Named in /datenschutz.
-		    One website id covers every host under voidtales.win - Umami records the
-		    hostname per event, so portal, gallery and wiki stay tellable apart. */}
-		<script
-			defer
-			src="https://stats.hzwd.xyz/script.js"
-			data-website-id="7c235267-8275-439c-8449-39b753460c67"
-		></script>
+		{/* Analytics: Umami loads only after consent, see Footer.astro and public/zaehlen.js. */}
 	</head>
 
 	{/* <main> is unconstrained so sections can go full-bleed; the width limit
