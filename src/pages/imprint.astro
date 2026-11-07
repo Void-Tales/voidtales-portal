@@ -1,0 +1,108 @@
+---
+// English translation of /impressum/ (§ 5 DDG). The German page is the binding one: change both together.
+// The address comes from the build secrets, see src/config/impressum.js.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { addressLines, phone, phoneHref, contactEmail } from '../config/impressum.js';
+---
+
+<BaseLayout
+	title="Imprint"
+	description="Provider identification under § 5 DDG for Void Tales."
+	noindex
+>
+	<section class="section">
+		<div class="shell shell-narrow">
+			<a class="back-link" href="/">
+				← Back to the Station
+			</a>
+			<article>
+				<h1 class="page-title">Imprint</h1>
+				<div class="prose">
+					<p>
+						This is a translation for convenience. The legally binding version is the{' '}
+						<a href="/impressum/" hreflang="de">
+							German Impressum
+						</a>
+						.
+					</p>
+
+					<h2>Information under § 5 DDG</h2>
+					<p>
+						{addressLines.map((line) => (
+							<>
+								{line}
+								<br />
+							</>
+						))}
+					</p>
+
+					<h2>Contact</h2>
+					<p>
+						{phone && (
+							<>
+								Phone: <a href={`tel:${phoneHref}`}>{phone}</a>
+								<br />
+							</>
+						)}
+						Email: <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+					</p>
+
+					<h2>Responsible for the content under § 18(2) MStV</h2>
+					<p>
+						{addressLines.map((line) => (
+							<>
+								{line}
+								<br />
+							</>
+						))}
+					</p>
+
+					<h2>Consumer dispute resolution</h2>
+					<p>
+						I am neither willing nor obliged to take part in dispute resolution proceedings before a
+						consumer arbitration board.
+					</p>
+
+					<h2>Liability for content</h2>
+					<p>
+						As a service provider I am responsible for my own content on these pages under the
+						general laws, in accordance with § 7(1) DDG. Under §§ 8 to 10 DDG, however, I am not
+						obliged to monitor third-party information transmitted or stored, or to look for
+						circumstances that indicate illegal activity. Obligations to remove or block the use of
+						information under the general laws remain unaffected. Liability in this respect is only
+						possible from the moment a specific infringement becomes known. As soon as I learn of
+						such infringements, I will remove the content immediately.
+					</p>
+
+					<h2>Liability for links</h2>
+					<p>
+						This site contains links to external third-party websites whose content I have no
+						influence on, so I cannot accept any liability for it. The respective provider or
+						operator of the linked pages is always responsible for their content. As soon as I learn
+						of infringements, I will remove such links immediately.
+					</p>
+
+					<h2>Copyright</h2>
+					<p>
+						The content and works created by the site operator on these pages are subject to German
+						copyright law. Reproduction, editing, distribution and any kind of use beyond the limits
+						of copyright law require the written consent of the respective author or creator.
+					</p>
+
+					<h2>Trademarks</h2>
+					<p>
+						Minecraft is a trademark of Mojang Studios / Microsoft. Void Tales is an independent
+						community project and is not affiliated with, run, supported or endorsed by Mojang
+						Studios, Microsoft or their partners.
+					</p>
+
+					<h2>Privacy</h2>
+					<p>
+						How personal data is processed on this website is described in the{' '}
+						<a href="/privacy/">Privacy Policy</a>.
+					</p>
+				</div>
+			</article>
+		</div>
+	</section>
+</BaseLayout>

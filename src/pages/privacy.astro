@@ -1,0 +1,283 @@
+---
+// English translation of /datenschutz/ (Art. 13 GDPR). The German page is the binding one:
+// change both together, section numbers and anchors match.
+// The address comes from the build secrets, see src/config/impressum.js.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { addressLines, phone, phoneHref, contactEmail } from '../config/impressum.js';
+import { siteConfig } from '../config/site.js';
+---
+
+<BaseLayout
+	title="Privacy Policy"
+	description="How personal data is processed on portal.voidtales.win and gallery.voidtales.win."
+	noindex
+>
+	<section class="section">
+		<div class="shell shell-narrow">
+			<a class="back-link" href="/">
+				← Back to the Station
+			</a>
+			<article>
+				<h1 class="page-title">Privacy Policy</h1>
+				<div class="prose">
+					<p>
+						This is a translation for convenience. The legally binding version is the{' '}
+						<a href="/datenschutz/" hreflang="de">
+							German Datenschutzerklärung
+						</a>
+						.
+					</p>
+					<p>
+						This policy describes which personal data is processed when you visit{' '}
+						<strong>portal.voidtales.win</strong> and the community gallery{' '}
+						<strong>gallery.voidtales.win</strong>, for what purpose and on which legal basis.
+						Sections 2, 3, 8 and 9 apply to both sites, section 11 to the gallery only. Last
+						updated: November 2026.
+					</p>
+
+					<h2>1. Controller</h2>
+					<p>
+						{addressLines.map((line) => (
+							<>
+								{line}
+								<br />
+							</>
+						))}
+					</p>
+					<p>
+						{phone && (
+							<>
+								Phone: <a href={`tel:${phoneHref}`}>{phone}</a>
+								<br />
+							</>
+						)}
+						Email: <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+					</p>
+					<p>
+						No data protection officer has been appointed; the legal requirements for one are not
+						met.
+					</p>
+
+					<h2>2. Server logs</h2>
+					<p>
+						This website is served from a self-managed server. On every request the web server logs
+						technical access data: IP address, time, requested resource, status code, amount of data
+						transferred, referrer and browser identification. This data is used only to run the
+						service securely and to find faults, is not combined with other data and is overwritten
+						on a rolling basis. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in secure
+						and reliable operation).
+					</p>
+
+					<h2>3. Delivery through Cloudflare</h2>
+					<p>
+						Access to this website runs through the network of Cloudflare, Inc. (101 Townsend St,
+						San Francisco, CA 94107, USA). Cloudflare forwards requests to the server, filters
+						attacks and provides TLS encryption, processing the technically necessary connection
+						data including your IP address. Cloudflare acts as a processor; a data processing
+						agreement is in place, and transfers to third countries are covered by EU Standard
+						Contractual Clauses. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in a
+						secure and reachable website).
+					</p>
+
+					<h2>4. YouTube videos</h2>
+					<p>
+						On the home page and in News and Devlog, videos from YouTube (Google Ireland Limited,
+						Gordon House, Barrow Street, Dublin 4, Ireland) can be played. Until you click the
+						preview image, no connection to YouTube is made: the image is served from our own
+						server. Only the click loads the player in privacy-enhanced mode (
+						<code>youtube-nocookie.com</code>); your IP address is then sent to YouTube, and further
+						usage data is added while the video plays. In privacy-enhanced mode YouTube sets no
+						cookies for personalised advertising before the video is played. The legal basis is Art.
+						6(1)(f) GDPR (legitimate interest in presenting the project); you trigger the request
+						yourself. Without JavaScript the click opens the video directly on youtube.com. More
+						information:{' '}
+						<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+							Google's privacy policy
+						</a>
+						.
+					</p>
+					<p>
+						The live map of the game world on the home page also loads only after a click. It runs
+						on our own server at <code>dynmap.voidtales.win</code>; no data goes to anyone else.
+					</p>
+
+					<h2>5. Server status lookup (api.mcstatus.io)</h2>
+					<p>
+						The status display of the Minecraft server ({siteConfig.mcServerHost}) queries the
+						service <code>api.mcstatus.io</code> directly from your browser, which sends your IP
+						address to the operator of that service. No cookies are set and no information about you
+						is transmitted. The legal basis is Art. 6(1)(f) GDPR (legitimate interest in showing the
+						current server status).
+					</p>
+
+					<h2>6. Storage on your device</h2>
+					<p>
+						The portal sets no cookies. Only your chosen appearance (light or dark) is stored in
+						your browser's <code>localStorage</code>, and in the gallery also the chosen sort order.
+						This never leaves your device and is not analysed; it is strictly necessary for a
+						function you explicitly asked for (§ 25(2) no. 2 TDDDG). You can delete it at any time
+						in your browser's site data. For your choice on visit counting see section 9, for the
+						cookies of the gallery login section 11.
+					</p>
+
+					<h2>7. Search</h2>
+					<p>
+						Search runs entirely in your browser: the search index is loaded like any other file
+						from this server, and your search terms are neither transmitted nor stored.
+					</p>
+
+					<h2>8. Fonts, images and scripts</h2>
+					<p>
+						Fonts, images, stylesheets and scripts are served from this server. No third-party
+						content delivery network and no external font source is used; the only exception are the
+						Discord profile pictures in the gallery (section 11). No third-party tracking services
+						are used; for visit counting see the next section.
+					</p>
+
+					<h2 id="analytics">9. Visit counting</h2>
+					<p>
+						To see which pages get read, the software “Umami” is used,{' '}
+						<strong>but only if you agree</strong>. It runs on the operator's own server in Germany;
+						the numbers are not passed to third parties and not combined with other data sources.
+					</p>
+					<p>
+						Recorded are the page opened, the previous page, browser, operating system, approximate
+						screen size, language and country. Your IP address is used only to determine the country
+						and is <strong>not stored</strong>. No cookies are set, and there is no recognition
+						across pages or devices.
+					</p>
+					<p>
+						Because the script reads some of this from your browser (such as screen size and
+						language), it is only loaded after you choose “Yes” on your first visit. The legal basis
+						is your consent under § 25(1) TDDDG and Art. 6(1)(a) GDPR. Your browser keeps your
+						answer in its <code>localStorage</code> (key <code>zaehlen</code>), separately for
+						portal and gallery, so the question does not come back on every visit; that is necessary
+						for the consent itself (§ 25(2) no. 2 TDDDG). Once you agree, the script is loaded from{' '}
+						<code>stats.hzwd.xyz</code>, which also sits behind Cloudflare (see section 3). You can
+						withdraw your consent at any time with effect for the future, here or via “Visit
+						counting” in the footer:
+						<button type="button" class="zaehlen-aendern" data-zaehlen-aendern hidden>
+							Allow or decline counting
+						</button>
+					</p>
+
+					<h2>10. Contacting us</h2>
+					<p>
+						If you write an email to the address above, your details are processed only to handle
+						your request and deleted once they are no longer needed. The legal basis is Art. 6(1)(f)
+						GDPR (legitimate interest in answering enquiries), for contract-related enquiries Art.
+						6(1)(b) GDPR.
+					</p>
+
+					<h2>11. Gallery: Discord login, likes and comments</h2>
+					<p>
+						Anyone can view the gallery's images, likes and comments without logging in. To like or
+						comment on images you log in with your Discord account; this is only possible for
+						members of the Void Tales Discord server.
+					</p>
+					<p>
+						<strong>Login.</strong> Clicking “Log in” takes you to Discord (responsible for users in
+						the EEA: Discord Netherlands BV, Schiphol Boulevard 195, 1118 BG Schiphol, Netherlands),
+						where the{' '}
+						<a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">
+							Discord privacy policy
+						</a>{' '}
+						applies. After you approve, Discord sends your Discord ID, your user, display and server
+						name, your avatar and your membership and roles on the Void Tales server. This decides
+						whether you may write and whether you belong to the team. The access token issued by
+						Discord is used for this one request only and not stored. While you are logged in, the
+						gallery checks again about every 10 minutes, through the gallery's Discord bot, whether
+						you are still a member of the server, whether a timeout applies and which roles you
+						have. If the membership ends or a timeout applies, the session ends; team rights follow
+						the roles.
+					</p>
+					<p>
+						<strong>What is stored.</strong> Your Discord ID, your name, the address of your avatar
+						and whether you belong to the team (for the duration of the session), plus the images
+						you liked and your comments, each with a timestamp. Comments are shown publicly with
+						name and avatar, likes only as a count. The address of the publicly shown avatar
+						contains your Discord ID. Storage is on a server of the operator in Germany.
+					</p>
+					<p>
+						<strong>Cookies.</strong> For the login the gallery sets two technically necessary
+						cookies: <code>__Host-vt_oauth</code> protects the login against forgery and expires
+						after 10 minutes, <code>__Host-vt_sess</code> keeps you logged in and expires after 7
+						days or when you log out. The server keeps only a checksum of the session cookie.
+						Without logging in, no cookies are set (§ 25(2) no. 2 TDDDG).
+					</p>
+					<p>
+						<strong>Sync with Discord.</strong> The gallery's images come from posts in the Void
+						Tales Discord. Reactions with 👍 or ❤️ on such a post count as a like for its images,
+						replies in the post's thread appear as comments (Discord ID, name, avatar, text, time).
+						If a reaction or reply is removed in Discord, it disappears from the gallery by the
+						following day at the latest. In the other direction, every comment from the gallery
+						appears with name, avatar, text and a link to the image in the post's thread in the Void
+						Tales Discord, marked “via Gallery”. If you delete it in the gallery, it is removed
+						there too; if the team removes it in Discord, it disappears from the gallery by the
+						following day at the latest. A bot shows in the same thread how many likes an image got
+						in the gallery, as a number only and without names. The legal basis is Art. 6(1)(f) GDPR
+						(legitimate interest in showing the community's feedback the same way in both places).
+					</p>
+					<p>
+						<strong>Avatars.</strong> Avatars are loaded directly from Discord (
+						<code>cdn.discordapp.com</code>) as soon as you view comments or are logged in, which
+						sends your IP address to Discord.
+					</p>
+					<p>
+						<strong>Moderation.</strong> Every new comment from the gallery is reported with name,
+						text and a link to the image to an internal team channel in the Void Tales Discord, so
+						that inappropriate posts can be removed quickly. The team can delete any comment.
+					</p>
+					<p>
+						<strong>Retention.</strong> Sessions end when you log out, when your membership ends or
+						a timeout applies on the Discord server, and after 7 days at the latest. Likes and
+						comments stay stored until you take them back or delete them, or ask for deletion.
+						Deleted comments are hidden immediately and removed for good 30 days later; until then
+						it remains traceable who deleted them. Daily backups are overwritten on a rolling basis.
+					</p>
+					<p>
+						The legal basis for login, likes and comments is Art. 6(1)(b) GDPR (providing the
+						function you use), for the report to the team Art. 6(1)(f) GDPR (legitimate interest in
+						a moderated gallery). The report, the thread in Discord and the login through Discord
+						may involve a transfer to the USA; Discord and its US companies state that they take
+						part in the EU-US Data Privacy Framework.
+					</p>
+
+					<h2>12. Linked services</h2>
+					<p>
+						This website links to external services, among them Discord and Modrinth. As soon as you
+						follow such a link, that provider's privacy policy applies. I have no influence on their
+						data processing.
+					</p>
+
+					<h2>13. Your rights</h2>
+					<p>You have the right at any time to</p>
+					<ul>
+						<li>access the data processed about you (Art. 15 GDPR)</li>
+						<li>rectification of inaccurate data (Art. 16 GDPR)</li>
+						<li>erasure (Art. 17 GDPR)</li>
+						<li>restriction of processing (Art. 18 GDPR)</li>
+						<li>data portability (Art. 20 GDPR)</li>
+						<li>object to processing based on legitimate interests (Art. 21 GDPR)</li>
+						<li>withdraw a consent you gave, with effect for the future (Art. 7(3) GDPR)</li>
+					</ul>
+					<p>
+						To do so, write to <a href={`mailto:${contactEmail}`}>{contactEmail}</a>. Independently
+						of this, you have the right to lodge a complaint with a data protection supervisory
+						authority (Art. 77 GDPR).
+					</p>
+
+					<h2>14. Changes to this policy</h2>
+					<p>
+						This policy is updated when the processing described here or the legal requirements
+						change. The version published here applies.
+					</p>
+
+					<p>
+						Provider identification: <a href="/imprint/">Imprint</a>
+					</p>
+				</div>
+			</article>
+		</div>
+	</section>
+</BaseLayout>

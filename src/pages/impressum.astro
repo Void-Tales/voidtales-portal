@@ -1,5 +1,6 @@
 ---
 // Deutsch, auch wenn der Rest der Seite englisch ist: Rechtsdokument nach § 5 DDG.
+// Englische Uebersetzung in imprint.astro: beide zusammen aendern.
 // Die Anschrift kommt aus den Build-Secrets, siehe src/config/impressum.js.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { addressLines, phone, phoneHref, contactEmail } from '../config/impressum.js';
@@ -19,6 +20,14 @@ import { addressLines, phone, phoneHref, contactEmail } from '../config/impressu
 			<article>
 				<h1 class="page-title">Impressum</h1>
 				<div class="prose">
+					<p lang="en">
+						English:{' '}
+						<a href="/imprint/" hreflang="en">
+							Imprint
+						</a>{' '}
+						(translation; this German version is the binding one).
+					</p>
+
 					<h2>Angaben gemäß § 5 DDG</h2>
 					<p>
 						{addressLines.map((line) => (

@@ -1,4 +1,4 @@
-// Ladungsfaehige Anschrift fuer /impressum und /datenschutz.
+// Ladungsfaehige Anschrift fuer /impressum und /datenschutz (und die Uebersetzungen /imprint, /privacy).
 //
 // Die Werte kommen zur Build-Zeit aus den GitHub-Secrets IMPRESSUM_ADDRESS und
 // IMPRESSUM_PHONE (siehe Dockerfile + .github/workflows/deploy.yml) und stehen
