@@ -24,6 +24,9 @@ const devlog = defineCollection({
 	schema: z.object({
 		date: z.coerce.date(),
 		author: z.string().optional(),
+		// Set by n8n for posts from the Reboot devlog channel: shown veiled, so
+		// players who'd rather be surprised aren't spoiled by scrolling past.
+		track: z.enum(['reboot']).optional(),
 	}),
 });
 
