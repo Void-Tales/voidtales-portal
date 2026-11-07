@@ -93,6 +93,12 @@ const jsonLd = {
 		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<link rel="alternate" type="application/rss+xml" title={siteConfig.name} href="/rss.xml" />
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title={`${siteConfig.name} Devlog`}
+			href="/devlog/rss.xml"
+		/>
 
 		<meta property="og:type" content={published ? 'article' : 'website'} />
 		<meta property="og:site_name" content={siteConfig.name} />

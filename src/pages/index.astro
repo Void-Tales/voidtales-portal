@@ -7,8 +7,8 @@ import { siteConfig, storySections, galleryImages } from '../config/site.js';
 import { socialLinks, isExternal } from '../config/navigation.js';
 import community from '../generated/community.json';
 import youtube from '../generated/youtube.json';
-import { berlinDay, berlinMonth } from '../utils/berlin.js';
-import { devlogAnchor } from '../utils/devlog';
+import { berlinMonth } from '../utils/berlin.js';
+import { devlogGroups } from '../utils/devlog';
 import { excerpt, newsSummary } from '../utils/excerpt';
 import { firstImage } from '../utils/media';
 
@@ -67,22 +67,22 @@ const dateFormat = new Intl.DateTimeFormat('en-GB', {
 	timeZone: 'Europe/Berlin',
 });
 
-// One line per day and author, as the devlog groups them. Posts that are only a
-// picture have nothing to quote and are passed over.
-const devlogDays = new Map<string, { date: Date; href: string; text: string }>();
-for (const entry of (await getCollection('devlog')).sort(
-	(a, b) => b.data.date.valueOf() - a.data.date.valueOf()
-)) {
-	const anchor = devlogAnchor(berlinDay(entry.data.date), entry.data.author);
-	const text = excerpt(entry.body ?? '', 110);
-	if (devlogDays.has(anchor) || !text) continue;
-	devlogDays.set(anchor, {
-		date: entry.data.date,
-		href: `/devlog/${berlinMonth(entry.data.date)}/#${anchor}`,
-		text,
-	});
-	if (devlogDays.size === 3) break;
-}
+// One line per day and author, as the devlog groups them, quoting the newest post
+// of the block. Posts that are only a picture have nothing to quote and are passed
+// over. Reboot posts stay out: quoting them here would spoil what the devlog veils.
+// They get one wordless line under the film instead.
+const devlogBlocks = devlogGroups(await getCollection('devlog')).reverse();
+const blockHref = (g: (typeof devlogBlocks)[number]) => `/devlog/${berlinMonth(g.date)}/#${g.id}`;
+const devlogDays = devlogBlocks
+	.filter((g) => !g.reboot)
+	.flatMap((g) => {
+		const entry = g.entries.findLast((e) => excerpt(e.body ?? ''));
+		return entry
+			? [{ date: entry.data.date, href: blockHref(g), text: excerpt(entry.body ?? '', 110) }]
+			: [];
+	})
+	.slice(0, 3);
+const rebootLatest = devlogBlocks.find((g) => g.reboot);
 ---
 
 <BaseLayout>
@@ -261,6 +261,17 @@ for (const entry of (await getCollection('devlog')).sort(
 				))}
 			</div>
 
+			{rebootLatest && (
+				<p class="reboot-whisper">
+					<a href={blockHref(rebootLatest)}>
+						Something stirs in the Reboot. Last seen{' '}
+						<time datetime={rebootLatest.date.toISOString()}>
+							{dateFormat.format(rebootLatest.date)}
+						</time>
+					</a>
+				</p>
+			)}
+
 			<div class="mt-12 flex justify-end">
 				<ScrollCue to="map" label={map.title} />
 			</div>
@@ -335,7 +346,7 @@ for (const entry of (await getCollection('devlog')).sort(
 					<div class="latest-side">
 						<h3>{latest.devlogTitle}</h3>
 						<ul>
-							{[...devlogDays.values()].map((day) => (
+							{devlogDays.map((day) => (
 								<li>
 									<a href={day.href}>
 										<time datetime={day.date.toISOString()}>{dateFormat.format(day.date)}</time>

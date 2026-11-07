@@ -2276,6 +2276,73 @@ body:has(.prose, .entry-list, .item-grid)::before {
 		margin-top: 0.4rem;
 	}
 
+	/* --- Reboot: veiled devlog posts and the line under the film ---------- */
+
+	.reboot-tag {
+		margin-left: 0.6rem;
+		color: var(--vt-accent);
+		font-size: 0.75rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.reboot-veil {
+		margin-top: 1rem;
+	}
+
+	.reboot-veil summary {
+		cursor: pointer;
+		list-style: none;
+		color: var(--vt-muted);
+		font-style: italic;
+	}
+
+	.reboot-veil summary::-webkit-details-marker {
+		display: none;
+	}
+
+	/* Closed, the veil shows blurred lines that stand for text. They're drawn, not
+	   the post itself: nothing of it reaches find-in-page or a screen reader. */
+	.reboot-veil:not([open]) summary::after {
+		content: '';
+		display: block;
+		height: 4.5rem;
+		margin-top: 0.8rem;
+		border-radius: var(--radius-sm);
+		background: repeating-linear-gradient(var(--vt-muted) 0 0.55rem, transparent 0.55rem 1.5rem);
+		filter: blur(5px);
+		opacity: 0.35;
+		mask-image: linear-gradient(90deg, #000 55%, transparent);
+	}
+
+	@media (hover: hover) {
+		.reboot-veil summary:hover {
+			color: var(--vt-accent);
+		}
+	}
+
+	.reboot-veil[open] summary {
+		margin-bottom: 1rem;
+	}
+
+	.reboot-whisper {
+		margin-top: 1.5rem;
+		color: var(--vt-muted);
+		font-size: 0.9rem;
+		font-style: italic;
+	}
+
+	.reboot-whisper a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	@media (hover: hover) {
+		.reboot-whisper a:hover {
+			color: var(--vt-accent);
+		}
+	}
+
 	/* --- Item catalogue (/items) ----------------------------------------- */
 
 	.item-stand {

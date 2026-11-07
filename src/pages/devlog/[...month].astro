@@ -3,8 +3,8 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHead from '../../components/PageHead.astro';
 import { siteConfig } from '../../config/site.js';
-import { berlinDay, berlinMonth } from '../../utils/berlin.js';
-import { devlogAnchor } from '../../utils/devlog';
+import { berlinMonth } from '../../utils/berlin.js';
+import { devlogGroups } from '../../utils/devlog';
 
 // One page per month rather than per N entries: a month URL still points at the
 // same entries a year from now, while /devlog/2 shifts by one every time
@@ -30,29 +30,7 @@ export async function getStaticPaths() {
 
 const { month, months, entries } = Astro.props;
 
-// A day of messages by the same person is one thought, so it renders as one
-// block with the messages as consecutive paragraphs. Grouping lives here and
-// not in the import, which keeps the n8n side at "write one file".
-// The anchor is day plus author: two people posting on the same day gave two
-// blocks with the same id. Counted in time order, so a new post never renumbers
-// an older block.
-type Group = { id: string; day: string; author?: string; date: Date; entries: typeof entries };
-const groups: Group[] = [];
-const seen = new Map<string, number>();
-for (const entry of entries) {
-	const day = berlinDay(entry.data.date);
-	const last = groups.at(-1);
-	if (last && last.day === day && last.author === entry.data.author) {
-		last.entries.push(entry);
-	} else {
-		const base = devlogAnchor(day, entry.data.author);
-		const n = (seen.get(base) ?? 0) + 1;
-		seen.set(base, n);
-		const id = n === 1 ? base : `${base}-${n}`;
-		groups.push({ id, day, author: entry.data.author, date: entry.data.date, entries: [entry] });
-	}
-}
-groups.reverse();
+const groups = devlogGroups(entries).reverse();
 
 const rendered = await Promise.all(
 	groups.map(async (group) => ({
@@ -162,12 +140,31 @@ const schema = {
 							<time datetime={group.day}>{dayFormat.format(group.date)}</time>
 						</a>
 					</h3>
-					{group.author && <p class="devlog-author">{group.author}</p>}
-					{group.parts.map(({ Content }) => (
-						<div class="prose">
-							<Content />
-						</div>
-					))}
+					{group.author && (
+						<p class="devlog-author">
+							{group.author}
+							{group.reboot && <span class="reboot-tag">Reboot</span>}
+						</p>
+					)}
+					{group.reboot ? (
+						// Veiled, not hidden: closed it shows a blurred glimpse where the
+						// browser can style ::details-content, a plain line elsewhere. Kept
+						// out of the search so the index doesn't quote what the veil covers.
+						<details class="reboot-veil" data-pagefind-ignore="all">
+							<summary>Something stirs in the Reboot. Look closer.</summary>
+							{group.parts.map(({ Content }) => (
+								<div class="prose">
+									<Content />
+								</div>
+							))}
+						</details>
+					) : (
+						group.parts.map(({ Content }) => (
+							<div class="prose">
+								<Content />
+							</div>
+						))
+					)}
 				</article>
 			))}
 
