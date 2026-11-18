@@ -173,6 +173,8 @@ const jsonLd = {
 					t = d.getDate();
 				if ((m === 9 && t >= 24) || (m === 10 && t <= 1))
 					document.documentElement.classList.add('halloween');
+				// Christmas: 1.12. to 26.12., the same way (rules: global.css, html.weihnachten)
+				if (m === 11 && t <= 26) document.documentElement.classList.add('weihnachten');
 
 				// Only the start page has .hero-bg; elsewhere this was 148 KB for nothing.
 				// High priority: it is the LCP element, and the font preloads outrank it otherwise.
